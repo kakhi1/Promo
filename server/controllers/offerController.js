@@ -1,5 +1,5 @@
 // controllers/offerController.js
-const Offer = require("../models/Offer");
+const Offer = require("../models/Offers");
 const Brand = require("../models/Brand");
 
 exports.addOffer = async (req, res) => {

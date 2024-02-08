@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
-// Import controllers here
+const { register, login } = require("../controllers/userController"); // Adjust the path as necessary
 
-router.post("/register" /* Your register controller function */);
-router.post("/login" /* Your login controller function */);
-// Add more user-related routes
+// Correctly wire up the route to the controller function
+router.post("/register", register);
+router.post("/login", login);
 
+// Export the router
 module.exports = router;
