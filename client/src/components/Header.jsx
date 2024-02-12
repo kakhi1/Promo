@@ -7,7 +7,7 @@ import { CiCircleInfo } from "react-icons/ci";
 import { LuUser } from "react-icons/lu";
 import { BsXSquare } from "react-icons/bs";
 
-function Header() {
+function Header({ onLoginClick }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
@@ -71,13 +71,26 @@ function Header() {
               >
                 შესახებ
               </Link>
-              <Link
+              {/* <Link
                 to="/login"
                 className="hover:text-white p-2"
-                onClick={toggleMobileMenu}
+                // onClick={toggleMobileMenu}
+                onClick={() => {
+                  onLoginClick();
+                  toggleMobileMenu();
+                }}
               >
                 შესვლა
-              </Link>
+              </Link> */}
+              <button
+                className="hover:text-white p-2"
+                onClick={() => {
+                  onLoginClick(); // Open the login modal
+                  toggleMobileMenu(); // Optionally, close the mobile menu if open
+                }}
+              >
+                შესვლა
+              </button>
             </nav>
           </div>
         )}
@@ -143,13 +156,23 @@ function Header() {
               <span>შესახებ</span>
             </Link>
             {/* Sign In Button */}
-            <Link
+            {/* <Link
               to="/login"
               className="inline-flex items-center border justify-center gap-4 focus:outline-none rounded-2xl lg:text-sm mt-4 md:mt-0 h-10 w-32 border-productBg"
             >
               <LuUser size={20} color="#DCEEF8" />
               <span> შესვლა</span>{" "}
-            </Link>
+            </Link> */}
+            <button
+              className="hover:text-white p-2 inline-flex items-center border justify-center gap-4 focus:outline-none rounded-2xl lg:text-sm mt-4 md:mt-0 h-10 w-32 border-productBg"
+              onClick={() => {
+                onLoginClick(); // Open the login modal
+                toggleMobileMenu(); // Optionally, close the mobile menu if open
+              }}
+            >
+              <LuUser size={20} color="#DCEEF8" />
+              <span> შესვლა</span>{" "}
+            </button>
           </nav>
 
           {/* Navigation Links */}
@@ -158,5 +181,4 @@ function Header() {
     </header>
   );
 }
-
 export default Header;
