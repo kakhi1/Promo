@@ -1,14 +1,45 @@
 import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Submitting Login Form", { email, password, rememberMe });
-    // Here you would typically handle the login logic, possibly sending the data to a backend server
+    try {
+      const response = await fetch("http://localhost:5000/api/users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password, rememberMe }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Login failed");
+      }
+
+      const data = await response.json();
+
+      console.log("Login successful:", data);
+      if (data.user) {
+        login(data.user);
+        navigate("/user-area");
+      } else {
+        // If user data is not part of the login response, fetch it separately or adjust backend
+        console.error("User data is missing from login response");
+      }
+      // Proceed with login success logic (e.g., redirecting the user)
+    } catch (error) {
+      console.error("Login error:", error);
+      // Handle login error (e.g., displaying an error message)
+    }
   };
 
   const handleForgotPassword = () => {

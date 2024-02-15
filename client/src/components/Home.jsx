@@ -21,11 +21,11 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="pt-8 bg-white">
+    <div className="pt-8 bg-white w-full">
       {/* Responsive Grid Layout */}
       <div className="flex md:flex-row flex-col-reverse justify-center px-5">
         {/* Main Content Section */}
-        <div className="md:flex-grow">
+        <div className="md:flex-grow ">
           {/* Top Offers Section */}
           <div className="flex justify-between items-center py-4">
             <h2 className="text-lg font-semibold">ტოპ შემოთავაზებები</h2>

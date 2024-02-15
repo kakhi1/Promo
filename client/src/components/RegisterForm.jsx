@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function RegisterForm({ onRegisterSuccess }) {
   const [name, setName] = useState("");
@@ -7,7 +9,8 @@ function RegisterForm({ onRegisterSuccess }) {
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [agreeToTerms, setAgreeToTerms] = useState(false);
-
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!agreeToTerms) {
@@ -15,19 +18,28 @@ function RegisterForm({ onRegisterSuccess }) {
       return;
     }
     try {
-      // API call to backend
+      // Adjusted to match the expected API payload
+      const payload = {
+        name, // Assuming 'name' is correctly mapped
+        username: lastName, // Assuming 'lastName' field should actually be 'username'
+        email,
+        mobile,
+        password,
+      };
+
       const response = await fetch("http://localhost:5000/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, lastName, email, mobile, password }),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
-        // Handle registration success
+        const data = await response.json();
+        login(data);
         console.log("Registration successful");
-        onRegisterSuccess(); // Placeholder for success callback
+        onRegisterSuccess();
+        navigate("/user-area");
       } else {
-        // Handle registration failure
         const errorData = await response.json();
         alert(`Failed to register: ${errorData.message}`);
       }
@@ -36,9 +48,8 @@ function RegisterForm({ onRegisterSuccess }) {
       alert(`Failed to register: ${error.toString()}`);
     }
   };
-
   return (
-    <div className="container mx-auto px-10 mb-10 mt-4 rounded-3xl">
+    <div className="container rounded-3xl">
       <form
         onSubmit={handleSubmit}
         className="max-w-sm mx-auto bg-white p-6 rounded-md"

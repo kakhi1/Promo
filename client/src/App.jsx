@@ -1,61 +1,91 @@
-import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import PrivateRoute from "./components/PrivateRoute";
 import Header from "./components/Header";
 import Home from "./components/Home";
 import Modal from "./components/Modal";
-import LoginForm from "./components/loginForm";
+import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import Brands from "./components/Brands";
 import Categories from "./components/Categories";
 import About from "./components/About";
-import { Navigate } from "react-router-dom";
-import "./index.css"; // Ensure Tailwind CSS is imported here
+import UserArea from "./components/UserArea";
+import { useAuth } from "./context/AuthContext";
+import "./index.css"; // Assuming Tailwind CSS is being used
+import Footer from "./components/Footer";
 
 function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-  const handleRegistrationRedirect = () => {
-    setIsLoginOpen(false); // Close the login modal
-    setIsRegisterOpen(true); // Open the registration modal
+  const { user } = useAuth(); // Assuming `useAuth` provides user state and auth functions
+
+  // Close modals and navigate to user area on successful login
+  const handleLoginSuccess = () => {
+    setIsLoginOpen(false); // Close login modal
+    // Logic for navigating to the user area after login should be handled within LoginForm
+    // This is a placeholder for any additional logic you might want to run on login success
   };
 
-  // Enhance modal toggle functions if needed for additional logic
-  const toggleLoginModal = () => setIsLoginOpen(!isLoginOpen);
-  const toggleRegisterModal = () => setIsRegisterOpen(!isRegisterOpen);
+  // Automatically redirect authenticated users to the user area
+  useEffect(() => {
+    if (user) {
+      // If there is a user, then close all modals just in case they are open
+      setIsLoginOpen(false);
+      setIsRegisterOpen(false);
+    }
+  }, [user]);
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">
-        <Header onLoginClick={toggleLoginModal} />
-
+      <div className="min-h-screen">
+        <Header onLoginClick={() => setIsLoginOpen(true)} />
         <main className="py-5">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route
+              path="/"
+              element={user ? <Navigate to="/user-area" /> : <Home />}
+            />
             <Route path="/brands" element={<Brands />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/about" element={<About />} />
-            <Route path="/login" element={<Navigate to="/" />} />
-            {/* No need for login/register routes due to modals */}
+            <Route
+              path="/user-area"
+              element={
+                <PrivateRoute>
+                  <UserArea />
+                </PrivateRoute>
+              }
+            />
           </Routes>
         </main>
 
-        {/* Login Modal */}
         {isLoginOpen && (
-          <Modal isOpen={isLoginOpen} onClose={toggleLoginModal}>
+          <Modal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)}>
             <LoginForm
-              onLoginSuccess={() => setIsLoginOpen(false)}
-              onRegisterClick={handleRegistrationRedirect} // Pass this function as a prop
+              onLoginSuccess={handleLoginSuccess}
+              onRegisterClick={() => {
+                setIsLoginOpen(false);
+                setIsRegisterOpen(true);
+              }}
             />
           </Modal>
         )}
 
-        {/* Register Modal */}
         {isRegisterOpen && (
-          <Modal isOpen={isRegisterOpen} onClose={toggleRegisterModal}>
+          <Modal
+            isOpen={isRegisterOpen}
+            onClose={() => setIsRegisterOpen(false)}
+          >
             <RegisterForm onRegisterSuccess={() => setIsRegisterOpen(false)} />
           </Modal>
         )}
       </div>
+      <Footer />
     </Router>
   );
 }

@@ -6,16 +6,36 @@ import { RiShoppingCart2Line } from "react-icons/ri";
 import { CiCircleInfo } from "react-icons/ci";
 import { LuUser } from "react-icons/lu";
 import { BsXSquare } from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
+import { BiChevronDown } from "react-icons/bi";
+import { useAuth } from "../context/AuthContext";
 
 function Header({ onLoginClick }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
+  const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { user, logout } = useAuth();
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
   // Function to close the mobile menu
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
+  // const closeMobileMenu = () => {
+  //   setIsMobileMenuOpen(false);
+  // };
+  // const handleLoginClick = async () => {
+  //   const loginSuccess = await onLoginClick(); // Assuming onLoginClick returns a promise
+  //   if (loginSuccess) {
+  //     navigate("/user-area"); // Navigate to user area on success
+  //   }
+  // };
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setIsDropdownOpen(false);
+    navigate("/"); // Adjust as needed
   };
 
   return (
@@ -37,60 +57,60 @@ function Header({ onLoginClick }) {
           size={30}
           onClick={toggleMobileMenu}
         />
-
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="absolute top-2 right-0 w-[60%] bg-Bgcolor p-5 md:hidden z-50">
+          <div className="absolute top-0 right-0 w-[60%] bg-Bgcolor p-5 md:hidden z-50">
             <div className="flex justify-end">
-              {/* Close Icon at the top right of the mobile menu */}
+              {/* Close Icon */}
               <BsXSquare
                 className="text-white"
                 size={30}
-                onClick={toggleMobileMenu} // This will close the menu
+                onClick={toggleMobileMenu}
               />
             </div>
             <nav className="flex flex-col items-center mt-4">
+              {/* Navigation Links */}
               <Link
                 to="/brands"
-                className="hover:text-white p-2"
+                className="text-white p-2"
                 onClick={toggleMobileMenu}
               >
                 ბრენდი
               </Link>
               <Link
                 to="/categories"
-                className="hover:text-white p-2"
+                className="text-white p-2"
                 onClick={toggleMobileMenu}
               >
                 კატეგორიები
               </Link>
               <Link
                 to="/about"
-                className="hover:text-white p-2"
+                className="text-white p-2"
                 onClick={toggleMobileMenu}
               >
                 შესახებ
               </Link>
-              {/* <Link
-                to="/login"
-                className="hover:text-white p-2"
-                // onClick={toggleMobileMenu}
-                onClick={() => {
-                  onLoginClick();
-                  toggleMobileMenu();
-                }}
-              >
-                შესვლა
-              </Link> */}
-              <button
-                className="hover:text-white p-2"
-                onClick={() => {
-                  onLoginClick(); // Open the login modal
-                  toggleMobileMenu(); // Optionally, close the mobile menu if open
-                }}
-              >
-                შესვლა
-              </button>
+              {/* Dynamic Authentication Button */}
+              {user ? (
+                <button
+                  className="text-white p-2"
+                  onClick={() => {
+                    handleLogout(); // Ensure this also closes the mobile menu as needed
+                    toggleMobileMenu(); // Optionally close the menu right after logging out
+                  }}
+                >
+                  გამოსვლა
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  className="text-white p-2"
+                  onClick={() => onLoginClick && onLoginClick()} // Close the menu upon navigation
+                >
+                  შესვლა
+                </Link>
+              )}
             </nav>
           </div>
         )}
@@ -155,24 +175,41 @@ function Header({ onLoginClick }) {
               />
               <span>შესახებ</span>
             </Link>
-            {/* Sign In Button */}
-            {/* <Link
-              to="/login"
-              className="inline-flex items-center border justify-center gap-4 focus:outline-none rounded-2xl lg:text-sm mt-4 md:mt-0 h-10 w-32 border-productBg"
-            >
-              <LuUser size={20} color="#DCEEF8" />
-              <span> შესვლა</span>{" "}
-            </Link> */}
-            <button
-              className="hover:text-white p-2 inline-flex items-center border justify-center gap-4 focus:outline-none rounded-2xl lg:text-sm mt-4 md:mt-0 h-10 w-32 border-productBg"
-              onClick={() => {
-                onLoginClick(); // Open the login modal
-                toggleMobileMenu(); // Optionally, close the mobile menu if open
-              }}
-            >
-              <LuUser size={20} color="#DCEEF8" />
-              <span> შესვლა</span>{" "}
-            </button>
+
+            {user ? (
+              <div className="relative">
+                <div
+                  className="flex items-center cursor-pointer "
+                  onClick={toggleDropdown}
+                >
+                  <div className="w-32 border border-productBg inline-flex items-center justify-center gap-2 rounded-2xl ">
+                    <LuUser size={20} color="#DCEEF8" />
+                    <span className="hover:text-white p-2 focus:outline-none flex items-center justify-center text-sm h-10 ">
+                      {user.name}
+                    </span>
+                    <BiChevronDown className="hover:text-white" size={20} />
+                  </div>
+                </div>
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 py-2 bg-white rounded-md shadow-xl z-20">
+                    <button
+                      className="text-sm text-gray-700 hover:bg-gray-100 px-4 py-2 block"
+                      onClick={handleLogout}
+                    >
+                      გამოსვლა
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                className="hover:text-white p-2 inline-flex items-center justify-center gap-4 focus:outline-none rounded-2xl text-sm h-10 w-32 border border-productBg"
+                onClick={() => onLoginClick && onLoginClick()} // Ensure onLoginClick is called correctly
+              >
+                <LuUser size={20} color="#DCEEF8" />
+                <span>შესვლა</span>
+              </button>
+            )}
           </nav>
 
           {/* Navigation Links */}
