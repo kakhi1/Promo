@@ -3,28 +3,38 @@ const Brand = require("../models/Brand");
 
 exports.createBrand = async (req, res) => {
   try {
-    const { name, login, password } = req.body;
+    const { name, email, password, description, category, url } = req.body;
+    const tags = JSON.parse(req.body.tags || "[]");
+    const state = JSON.parse(req.body.state || "[]");
+    const imageUrl = req.file ? req.file.path : "";
 
-    // Check if brand already exists
-    let brand = await Brand.findOne({ login });
-    if (brand) {
-      return res.status(400).json({ message: "Brand already exists" });
+    const existingBrand = await Brand.findOne({ email });
+    if (existingBrand) {
+      return res
+        .status(400)
+        .json({ message: "Brand already exists with this email." });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create new brand
-    brand = new Brand({
+    const brand = new Brand({
       name,
-      login,
+      email,
       password: hashedPassword,
+      description,
+      tags,
+      category,
+      url,
+      state,
+      imageUrl,
     });
 
     await brand.save();
-    res.status(201).json({ message: "Brand created successfully", brand });
+    res
+      .status(201)
+      .json({ message: "Brand created successfully", brandId: brand._id });
   } catch (error) {
+    console.error(error);
     res
       .status(500)
       .json({ message: "Error creating brand", error: error.message });

@@ -1,4 +1,4 @@
-// PrivateRoute.jsx
+// // PrivateRoute.jsx
 // import React from "react";
 // import { Navigate } from "react-router-dom";
 // import { useAuth } from "../context/AuthContext";
@@ -13,16 +13,17 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const PrivateRoute = ({ children, adminRoute = false }) => {
+const PrivateRoute = ({ children, isAdminRoute = false }) => {
   const { user } = useAuth();
 
-  // Redirect non-authenticated users
-  if (!user) return <Navigate to="/" replace />;
+  // Redirect non-logged-in users
+  if (!user) return <Navigate to="/login" replace />;
 
-  // Redirect non-admin users trying to access admin routes
-  if (adminRoute && !user.isAdmin) return <Navigate to="/user-area" replace />;
+  // If it's an admin route and the logged-in user is not an admin, redirect to user area
+  if (isAdminRoute && !user.isAdmin)
+    return <Navigate to="/user-area" replace />;
 
-  // Allow access to the route
+  // Otherwise, render the children components
   return children;
 };
 

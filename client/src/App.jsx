@@ -18,10 +18,14 @@ import UserArea from "./components/UserArea";
 import { useAuth } from "./context/AuthContext";
 import "./index.css"; // Assuming Tailwind CSS is being used
 import Footer from "./components/Footer";
-
+import Admin from "./components/Admin";
+import Ads from "./components/Ads";
+import Offers from "./components/Offers";
+import Adbrands from "./components/Adbrands";
 function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const { user } = useAuth(); // Assuming `useAuth` provides user state and auth functions
 
   // Close modals and navigate to user area on successful login
@@ -39,20 +43,57 @@ function App() {
       setIsRegisterOpen(false);
     }
   }, [user]);
+  const RootRedirect = () => {
+    const { user } = useAuth();
+  };
+
+  const handleCategoriesOpen = () => {
+    setIsCategoriesOpen(true);
+  };
+
+  // Optional: Handler for closing Categories modal (can be passed to Categories component if needed)
+  const handleCategorySelect = () => {
+    setIsCategoriesOpen(false); // Close Categories modal on category selection
+  };
 
   return (
     <Router>
       <div className="min-h-screen">
-        <Header onLoginClick={() => setIsLoginOpen(true)} />
+        <Header
+          onLoginClick={() => setIsLoginOpen(true)}
+          onCategoriesClick={handleCategoriesOpen}
+        />
         <main className="py-5">
           <Routes>
             <Route
               path="/"
-              element={user ? <Navigate to="/user-area" /> : <Home />}
+              element={
+                user ? (
+                  user.isAdmin ? (
+                    <Navigate to="/admin-area" />
+                  ) : (
+                    <Navigate to="/user-area" />
+                  )
+                ) : (
+                  <Home />
+                )
+              }
             />
+            <Route path="/offers" element={<Offers />} />
+            <Route path="/ads" element={<Ads />} />
+            <Route path="/adbrands" element={<Adbrands />} />
             <Route path="/brands" element={<Brands />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/about" element={<About />} />
+            <Route
+              path="/admin-area"
+              element={
+                <PrivateRoute isAdminRoute={true}>
+                  <Admin />
+                </PrivateRoute>
+              }
+            />
+
             <Route
               path="/user-area"
               element={
@@ -82,6 +123,14 @@ function App() {
             onClose={() => setIsRegisterOpen(false)}
           >
             <RegisterForm onRegisterSuccess={() => setIsRegisterOpen(false)} />
+          </Modal>
+        )}
+        {isCategoriesOpen && (
+          <Modal
+            isOpen={isCategoriesOpen}
+            onClose={() => setIsCategoriesOpen(false)}
+          >
+            <Categories onCategorySelect={handleCategorySelect} />
           </Modal>
         )}
       </div>

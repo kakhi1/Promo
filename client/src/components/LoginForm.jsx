@@ -26,16 +26,22 @@ function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
       }
 
       const data = await response.json();
+      console.log("Login response data:", data);
+
+      // Specifically print out if the user is an admin
+      console.log("Is the user an admin?", data.user.isAdmin);
 
       console.log("Login successful:", data);
       if (data.user) {
         login(data.user);
-        navigate("/user-area");
+        if (data.user.isAdmin) {
+          navigate("/admin-area"); // Redirect to admin page
+        } else {
+          navigate("/user-area"); // Redirect to regular user page
+        }
       } else {
-        // If user data is not part of the login response, fetch it separately or adjust backend
         console.error("User data is missing from login response");
       }
-      // Proceed with login success logic (e.g., redirecting the user)
     } catch (error) {
       console.error("Login error:", error);
       // Handle login error (e.g., displaying an error message)
