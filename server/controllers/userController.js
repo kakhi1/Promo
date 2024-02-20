@@ -2,15 +2,24 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
+const Brand = require("../models/Brand");
+
+// Assuming this function is defined to check both User and Brand collections
+async function emailExists(email) {
+  const userExists = await User.findOne({ email }).lean();
+  const brandExists = await Brand.findOne({ email }).lean();
+  return userExists || brandExists ? true : false;
+}
 
 exports.register = async (req, res) => {
   try {
     const { name, username, email, password, mobile } = req.body;
 
     // Check if user already exists
-    let user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ message: "User already exists" });
+    if (await emailExists(email)) {
+      return res
+        .status(400)
+        .json({ message: "ეს იმეილი უკვე გამოყენებულია, სცადეთ სხვა იმეილი" });
     }
 
     // Hash password
@@ -34,80 +43,50 @@ exports.register = async (req, res) => {
       .json({ message: "Error registering user", error: error.message });
   }
 };
-// exports.login = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
 
-//     // Check if user exists
-//     const user = await User.findOne({ email });
-//     if (!user) {
-//       return res.status(400).json({ message: "Invalid Credentials" });
-//     }
-
-//     // Validate password
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) {
-//       return res.status(400).json({ message: "Invalid Credentials" });
-//     }
-
-//     // Generate JWT token
-//     const token = jwt.sign(
-//       { userId: user._id }, // Payload to include in the token
-//       process.env.JWT_SECRET, // Secret key from your .env file
-//       { expiresIn: "1h" } // Options, setting token expiration
-//     );
-
-//     // Respond with user data (excluding sensitive information like password) and JWT token
-//     res.status(200).json({
-//       message: "Logged in successfully",
-//       user: {
-//         id: user._id,
-//         name: user.name,
-//         email: user.email,
-//         // Include any other non-sensitive user information you want to return
-//       },
-//       token, // Send the token to the client
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: "Error logging in", error: error.message });
-//   }
-// };
 exports.login = async (req, res) => {
+  const { email, password } = req.body;
+  console.log("Attempting login for:", email);
   try {
-    const { email, password } = req.body;
+    let user = await User.findOne({ email });
 
-    // Check if user exists
-    const user = await User.findOne({ email });
     if (!user) {
+      console.log("Email not found:", email);
       return res.status(400).json({ message: "Invalid Credentials" });
     }
 
-    // Validate password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid Credentials" });
     }
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user._id, isAdmin: user.isAdmin }, // Include isAdmin in the JWT payload
-      process.env.JWT_SECRET, // Secret key from your .env file
-      { expiresIn: "1h" } // Options, setting token expiration
-    );
+    // Determine the role based on user document flags
+    let role = "user"; // Default role
+    if (user.isAdmin) {
+      role = "admin";
+    } else if (user.isBrand) {
+      role = "brand";
+    }
 
-    // Respond with user data (excluding sensitive information like password) and JWT token
-    res.status(200).json({
+    const token = jwt.sign({ userId: user._id, role }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    const responseObj = {
       message: "Logged in successfully",
-      user: {
-        id: user._id,
+      entity: {
+        id: user._id.toString(),
         name: user.name,
         email: user.email,
-        isAdmin: user.isAdmin, // Include isAdmin property
-        // Include any other non-sensitive user information you want to return
+        role, // Reflects the determined role
       },
-      token, // Send the token to the client
-    });
+      token,
+    };
+
+    res.status(200).json(responseObj);
+    console.log("Sending login response:", responseObj);
   } catch (error) {
+    console.error("Login error:", error);
     res.status(500).json({ message: "Error logging in", error: error.message });
   }
 };

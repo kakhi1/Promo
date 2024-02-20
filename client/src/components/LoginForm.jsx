@@ -9,6 +9,44 @@ function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   console.log("Submitting Login Form", { email, password, rememberMe });
+  //   try {
+  //     const response = await fetch("http://localhost:5000/api/users/login", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({ email, password, rememberMe }),
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error("Login failed");
+  //     }
+
+  //     const data = await response.json();
+  //     console.log("Login response data:", data);
+
+  //     // Specifically print out if the user is an admin
+  //     console.log("Is the user an admin?", data.user.isAdmin);
+
+  //     console.log("Login successful:", data);
+  //     if (data.user) {
+  //       login(data.user);
+  //       if (data.user.isAdmin) {
+  //         navigate("/admin-area"); // Redirect to admin page
+  //       } else {
+  //         navigate("/user-area"); // Redirect to regular user page
+  //       }
+  //     } else {
+  //       console.error("User data is missing from login response");
+  //     }
+  //   } catch (error) {
+  //     console.error("Login error:", error);
+  //     // Handle login error (e.g., displaying an error message)
+  //   }
+  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Submitting Login Form", { email, password, rememberMe });
@@ -18,7 +56,7 @@ function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password, rememberMe }),
+        body: JSON.stringify({ email, password }),
       });
 
       if (!response.ok) {
@@ -28,26 +66,34 @@ function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
       const data = await response.json();
       console.log("Login response data:", data);
 
-      // Specifically print out if the user is an admin
-      console.log("Is the user an admin?", data.user.isAdmin);
+      // Assuming the structure is { message: '', entity: { role: '' }, token: '' }
+      // Adjusting access to the role based on the corrected structure
+      console.log("User role:", data.entity.role);
 
-      console.log("Login successful:", data);
-      if (data.user) {
-        login(data.user);
-        if (data.user.isAdmin) {
-          navigate("/admin-area"); // Redirect to admin page
-        } else {
-          navigate("/user-area"); // Redirect to regular user page
+      if (data.entity) {
+        // Assuming your login function properly handles this object structure
+        login({ ...data.entity, token: data.token }); // Include token as part of the user data
+
+        // Correct redirection based on the role
+        switch (data.entity.role) {
+          case "admin":
+            navigate("/admin-area"); // Redirect to admin page
+            break;
+          case "brand":
+            navigate("/brand-area"); // Redirect to brand page, if applicable
+            break;
+          default:
+            navigate("/user-area"); // Redirect to regular user page
+            break;
         }
       } else {
-        console.error("User data is missing from login response");
+        console.error("Entity data is missing from login response");
       }
     } catch (error) {
-      console.error("Login error:", error);
-      // Handle login error (e.g., displaying an error message)
+      console.error("Login error:", error.message);
+      // Optionally handle the login error, such as displaying an error message to the user
     }
   };
-
   const handleForgotPassword = () => {
     console.log("Forgot Password Clicked");
     onForgotPasswordClick(); // This should be a function passed down as a prop that handles forgot password action

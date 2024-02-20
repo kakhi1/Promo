@@ -1,11 +1,30 @@
 const mongoose = require("mongoose");
+
 const offerSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
-  brand: { type: mongoose.Schema.Types.ObjectId, ref: "Brand", required: true },
-  createdAt: { type: Date, default: Date.now },
-  link: { type: String, required: true },
-  // Add more fields as necessary
+  // brand: { type: mongoose.Schema.Types.ObjectId, ref: "Brand", required: true }, // Reference to the Brand model
+  createdAt: { type: Date, default: Date.now }, // Automatically sets the date when the offer is created
+  category: String,
+  state: [String],
+  url: String,
+  tags: [String], // Optional: Similar to Brand, you might want to tag offers for categorization
+  state: [String], // Optional: If offers are state-specific
+  imageUrl: String, // Optional: If you want to include an image with the offer
+  status: {
+    type: String,
+    default: "pending",
+    enum: ["pending", "approved", "rejected"],
+  },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Brand" }, // Optional: If you want to track the status of offers
+  lastModified: { type: Date, default: Date.now }, // To track when an offer was last updated
 });
+
+// Optionally, you can add methods or virtuals to your schema if needed
+// For instance, a method to format the createdAt date in a more readable form
+
+offerSchema.methods.formattedDate = function () {
+  return this.createdAt.toDateString(); // Example method to format date
+};
 
 module.exports = mongoose.model("Offer", offerSchema);

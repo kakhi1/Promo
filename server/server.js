@@ -18,15 +18,16 @@ mongoose
 // Require routes
 const userRoutes = require("./routes/userRoutes");
 const brandRoutes = require("./routes/brandRoutes");
+const dataRoutes = require("./routes/dataRoutes");
 const offerRoutes = require("./routes/offerRoutes");
-const categoryRoutes = require("./routes/categoryRoutes");
 // const brandRoutes = require("./routes/brand");
-app.use(express.json());
+
 // Use routes
 app.use("/api/users", userRoutes);
 app.use(brandRoutes);
 app.use("/api/offers", offerRoutes);
-app.use("/api/categories", categoryRoutes);
+app.use("/api/data", dataRoutes);
+app.use("/api/offers", offerRoutes);
 
 // Define a simple route
 app.get("/", (req, res) => {

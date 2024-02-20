@@ -1,27 +1,3 @@
-// const mongoose = require("mongoose");
-// const bcrypt = require("bcryptjs");
-
-// const brandSchema = new mongoose.Schema({
-//   name: { type: String, required: true, unique: true },
-//   email: { type: String, required: true, unique: true },
-//   password: { type: String, required: true },
-//   description: String,
-//   tags: [String],
-//   category: String,
-//   url: String, // Assuming this is for the brand's website URL
-//   state: [String],
-//   imageUrl: String, // Field for storing the image URL
-// });
-
-// // Hash password before saving
-// brandSchema.pre("save", async function (next) {
-//   if (this.isModified("password")) {
-//     this.password = await bcrypt.hash(this.password, 12);
-//   }
-//   next();
-// });
-
-// module.exports = mongoose.model("Brand", brandSchema);
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
