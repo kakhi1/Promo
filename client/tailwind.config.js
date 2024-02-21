@@ -3,6 +3,9 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      screens: {
+        xl2: "1680px", // Custom name for the breakpoint, e.g., 'xl2'
+      },
       fontFamily: {
         sans: ["FiraGO", "sans-serif"],
       },

@@ -1,69 +1,81 @@
-// const Offer = require("../models/offers"); // Adjust the path as necessary
-
-// // Create a new offer
-// // Adjusted to set the offer as pending approval when created by a brand
-// exports.createOffer = async (req, res) => {
-//   console.log("Creating offer with data:", req.body); // Log incoming request data
-//   const offerData = {
-//     ...req.body,
-//     isApproved: false, // Assuming you have an isApproved field
-//     // or status: 'pending', if you're using a status field
-//   };
-//   try {
-//     const newOffer = await Offer.create(offerData);
-//     console.log("Offer created, pending approval:", newOffer);
-//     res.status(201).json({ success: true, data: newOffer });
-//   } catch (error) {
-//     console.error("Error creating offer:", error);
-//     res.status(400).json({ success: false, error: error.message });
-//   }
-// };
-const Offer = require("../models/offers");
+const Offer = require("../models/Offers");
 const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
 
+exports.incrementOfferViews = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const offer = await Offer.findByIdAndUpdate(
+      id,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+    if (!offer) {
+      return res.status(404).json({ success: false, error: "Offer not found" });
+    }
+    res.status(200).json({ success: true, data: offer });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 exports.createOffer = async (req, res) => {
   try {
-    // Parse tags and state from JSON strings, if provided
-    let tags = [],
-      state = [];
-    if (req.body.tags && req.body.tags.startsWith("[")) {
-      tags = JSON.parse(req.body.tags);
+    if (req.fileValidationError) {
+      return res
+        .status(400)
+        .json({ success: false, error: req.fileValidationError });
     }
-    if (req.body.state && req.body.state.startsWith("[")) {
-      state = JSON.parse(req.body.state);
-    }
+    let tags = req.body.tags ? parseInput(req.body.tags) : [];
+    let state = req.body.state ? parseInput(req.body.state) : [];
+    const { originalPrice, discountPrice } = req.body;
 
     const imageUrl = req.file ? req.file.path : ""; // Handle file upload
 
-    // Construct the offer data, incorporating parsed fields and the image URL
     const offerData = {
       ...req.body,
-      tags,
-      state,
+      tags, // Use parsed tags
+      state, // Use parsed state
       imageUrl,
-      isApproved: false, // Example field, assuming offers require approval
+      originalPrice,
+      discountPrice,
+      isApproved: false,
+      brand: req.body.brandId,
     };
 
-    // Remove fields that should not be directly copied
-    delete offerData.tags;
-    delete offerData.state;
+    // Optionally remove properties if not part of your model
+    delete offerData.brandId;
 
-    // Log the final offer data being created (for debugging purposes)
-    console.log("Creating offer with data:", offerData);
-
-    // Create the offer in the database
     const newOffer = await Offer.create(offerData);
-    console.log("Offer created, pending approval:", newOffer);
 
-    // Respond with success and the created offer data
     res.status(201).json({ success: true, data: newOffer });
   } catch (error) {
     console.error("Error creating offer:", error);
-    // If parsing JSON fails, it will also be caught here
     res.status(400).json({ success: false, error: error.message });
   }
 };
+
+// Helper function to parse input to array format
+function parseInput(input) {
+  if (Array.isArray(input)) {
+    return input; // Already an array, return as is
+  } else if (typeof input === "string") {
+    try {
+      // Attempt to parse as JSON array
+      const parsed = JSON.parse(input);
+      if (Array.isArray(parsed)) {
+        return parsed; // Successfully parsed JSON array
+      } else {
+        return [parsed]; // Parsed single value, return as array
+      }
+    } catch (error) {
+      // Not a JSON string, treat as single string value
+      return [input]; // Return as array with single item
+    }
+  } else {
+    return []; // Unsupported type, return empty array
+  }
+}
 
 exports.approveOfferById = async (req, res) => {
   try {
@@ -104,9 +116,28 @@ exports.rejectOfferById = async (req, res) => {
 };
 
 // Get all offers
+// exports.getAllOffers = async (req, res) => {
+//   try {
+//     const brandId = req.query.brandId;
+//     const query = brandId ? { brand: brandId } : {};
+//     const offers = await Offer.find();
+//     res.status(200).json({ success: true, data: offers });
+//   } catch (error) {
+//     res.status(400).json({ success: false, error: error.message });
+//   }
+// };
 exports.getAllOffers = async (req, res) => {
   try {
-    const offers = await Offer.find();
+    const brandId = req.query.brandId;
+    let query = {};
+
+    if (brandId) {
+      query = { brand: brandId, status: "approved" }; // Assuming status field tracks approval
+    } else {
+      query = { status: "approved" };
+    }
+
+    const offers = await Offer.find(query);
     res.status(200).json({ success: true, data: offers });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });

@@ -4,7 +4,6 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-
 // Middleware
 app.use(cors());
 app.use(express.json()); // for parsing application/json
@@ -17,17 +16,18 @@ mongoose
 
 // Require routes
 const userRoutes = require("./routes/userRoutes");
-const brandRoutes = require("./routes/brandRoutes");
 const dataRoutes = require("./routes/dataRoutes");
 const offerRoutes = require("./routes/offerRoutes");
-// const brandRoutes = require("./routes/brand");
+const brandRoutes = require("./routes/brandRoutes");
 
+// const brandRoutes = require("./routes/brand");
+app.use("/uploads", express.static("uploads"));
 // Use routes
 app.use("/api/users", userRoutes);
 app.use(brandRoutes);
 app.use("/api/offers", offerRoutes);
 app.use("/api/data", dataRoutes);
-app.use("/api/offers", offerRoutes);
+app.use("/api/brands", brandRoutes);
 
 // Define a simple route
 app.get("/", (req, res) => {

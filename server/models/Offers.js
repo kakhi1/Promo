@@ -11,11 +11,18 @@ const offerSchema = new mongoose.Schema({
   tags: [String], // Optional: Similar to Brand, you might want to tag offers for categorization
   state: [String], // Optional: If offers are state-specific
   imageUrl: String, // Optional: If you want to include an image with the offer
+  views: { type: Number, default: 0 },
+  brand: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Brand",
+  },
   status: {
     type: String,
     default: "pending",
     enum: ["pending", "approved", "rejected"],
   },
+  originalPrice: { type: Number, required: true }, // Added field for original price
+  discountPrice: { type: Number },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Brand" }, // Optional: If you want to track the status of offers
   lastModified: { type: Date, default: Date.now }, // To track when an offer was last updated
 });

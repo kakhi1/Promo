@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User"); // Import the User model
 const Brand = require("../models/Brand");
+const Offer = require("../models/Offers");
 
 exports.createBrand = async (req, res) => {
   try {
@@ -56,5 +57,46 @@ exports.createBrand = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error creating brand", error: error.message });
+  }
+};
+exports.getBrands = async (req, res) => {
+  try {
+    const brandsWithOfferCount = await Brand.aggregate([
+      {
+        $lookup: {
+          from: "offers", // Ensure this matches your offers collection name
+          localField: "_id",
+          foreignField: "brand",
+          as: "offers",
+        },
+      },
+      {
+        $addFields: {
+          offerCount: { $size: "$offers" },
+        },
+      },
+      {
+        $project: {
+          name: 1,
+          email: 1,
+          description: 1,
+          tags: 1,
+          category: 1,
+          url: 1,
+          state: 1,
+          imageUrl: 1,
+          offerCount: 1,
+        },
+      },
+    ]);
+
+    res.json({ success: true, data: brandsWithOfferCount });
+  } catch (error) {
+    console.error("Failed to fetch brands with offer count:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 };
