@@ -104,7 +104,7 @@ function Adoffers() {
     formData.append("title", offerInfo.title);
     formData.append("description", offerInfo.description);
     formData.append("url", offerInfo.url); // Make sure this matches your backend expectation, whether it's 'url' or 'link'
-    formData.append("brand", brandId);
+    formData.append("brand", user.brand);
     formData.append("originalPrice", offerInfo.originalPrice);
     // Append discountPrice only if it's provided, given it can be optional
     if (offerInfo.discountPrice) {

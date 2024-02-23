@@ -16,6 +16,7 @@ mongoose
 
 // Require routes
 const userRoutes = require("./routes/userRoutes");
+
 const dataRoutes = require("./routes/dataRoutes");
 const offerRoutes = require("./routes/offerRoutes");
 const brandRoutes = require("./routes/brandRoutes");
@@ -24,7 +25,7 @@ const brandRoutes = require("./routes/brandRoutes");
 app.use("/uploads", express.static("uploads"));
 // Use routes
 app.use("/api/users", userRoutes);
-app.use(brandRoutes);
+// app.use(brandRoutes);
 app.use("/api/offers", offerRoutes);
 app.use("/api/data", dataRoutes);
 app.use("/api/brands", brandRoutes);

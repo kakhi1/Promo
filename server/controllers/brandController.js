@@ -59,6 +59,35 @@ exports.createBrand = async (req, res) => {
       .json({ message: "Error creating brand", error: error.message });
   }
 };
+
+exports.getBrandByOfferId = async (req, res) => {
+  console.log(`Fetching brand for offer ID: ${req.params.offersId}`);
+  try {
+    const { offersId } = req.params;
+    const offer = await Offer.findById(offersId).populate("brand");
+    if (!offer) {
+      return res.status(404).send("Offer not found");
+    }
+
+    // Check if offer has a brand populated
+    if (!offer.brand) {
+      return res.status(404).send("Brand not found for this offer");
+    }
+
+    const brand = await Brand.findById(offer.brand._id);
+    // Since we already checked if offer.brand is null, this check might be redundant
+    // unless you want to double-check that the brand document exists
+    if (!brand) {
+      return res.status(404).send("Brand not found");
+    }
+    console.log("Brand data:", brand);
+    res.json(brand);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server error");
+  }
+};
+
 exports.getBrands = async (req, res) => {
   try {
     const brandsWithOfferCount = await Brand.aggregate([
@@ -91,6 +120,7 @@ exports.getBrands = async (req, res) => {
     ]);
 
     res.json({ success: true, data: brandsWithOfferCount });
+    console.log(brandsWithOfferCount);
   } catch (error) {
     console.error("Failed to fetch brands with offer count:", error);
     res.status(500).json({

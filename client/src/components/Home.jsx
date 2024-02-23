@@ -4,66 +4,56 @@ import OffersCard from "./OffersCard";
 import BrandCard from "./BrandCard";
 
 const Home = () => {
-  const [brands] = useState([...Array(20).keys()]); // Simulated array of brands
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [showAllBrands, setShowAllBrands] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [offers, setOffers] = useState([]);
+  const [brands, setBrands] = useState([]); // Changed to fetch from API
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const handleShowAllBrands = () => setShowAllBrands(true);
+  console.log(offers);
+  const handleShowAllBrands = () => setShowAllBrands(!showAllBrands); // Toggle visibility
   const handleShowAllProducts = () => setShowAllProducts(!showAllProducts);
-  const handleResize = () => {
-    console.log("Window resized");
-    setIsMobile(window.innerWidth <= 768);
-  };
+  const handleResize = () => setIsMobile(window.innerWidth <= 768);
 
   useEffect(() => {
-    // Function to fetch offers from an API
-    const fetchOffers = async () => {
+    const fetchOffersAndBrands = async () => {
+      setLoading(true);
       try {
-        const response = await fetch("http://localhost:5000/api/offers");
-        if (!response.ok) {
-          throw new Error(
-            `Network response was not ok, status: ${response.status}`
-          );
-        }
-        const result = await response.json();
-        if (result.success && Array.isArray(result.data)) {
-          setOffers(result.data);
-          console.log("Fetched offers:", result.data);
-          setError(""); // Clear any previous errors
+        // Fetch offers
+        const offersResponse = await fetch("http://localhost:5000/api/offers");
+        const offersResult = await offersResponse.json();
+        if (offersResult.success && Array.isArray(offersResult.data)) {
+          setOffers(offersResult.data);
         } else {
-          throw new Error(
-            "Data format is incorrect, expected an array of offers."
-          );
+          throw new Error("Failed to fetch offers");
+        }
+
+        // Fetch brands
+        const brandsResponse = await fetch("http://localhost:5000/api/brands");
+        const brandsResult = await brandsResponse.json();
+        console.log(brandsResult);
+        if (brandsResult.success && Array.isArray(brandsResult.data)) {
+          setBrands(brandsResult.data);
+        } else {
+          throw new Error("Failed to fetch brands");
         }
       } catch (error) {
-        console.error("Failed to fetch offers:", error);
+        console.error("Failed to fetch data:", error);
         setError(error.message);
       } finally {
-        setLoading(false); // Ensure loading state is updated regardless of outcome
+        setLoading(false);
       }
     };
 
-    // Call fetchOffers to load data when the component mounts
-    fetchOffers();
-
-    // Setup the resize event listener
+    fetchOffersAndBrands();
     window.addEventListener("resize", handleResize);
-
-    // Cleanup function to remove the event listener when the component unmounts or before the effect runs again
     return () => window.removeEventListener("resize", handleResize);
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
   return (
     <div className="pt-8 bg-white w-full">
       {/* Responsive Grid Layout */}
@@ -126,36 +116,29 @@ const Home = () => {
           </div>
 
           {/* Brands Grid */}
-          {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {(showAllBrands
               ? brands
               : isMobile
               ? brands.slice(0, 4)
               : brands.slice(0, 8)
-            ).map((brand, index) => (
-              <div
-                key={index}
-                className="bg-gray-200 h-20 flex items-center justify-center"
-              >
-                Brand {brand + 1}
-              </div>
-            ))}
-          </div>
-        </div> */}
-          {/* Brands Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {(showAllBrands
-              ? brands // Assuming this now includes brand details fetched from an API
-              : isMobile
-              ? brands.slice(0, 4)
-              : brands.slice(0, 8)
-            ).map((brand) => (
-              <BrandCard
-                key={brand._id} // Use a unique identifier from your brand data
-                name={brand.name}
-                imageUrl={brand.imageUrl} // Ensure you construct the full URL if necessary
-              />
-            ))}
+            ).map((brand) => {
+              // Assuming your backend server is running on localhost:5000
+              // and the images are served from the 'uploads' directory
+              const baseUrl = "http://localhost:5000/";
+              const imagePath = brand.imageUrl.replace(/\\/g, "/"); // Replace backslashes with forward slashes if needed
+              const fullImageUrl = baseUrl + imagePath;
+
+              return (
+                <BrandCard
+                  key={brand._id}
+                  id={brand._id}
+                  name={brand.name}
+                  imageUrl={fullImageUrl} // Adjust as necessary for the path
+                  offerCount={brand.offerCount} // Make sure your API provides this
+                />
+              );
+            })}
           </div>
         </div>
 

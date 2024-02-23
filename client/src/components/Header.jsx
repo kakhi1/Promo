@@ -34,7 +34,7 @@ function Header({ onLoginClick, onCategoriesClick }) {
         {/* Logo always visible */}
         <Link
           to="/"
-          className="flex title-font font-medium items-center text-white mb-4 md:mb-0"
+          className="flex title-font font-medium items-center text-white mb-4 md:mb-0 w-1/4"
         >
           <img src={logo} alt="Logo" className="h-10" />
         </Link>
@@ -109,16 +109,16 @@ function Header({ onLoginClick, onCategoriesClick }) {
         )}
 
         {/* Desktop Menu including search bar */}
-        <div className="hidden md:flex w-2/3 justify-end items-center">
+        <div className="hidden md:flex w-3/4 justify-end  items-center">
           {/* Search Bar */}
-          <div className="md:ml-auto md:mr-3 hidden md:block">
-            <div className="relative">
+          <div className="md:ml-auto md:mr-3 hidden md:block h-[40px]">
+            <div className="relative h-full ">
               <input
-                className="w-full rounded-2xl md:w-64 px-4 py-1 pl-10 border border-productBg bg-Bgcolor text-productBg placeholder-productBg text-sm font-normal"
+                className="w-full rounded-2xl md:w-64 px-4 py-1 pl-10 border border-productBg bg-Bgcolor text-productBg placeholder-productBg text-sm font-normal h-full"
                 placeholder="ძებნა..."
               />
               <svg
-                className="absolute right-4 bottom-[6px] text-productBg"
+                className="absolute right-4 bottom-[8px] text-productBg"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

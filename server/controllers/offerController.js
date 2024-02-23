@@ -1,6 +1,7 @@
 const Offer = require("../models/Offers");
 const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
+const Brand = require("../models/Brand");
 
 exports.incrementOfferViews = async (req, res) => {
   try {
@@ -28,7 +29,7 @@ exports.createOffer = async (req, res) => {
     }
     let tags = req.body.tags ? parseInput(req.body.tags) : [];
     let state = req.body.state ? parseInput(req.body.state) : [];
-    const { originalPrice, discountPrice } = req.body;
+    const { originalPrice, discountPrice, brand } = req.body;
 
     const imageUrl = req.file ? req.file.path : ""; // Handle file upload
 
@@ -40,14 +41,22 @@ exports.createOffer = async (req, res) => {
       originalPrice,
       discountPrice,
       isApproved: false,
-      brand: req.body.brandId,
+      brand,
     };
 
     // Optionally remove properties if not part of your model
-    delete offerData.brandId;
 
+    // Create the offer with the brand linked
     const newOffer = await Offer.create(offerData);
-
+    // If `brand` is provided, update the Brand document to include this new offer
+    if (brand) {
+      // Make sure `brand` is the correct ObjectId format
+      await Brand.findByIdAndUpdate(
+        brand, // Use `brand` as the ID directly
+        { $push: { offers: newOffer._id } }, // Pushing the offer ID to the brand's offers array
+        { new: true, safe: true, upsert: false } // Options for findByIdAndUpdate
+      );
+    }
     res.status(201).json({ success: true, data: newOffer });
   } catch (error) {
     console.error("Error creating offer:", error);

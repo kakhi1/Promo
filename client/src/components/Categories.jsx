@@ -5,7 +5,7 @@ function Categories({ onSelectCategory }) {
 
   useEffect(() => {
     // Replace 'http://localhost:5000/api/categories' with the actual endpoint from which you are fetching the categories
-    fetch("http://localhost:5000/api/categories")
+    fetch("http://localhost:5000/api/data/categories")
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");

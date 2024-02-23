@@ -11,6 +11,12 @@ const brandSchema = new mongoose.Schema({
   url: String,
   state: [String],
   imageUrl: String,
+  offers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Offer", // Assuming your offer model's name is 'Offer'
+    },
+  ],
   createdAt: { type: Date, default: Date.now }, // Default timestamp for document creation
   status: { type: String, default: "active" }, // Default status for new brands
   lastModified: { type: Date, default: Date.now }, // To be updated on every document modification
