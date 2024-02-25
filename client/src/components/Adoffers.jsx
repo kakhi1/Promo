@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Select from "react-select";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function Adoffers() {
+  const fileInputRef = useRef(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const [brandId, setBrandId] = useState(null);
@@ -20,27 +21,41 @@ function Adoffers() {
     discountPrice: "",
   });
   const [image, setImage] = useState(null);
+  const [offerImages, setOfferImages] = useState([]); // Holds the File objects
+  const [imagesPreview, setImagesPreview] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
   const [states, setStates] = useState([]);
   const [tags, setTags] = useState([]);
   const [errors, setErrors] = useState({});
+
   const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    setOfferImage(file);
-    setImage(URL.createObjectURL(file));
+    const files = Array.from(event.target.files);
+
+    // Assuming setOfferImages and setImagesPreview are meant to manage an array of file objects and their preview URLs respectively
+    const newFiles = files.filter(
+      (file) =>
+        !offerImages.some((existingFile) => existingFile.name === file.name)
+    );
+    const newImageUrls = newFiles.map((file) => URL.createObjectURL(file));
+
+    setOfferImages((prevImages) => [...prevImages, ...newFiles]);
+    setImagesPreview((prevUrls) => [...prevUrls, ...newImageUrls]);
+
+    // Reset errors if necessary
     if (errors.offerImage) {
       setErrors((prevErrors) => ({ ...prevErrors, offerImage: undefined }));
     }
   };
 
-  const handleImageDelete = () => {
-    setOfferImage(null);
-    setImage(null);
-    if (errors.offerImage) {
-      setErrors((prevErrors) => ({ ...prevErrors, offerImage: undefined }));
-    }
-  };
+  const handleImageDelete = (index) => {
+    // Remove the image from the offerImages array
+    const newOfferImages = offerImages.filter((_, i) => i !== index);
+    setOfferImages(newOfferImages);
 
+    // Remove the image preview URL from the imagesPreview array
+    const newImagesPreview = imagesPreview.filter((_, i) => i !== index);
+    setImagesPreview(newImagesPreview);
+  };
   const handleChange = (event) => {
     const { name, value } = event.target;
     setOfferInfo((prev) => ({ ...prev, [name]: value }));
@@ -71,56 +86,147 @@ function Adoffers() {
     }
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   // Initialize an errors object
+  //   let newErrors = {};
+
+  //   // Required fields validation
+  //   if (!offerInfo.title) newErrors.title = "გთხოვ შეავსოთ დასახელება";
+  //   if (!offerInfo.description)
+  //     newErrors.description = "გთხოვ შეავსოთ პროდუქციის აღწერა";
+  //   if (!offerInfo.category) newErrors.category = "მიუთითეთ კატეგორია";
+  //   if (!offerInfo.url) newErrors.url = "გთხოვ მიუთით მისამართი (url)";
+  //   if (!offerInfo.tags.length) newErrors.tags = "გთხოვ მონიშნოთ თაგი(ები)";
+  //   if (!offerInfo.state.length) newErrors.state = "გთხოვ მიუთითოთ ქალაქი";
+  //   if (offerImages.length === 0)
+  //     newErrors.offerImage = "გთხოვ ატვირთოთ სურათი";
+
+  //   // Check if there are any errors
+  //   if (Object.keys(newErrors).length > 0) {
+  //     setErrors(newErrors);
+  //     return; // Stop the form submission
+  //   }
+
+  //   // If no errors, proceed with form submission
+  //   setErrors({}); // Reset errors
+  //   if (!user || !user.id) {
+  //     console.error("User ID (brand ID) is not available.");
+  //     return; // Handle this case appropriately
+  //   }
+
+  //   console.log("offerImages", offerImages);
+
+  //   const formData = new FormData();
+
+  //   // Append the first image if present and defined
+  //   if (offerImages.length > 0 && offerImages[0]) {
+  //     formData.append("image", offerImages[0]);
+  //   } else {
+  //     console.error("No images to append."); // Helps identify if there's an attempt to append an undefined image
+  //   }
+
+  //   // Append simple string values directly
+  //   formData.append("title", offerInfo.title);
+  //   formData.append("description", offerInfo.description);
+  //   formData.append("url", offerInfo.url); // Make sure this matches your backend expectation, whether it's 'url' or 'link'
+  //   formData.append("brand", user.brand);
+  //   formData.append("originalPrice", offerInfo.originalPrice);
+  //   // Append discountPrice only if it's provided, given it can be optional
+  //   if (offerInfo.discountPrice) {
+  //     formData.append("discountPrice", offerInfo.discountPrice);
+  //   }
+  //   // Handle arrays; directly append each item as a separate entry if backend expects them as arrays
+  //   offerInfo.tags.forEach((tag) => formData.append("tags", tag.value));
+  //   offerInfo.state.forEach((state) => formData.append("state", state.value));
+
+  //   // Handle category, assuming it's a single object selection
+  //   if (offerInfo.category)
+  //     formData.append("category", offerInfo.category.value);
+
+  //   // Append image if present
+  //   // if (offerImage) formData.append("image", offerImage);
+  //   // formData.append("image", file); // Assuming 'file' is a File object
+  //   // offerImages.forEach((imageFile, index) => {
+  //   //   formData.append(`images[${index}]`, imageFile);
+  //   // });
+
+  //   console.log("Sending file to backend:", file);
+
+  //   formData.append("brandId", user.id);
+
+  //   try {
+  //     const response = await fetch("http://localhost:5000/api/offers", {
+  //       method: "POST",
+  //       body: formData,
+  //     });
+
+  //     const data = await response.json(); // Assuming the server responds with JSON
+  //     console.log(data);
+  //     if (response.ok) {
+  //       console.log("Offer created:", data);
+  //       navigate("/"); // Navigate to the homepage upon success
+  //     } else {
+  //       // Handle server-side validation errors (e.g., 400 responses)
+  //       console.error("Error creating offer:", data.error || "Unknown error");
+  //       // Optionally, update state to display error messages to the user
+  //       setErrors(
+  //         data.errors || { general: "An error occurred. Please try again." }
+  //       );
+  //     }
+  //     console.log([...formData.entries()]);
+  //   } catch (error) {
+  //     // Handle network errors or other unexpected errors
+  //     console.error("Submission error:", error);
+  //     setErrors({ general: "A network error occurred. Please try again." });
+  //   }
+  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Initialize an errors object
+
     let newErrors = {};
 
-    // Required fields validation
-    if (!offerInfo.title) newErrors.title = "გთხოვ შეავსოთ დასახელება";
+    // Validation checks (assuming offerInfo and offerImages are correctly defined in your component's state)
+    if (!offerInfo.title) newErrors.title = "Please fill out the title";
     if (!offerInfo.description)
-      newErrors.description = "გთხოვ შეავსოთ პროდუქციის აღწერა";
-    if (!offerInfo.category) newErrors.category = "მიუთითეთ კატეგორია";
-    if (!offerInfo.url) newErrors.url = "გთხოვ მიუთით მისამართი (url)";
-    if (!offerInfo.tags.length) newErrors.tags = "გთხოვ მონიშნოთ თაგი(ები)";
-    if (!offerInfo.state.length) newErrors.state = "გთხოვ მიუთითოთ ქალაქი";
-    if (!offerImage) newErrors.offerImage = "გთხოვ ატვირთოთ სურათი";
+      newErrors.description = "Please fill out the description";
+    if (!offerInfo.category) newErrors.category = "Please select a category";
+    if (!offerInfo.url) newErrors.url = "Please provide a URL";
+    if (!offerInfo.tags.length)
+      newErrors.tags = "Please select at least one tag";
+    if (!offerInfo.state.length)
+      newErrors.state = "Please select at least one state";
+    if (offerImages.length === 0)
+      newErrors.offerImage = "Please upload at least one image";
 
-    // Check if there are any errors
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      return; // Stop the form submission
+      return; // Stop form submission if there are errors
     }
 
-    // If no errors, proceed with form submission
-    setErrors({}); // Reset errors
-    if (!user || !user.id) {
-      console.error("User ID (brand ID) is not available.");
-      return; // Handle this case appropriately
-    }
+    setErrors({}); // Reset errors before proceeding
 
     const formData = new FormData();
-    // Append simple string values directly
-    formData.append("title", offerInfo.title);
-    formData.append("description", offerInfo.description);
-    formData.append("url", offerInfo.url); // Make sure this matches your backend expectation, whether it's 'url' or 'link'
+
+    // Append files to formData
+    offerImages.forEach((file) => {
+      formData.append("images", file);
+    });
     formData.append("brand", user.brand);
-    formData.append("originalPrice", offerInfo.originalPrice);
-    // Append discountPrice only if it's provided, given it can be optional
-    if (offerInfo.discountPrice) {
-      formData.append("discountPrice", offerInfo.discountPrice);
+    // Append other form data
+    Object.entries(offerInfo).forEach(([key, value]) => {
+      // For array values, append each value under the same key
+      if (Array.isArray(value)) {
+        value.forEach((item) => formData.append(key, item.value || item));
+      } else {
+        formData.append(key, value);
+      }
+    });
+
+    // Log formData for debugging (optional)
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
     }
-    // Handle arrays; directly append each item as a separate entry if backend expects them as arrays
-    offerInfo.tags.forEach((tag) => formData.append("tags", tag.value));
-    offerInfo.state.forEach((state) => formData.append("state", state.value));
-
-    // Handle category, assuming it's a single object selection
-    if (offerInfo.category)
-      formData.append("category", offerInfo.category.value);
-
-    // Append image if present
-    if (offerImage) formData.append("image", offerImage);
-    formData.append("brandId", user.id);
 
     try {
       const response = await fetch("http://localhost:5000/api/offers", {
@@ -128,25 +234,21 @@ function Adoffers() {
         body: formData,
       });
 
-      const data = await response.json(); // Assuming the server responds with JSON
-      if (response.ok) {
-        console.log("Offer created:", data);
-        navigate("/"); // Navigate to the homepage upon success
-      } else {
-        // Handle server-side validation errors (e.g., 400 responses)
-        console.error("Error creating offer:", data.error || "Unknown error");
-        // Optionally, update state to display error messages to the user
-        setErrors(
-          data.errors || { general: "An error occurred. Please try again." }
+      if (!response.ok) {
+        throw new Error(
+          "Server responded with an error: " + response.statusText
         );
       }
-      console.log([...formData.entries()]);
+
+      const data = await response.json();
+      console.log("Offer created:", data);
+      navigate("/"); // Adjust as needed for your routing setup
     } catch (error) {
-      // Handle network errors or other unexpected errors
       console.error("Submission error:", error);
       setErrors({ general: "A network error occurred. Please try again." });
     }
   };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -193,27 +295,73 @@ function Adoffers() {
               <FaPlus size={24} color="#5E5FB2" />
               <p>სურათის ატვირთვა</p>
             </div>
+
+            {/* Hidden input for handling the actual file upload */}
             <input
               type="file"
               id="imageUpload"
+              ref={fileInputRef}
+              multiple
               style={{ display: "none" }}
               onChange={handleImageUpload}
             />
-            {image && (
-              <div>
+
+            {/* Display the selected image previews */}
+            {/* {imagesPreview.map((image, index) => (
+              <div
+                key={index}
+                style={{
+                  position: "relative",
+                  display: "inline-block",
+                  marginRight: "10px",
+                }}
+              >
                 <img
                   src={image}
-                  alt="Uploaded"
+                  alt={`Uploaded ${index}`}
                   style={{ width: "100px", height: "100px" }}
                 />
-                <button onClick={handleImageDelete}>
+                <button
+                  onClick={() => handleImageDelete(index)}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                    cursor: "pointer",
+                  }}
+                >
                   <FaTrash />
                 </button>
               </div>
-            )}
+            ))} */}
+            {/* <input
+              type="file"
+              id="imageUpload"
+              multiple
+              style={{ display: "none" }}
+              onChange={handleImageUpload}
+            /> */}
+            <div className="flex flex-wrap gap-2">
+              {imagesPreview.map((image, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={image}
+                    alt={`Upload ${index}`}
+                    className="w-24 h-24 object-cover"
+                  />
+                  <button
+                    onClick={() => handleImageDelete(index)}
+                    className="absolute top-0 right-0 cursor-pointer bg-red-500 text-white p-1 rounded-full text-sm"
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
+              ))}
+            </div>
             {errors.offerImage && (
               <span className="text-red-500 text-sm">{errors.offerImage}</span>
             )}
+
             {/* Original Price Input */}
             <div className=" flex md:w-2/3 w-[93%] mt-4 justify-start items-center flex-col gap-4">
               <h1 className="text-start w-full  text-base font-semibold">

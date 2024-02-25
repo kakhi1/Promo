@@ -55,10 +55,7 @@ function Header({ onLoginClick, onCategoriesClick }) {
               <BsXSquare
                 className="text-white"
                 size={30}
-                onClick={() => {
-                  onCategoriesClick(); // Call the passed function to open Categories modal
-                  toggleMobileMenu(); // Close the mobile menu
-                }}
+                onClick={toggleMobileMenu}
               />
             </div>
             <nav className="flex flex-col items-center mt-4">

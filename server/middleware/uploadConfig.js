@@ -1,7 +1,7 @@
-// middlewares/uploadConfig.js or config/uploadConfig.js
 const multer = require("multer");
 const path = require("path");
 
+// Storage configuration remains the same
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/");
@@ -15,6 +15,7 @@ const storage = multer.diskStorage({
   },
 });
 
+// File filter configuration remains the same
 const fileFilter = (req, file, cb) => {
   if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF)$/)) {
     req.fileValidationError = "Only image files are allowed!";
@@ -23,6 +24,19 @@ const fileFilter = (req, file, cb) => {
   cb(null, true);
 };
 
-const upload = multer({ storage: storage, fileFilter: fileFilter });
+// Initialize multer with the storage and fileFilter options
+const singleUpload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+}).single("image");
 
-module.exports = upload;
+const arrayUpload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+}).array("images", 4);
+
+// Export the configured multer instances
+module.exports = {
+  singleUpload: singleUpload,
+  arrayUpload: arrayUpload,
+};

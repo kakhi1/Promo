@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { IoEyeOutline } from "react-icons/io5";
 import { FaLariSign } from "react-icons/fa6";
@@ -19,7 +19,23 @@ const OffersInfo = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [isTextExpanded, setTextExpanded] = useState(false);
   const [clickCount, setClickCount] = useState(0);
+  const [showShareOptions, setShowShareOptions] = useState(false);
+  const shareOptionsRef = useRef(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  // Function to navigate to the next image
+  const nextImage = () => {
+    setCurrentImageIndex(
+      (prevIndex) => (prevIndex + 1) % offer.imageUrls.length
+    );
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex(
+      (prevIndex) =>
+        (prevIndex - 1 + offer.imageUrls.length) % offer.imageUrls.length
+    );
+  };
   const toggleTextExpansion = () => {
     setTextExpanded(!isTextExpanded);
   };
@@ -39,34 +55,44 @@ const OffersInfo = () => {
     }
   };
 
-  const handleImageClick = () => {
-    setClickCount((prevCount) => prevCount + 1);
-    // Here you would also send the click count to the database
-    // This can be done using an API call to your backend
+  const facebookShare = () => {
+    if (!isAuthenticated) {
+      toast.warn("გაზიარებისთვის გთხოვთ გაიაროთ რეგისტრაცია");
+      return;
+    }
+    const shareUrl = encodeURIComponent(window.location.href);
+    const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
+    window.open(facebookShareUrl, "_blank");
+    setShowShareOptions(false); // Hide options after sharing
   };
 
-  // Assuming you have a method to send data to your backend
-  const sendClickDataToDatabase = async () => {
-    const response = await fetch("/api/track-click", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+  const copyLinkToClipboard = () => {
+    if (!isAuthenticated) {
+      toast.warn("გაზიარებისთვის გთხოვთ გაიაროთ რეგისტრაცია");
+      return;
+    }
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(
+      () => {
+        toast.success("Link copied to clipboard. Share it on Instagram!");
       },
-      body: JSON.stringify({ offerId: offer.id, clicks: clickCount }),
-    });
-
-    if (!response.ok) {
-      console.error("Failed to send click data");
-    }
+      () => {
+        toast.error("Failed to copy link.");
+      }
+    );
+    setShowShareOptions(false); // Hide options after copying
   };
 
   useEffect(() => {
-    if (clickCount > 0) {
-      sendClickDataToDatabase();
-    }
-  }, [clickCount]);
-
-  useEffect(() => {
+    // Function to hide share options if clicked outside
+    const handleClickOutside = (event) => {
+      if (
+        shareOptionsRef.current &&
+        !shareOptionsRef.current.contains(event.target)
+      ) {
+        setShowShareOptions(false);
+      }
+    };
     const fetchOfferAndBrand = async () => {
       setLoading(true); // Assuming you have a loading state
       setError(null); // Assuming you have an error state
@@ -117,6 +143,9 @@ const OffersInfo = () => {
     };
 
     fetchOfferAndBrand();
+    // Add and remove the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [offerId]);
 
   if (loading) {
@@ -136,15 +165,19 @@ const OffersInfo = () => {
     offer.discountPrice && offer.discountPrice < offer.originalPrice;
   // Construct the full URL for the image
   const baseUrl = "http://localhost:5000/";
-  const imagePath = offer.imageUrl.replace(/\\/g, "/");
-  const fullImageUrl = baseUrl + imagePath;
+  // const imagePath = offer.imageUrl.replace(/\\/g, "/");
+  // const fullImageUrl = baseUrl + imagePath;
+  if (!offer || !offer.imageUrls || offer.imageUrls.length === 0) {
+    // Handle the case where there's no image URLs available
+    return <div>No image available</div>;
+  }
 
-  // Use brand's imageUrl for the background image
-  const brandImageUrl = baseUrl + brand.imageUrl.replace(/\\/g, "/");
-  // const brandImagePath = brand?.imageUrl
-  //   ? brand.imageUrl.replace(/\\/g, "/")
-  //   : "path/to/default/brandImage.png";
-  // const brandImageUrl = `${baseUrl}${brandImagePath}`;
+  // Now it's safe to access offer.imageUrls
+  const imageUrl = offer.imageUrls[currentImageIndex];
+  const fullImageUrl = `${baseUrl}${imageUrl.replace(/\\/g, "/")}`;
+
+  const imagePath = brand.imageUrl.replace(/\\/g, "/"); // Replace backslashes with forward slashes if needed
+  const brandImageUrl = baseUrl + imagePath;
 
   return (
     <main className="flex md:flex-row flex-col-reverse  px-5">
@@ -187,17 +220,41 @@ const OffersInfo = () => {
               )}
             </div>
             {/* brand logo */}
-            <div className="h-[50px] w-[100px] bg-yellow-300 col-span-2 rounded-lg md:order-first order-none">
-              {/* <img src={brandImageUrl} alt={offer.title} /> */}
+            <div className="h-[50px] w-[100px] col-span-2 rounded-lg md:order-first order-none">
+              <img src={brandImageUrl} alt={offer.title} />
             </div>
           </div>
           {/* share and favorites */}
-          <div className="md:flex gap-2 mb-2 hidden  ">
-            <RiShareForwardBoxLine
-              size={22}
-              color="#6D9FBB"
-              className="lg:cursor-pointer"
-            />
+          <div className="md:flex gap-2 mb-2 hidden ">
+            <div>
+              {" "}
+              <RiShareForwardBoxLine
+                onClick={() => setShowShareOptions(!showShareOptions)}
+                size={22}
+                color="#6D9FBB"
+                className="lg:cursor-pointer "
+              />{" "}
+              {showShareOptions && (
+                <div
+                  className="absolute z-10 w-40 bg-white shadow-md rounded-lg overflow-hidden mt-2 p-4 flex flex-col items-center gap-4"
+                  ref={shareOptionsRef}
+                >
+                  {" "}
+                  <button
+                    className="text-blue-600 hover:text-blue-800"
+                    onClick={facebookShare}
+                  >
+                    Facebook Icon
+                  </button>
+                  <button
+                    className="text-blue-600 hover:text-blue-800"
+                    onClick={copyLinkToClipboard}
+                  >
+                    Instagram Icon
+                  </button>
+                </div>
+              )}
+            </div>
             <FaHeart
               className={`top-2 right-2 cursor-pointer ${
                 isLiked ? "fill-red-500" : "stroke-current text-gray-500"
@@ -209,34 +266,58 @@ const OffersInfo = () => {
         </section>
         {/* main section  */}
         <section className="md:h-[50%] flex flex-col items-center  mt-4  ">
-          <div className="flex gap-2 mb-2 absolute md:hidden ">
-            <RiShareForwardBoxLine
-              size={22}
-              color="#6D9FBB"
-              className="lg:cursor-pointer"
-            />
-            <FaHeart
-              className={`top-2 right-2 cursor-pointer ${
-                isLiked ? "fill-red-500" : "stroke-current text-gray-500"
-              }`}
-              onClick={() => toggleFavorite()}
-              size={22}
-            />
-          </div>
-          {/* offer iamage */}
+          {/* offer image */}
           <div className="w-full h-full flex md:flex-row flex-col gap-6 ">
-            <div className="h-[300px] md:w-[300px] relative">
-              <img
-                src={fullImageUrl}
-                alt={offer.title}
-                className="h-[300px] md:w-[300px]"
-              />
-              <div className="flex gap-2 mb-2 absolute  right-5 ">
-                <RiShareForwardBoxLine
-                  size={22}
-                  color="#6D9FBB"
-                  className="lg:cursor-pointer"
+            <div className=" relative flex items-center justify-center md:w-[35%] w-full">
+              {offer.imageUrls && offer.imageUrls.length > 0 && (
+                <img
+                  // src={`${baseUrl}${offer.imageUrls[currentImageIndex].replace(
+                  //   /\\/g,
+                  //   "/"
+                  // )}`}
+                  src={fullImageUrl}
+                  alt={offer.title}
+                  className=" h-[300px] bg-cover"
                 />
+              )}
+              <div className="absolute inset-0 flex justify-between items-center">
+                <button className="text-[30px]" onClick={prevImage}>
+                  &lt;
+                </button>
+                <button className="text-[30px]" onClick={nextImage}>
+                  &gt;
+                </button>
+              </div>
+              <div className="flex gap-2 mb-2 absolute md:hidden right-5 -bottom-7 ">
+                <div>
+                  {" "}
+                  <RiShareForwardBoxLine
+                    onClick={() => setShowShareOptions(!showShareOptions)}
+                    size={22}
+                    color="#6D9FBB"
+                    className="lg:cursor-pointer "
+                  />{" "}
+                  {showShareOptions && (
+                    <div
+                      className="absolute z-10 w-40 bg-white shadow-md rounded-lg overflow-hidden mt-2 p-4 flex flex-col right-0 items-center gap-4"
+                      ref={shareOptionsRef}
+                    >
+                      {" "}
+                      <button
+                        className="text-blue-600 hover:text-blue-800"
+                        onClick={facebookShare}
+                      >
+                        Facebook Icon
+                      </button>
+                      <button
+                        className="text-blue-600 hover:text-blue-800"
+                        onClick={copyLinkToClipboard}
+                      >
+                        Instagram Icon
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <FaHeart
                   className={`top-2 right-2 cursor-pointer ${
                     isLiked ? "fill-red-500" : "stroke-current text-gray-500"
@@ -244,7 +325,7 @@ const OffersInfo = () => {
                   onClick={() => toggleFavorite()}
                   size={22}
                 />
-              </div>
+              </div>{" "}
             </div>
 
             {/* Display the offer's description. If isTextExpanded is false, show a truncated version */}
@@ -254,13 +335,13 @@ const OffersInfo = () => {
                 : `${offer.description.substring(0, 100)}...`}
             </p>
           </div>
-          <div className="flex w-full md:flex-row flex-col gap-6 items-start">
-            <button
-              onClick={handleImageClick}
-              className="lg:w-[300px] w-[300px] md:w-[200px] h-[40px] flex order-last md:order-none rounded-sm  items-center justify-center text-white text-xl bg-[#5E5FB2] lg:hover:bg-Bgcolor"
-            >
-              შეიძინე
-            </button>{" "}
+          <div className="flex w-full md:flex-row flex-col-reverse gap-6 items-start">
+            <div className="flex items-center   md:w-[35%] ">
+              {" "}
+              <button className="lg:w-[300px] w-[300px] md:w-[200px] h-[40px] flex order-last md:order-none rounded-sm  items-center justify-center text-white text-xl bg-[#5E5FB2] lg:hover:bg-Bgcolor">
+                შეიძინე
+              </button>{" "}
+            </div>
             <div className=" flex  items-center  md:justify-center justify-end lg:w-[300px] w-[300px] md:w-[200px]  h-[40px] gap-2">
               {/* Button to toggle text expansion */}
               <button

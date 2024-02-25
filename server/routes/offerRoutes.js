@@ -1,9 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const offerController = require("../controllers/offerController");
-// const multer = require("multer"); // Configure multer; adjust settings as needed
-const upload = require("../middleware/uploadConfig");
-
+const { arrayUpload } = require("../middleware/uploadConfig");
 // Middleware to check if the user is an admin
 function isAdmin(req, res, next) {
   // Assuming you have some way to set req.user (e.g., via authentication middleware)
@@ -18,8 +16,10 @@ function isAdmin(req, res, next) {
 router.post("/increment-views/:id", offerController.incrementOfferViews);
 
 // POST request to create a new offer, now using multer for image upload
-router.post("/", upload.single("image"), offerController.createOffer);
+// Adjusted route for multiple images
+// router.post("/", arrayUpload, offerController.createOffer);
 
+router.post("/", arrayUpload, offerController.createOffer);
 // GET request to fetch all offers
 router.get("/", offerController.getAllOffers);
 

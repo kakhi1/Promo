@@ -10,7 +10,7 @@ const offerSchema = new mongoose.Schema({
   url: String,
   tags: [String], // Optional: Similar to Brand, you might want to tag offers for categorization
   state: [String], // Optional: If offers are state-specific
-  imageUrl: String, // Optional: If you want to include an image with the offer
+  imageUrls: [{ type: String }], // Optional: If you want to include an image with the offer
   views: { type: Number, default: 0 },
   shares: { type: Number, default: 0 },
   brand: {

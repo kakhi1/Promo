@@ -87,7 +87,35 @@ exports.getBrandByOfferId = async (req, res) => {
     res.status(500).send("Server error");
   }
 };
+// exports.getBrandById = async (req, res) => {
+//   try {
+//     const brand = await Brand.findById(req.params.brandId); // Assuming you're using Mongoose
+//     if (!brand) {
+//       return res.status(404).send({ message: "Brand not found" });
+//     }
+//     res.status(200).json(brand);
+//   } catch (error) {
+//     res.status(500).send({ message: "Server error" });
+//   }
+// };
+// Controller function to get brand by ID
+exports.getBrandById = async (req, res) => {
+  try {
+    const { brandId } = req.params; // Extract brandId from request parameters
+    const brand = await Brand.findById(brandId).populate("offers"); // Populate the offers if they are referenced in the Brand model
 
+    if (!brand) {
+      return res.status(404).json({ message: "Brand not found" });
+    }
+
+    res.json(brand); // Send back the found brand with its details and offers
+  } catch (error) {
+    console.error("Error fetching brand details:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching brand details", error: error.message });
+  }
+};
 exports.getBrands = async (req, res) => {
   try {
     const brandsWithOfferCount = await Brand.aggregate([

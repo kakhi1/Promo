@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-function RegisterForm({ onRegisterSuccess }) {
+function RegisterForm() {
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -11,6 +11,7 @@ function RegisterForm({ onRegisterSuccess }) {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!agreeToTerms) {
@@ -37,7 +38,8 @@ function RegisterForm({ onRegisterSuccess }) {
         const data = await response.json();
         login(data);
         console.log("Registration successful");
-        onRegisterSuccess();
+        // onRegisterSuccess();
+
         navigate("/user-area");
       } else {
         const errorData = await response.json();

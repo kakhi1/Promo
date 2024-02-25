@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -9,44 +9,6 @@ function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   console.log("Submitting Login Form", { email, password, rememberMe });
-  //   try {
-  //     const response = await fetch("http://localhost:5000/api/users/login", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({ email, password, rememberMe }),
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error("Login failed");
-  //     }
-
-  //     const data = await response.json();
-  //     console.log("Login response data:", data);
-
-  //     // Specifically print out if the user is an admin
-  //     console.log("Is the user an admin?", data.user.isAdmin);
-
-  //     console.log("Login successful:", data);
-  //     if (data.user) {
-  //       login(data.user);
-  //       if (data.user.isAdmin) {
-  //         navigate("/admin-area"); // Redirect to admin page
-  //       } else {
-  //         navigate("/user-area"); // Redirect to regular user page
-  //       }
-  //     } else {
-  //       console.error("User data is missing from login response");
-  //     }
-  //   } catch (error) {
-  //     console.error("Login error:", error);
-  //     // Handle login error (e.g., displaying an error message)
-  //   }
-  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Submitting Login Form", { email, password, rememberMe });
@@ -69,11 +31,16 @@ function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
       // Assuming the structure is { message: '', entity: { role: '' }, token: '' }
       // Adjusting access to the role based on the corrected structure
       console.log("User role:", data.entity.role);
+      console.log("data.entity:", data.entity);
 
       if (data.entity) {
-        // Assuming your login function properly handles this object structure
-        login({ ...data.entity, token: data.token }); // Include token as part of the user data
+        login({ ...data.entity, token: data.token }); // Handle user context or state update with login data
 
+        // Store the token and brandId in localStorage
+        localStorage.setItem("userToken", data.token);
+        localStorage.setItem("brandId", data.entity.brand); // Always store brandId on successful login
+
+        console.log("Token and brandId saved:", data.token, data.entity.brand);
         // Correct redirection based on the role
         switch (data.entity.role) {
           case "admin":
@@ -103,6 +70,7 @@ function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
     console.log("Redirect to Registration");
     onRegisterClick(); // Ensure this is linked to toggle the registration modal in App.jsx
   };
+
   return (
     <div className="container mx-auto px-10 mb-10 mt-4 rounded-3xl">
       <form onSubmit={handleSubmit} className="max-w-sm mx-auto">

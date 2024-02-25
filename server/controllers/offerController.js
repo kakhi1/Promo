@@ -21,6 +21,8 @@ exports.incrementOfferViews = async (req, res) => {
 };
 
 exports.createOffer = async (req, res) => {
+  console.log("Request Body:", req.body);
+  console.log("Request Files:", req.files);
   try {
     if (req.fileValidationError) {
       return res
@@ -31,13 +33,14 @@ exports.createOffer = async (req, res) => {
     let state = req.body.state ? parseInput(req.body.state) : [];
     const { originalPrice, discountPrice, brand } = req.body;
 
-    const imageUrl = req.file ? req.file.path : ""; // Handle file upload
+    // Adjusting for multiple files; map each file to its path
+    const imageUrls = req.files ? req.files.map((file) => file.path) : [];
 
     const offerData = {
       ...req.body,
       tags, // Use parsed tags
       state, // Use parsed state
-      imageUrl,
+      imageUrls,
       originalPrice,
       discountPrice,
       isApproved: false,

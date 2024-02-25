@@ -62,55 +62,6 @@ function Adbrands() {
     setShowPassword(!showPassword);
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setEmailError("");
-  //   setNameError("");
-  //   const formData = new FormData();
-  //   Object.entries(brandInfo).forEach(([key, value]) => {
-  //     if (key === "tags" || key === "state") {
-  //       formData.append(key, JSON.stringify(value.map((v) => v.value)));
-  //     } else if (key !== "category") {
-  //       // Exclude category for special handling
-  //       formData.append(key, value);
-  //     }
-  //   });
-  //   // Handle category separately to maintain its structure for the backend
-  //   if (brandInfo.category) {
-  //     formData.append("category", JSON.stringify(brandInfo.category.value));
-  //   }
-  //   if (brandImage) {
-  //     formData.append("image", brandImage);
-  //   }
-
-  //   try {
-  //     const response = await fetch("http://localhost:5000/brands/create", {
-  //       method: "POST",
-  //       body: formData,
-  //     });
-  //     if (!response.ok)
-  //       throw new Error(`HTTP error! status: ${response.status}`);
-  //     const data = await response.json();
-  //     if (!response.ok) {
-  //       // Check if the error message is for email or name and set the state accordingly
-  //       if (data.message.includes("იმეილი")) {
-  //         setEmailError(error.message);
-  //       } else if (data.message.includes("სახელი")) {
-  //         setNameError(error.message);
-  //       }
-  //       return; // Prevent further execution
-  //     }
-
-  //     // If successful, clear any existing error messages and proceed
-  //     setEmailError("");
-  //     setNameError("");
-  //     console.log(data);
-  //     navigate("/");
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //   }
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Resetting error states before making the request
@@ -122,10 +73,7 @@ function Adbrands() {
       if (key === "tags" || key === "state") {
         formData.append(key, JSON.stringify(value.map((v) => v.value)));
       } else if (key === "category") {
-        // Here, we ensure that we're appending the category's value or ID as a string
-        // Adjust this line according to how your category object is structured
-        // For example, if the category object has an "id" field, you might use value.id
-        formData.append(key, value.value); // Assuming "value" is the property holding the category's ID
+        formData.append(key, value.value);
       } else {
         formData.append(key, value);
       }
@@ -138,7 +86,7 @@ function Adbrands() {
     console.log([...formData.entries()]);
 
     try {
-      const response = await fetch("http://localhost:5000/brands/create", {
+      const response = await fetch("http://localhost:5000/api/brands/create", {
         method: "POST",
         body: formData,
         // Include headers if your backend expects Content-Type for form data

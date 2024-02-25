@@ -28,7 +28,7 @@ function Categories({ onSelectCategory }) {
       className="categories-container"
       style={{ maxHeight: "400px", overflowY: "scroll" }}
     >
-      <h2>Categories List</h2>
+      <h2>კატეგორიები</h2>
       <ul style={{ listStyleType: "none", padding: 0 }}>
         {categories.map((category) => (
           <li

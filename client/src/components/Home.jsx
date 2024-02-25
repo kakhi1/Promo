@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom"; // If needed for navigation
+import { useNavigate } from "react-router-dom";
 import OffersCard from "./OffersCard";
 import BrandCard from "./BrandCard";
 
@@ -13,7 +13,13 @@ const Home = () => {
   const [error, setError] = useState("");
 
   console.log(offers);
-  const handleShowAllBrands = () => setShowAllBrands(!showAllBrands); // Toggle visibility
+  console.log(brands);
+  const navigate = useNavigate();
+  // New function to navigate to Brand.jsx
+  const navigateToAllBrands = () => {
+    navigate("/brands"); // Assuming your route to Brand.jsx is "/brands"
+  };
+
   const handleShowAllProducts = () => setShowAllProducts(!showAllProducts);
   const handleResize = () => setIsMobile(window.innerWidth <= 768);
 
@@ -54,6 +60,8 @@ const Home = () => {
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
+
+  const baseUrl = "http://localhost:5000/";
   return (
     <div className="pt-8 bg-white w-full">
       {/* Responsive Grid Layout */}
@@ -82,15 +90,16 @@ const Home = () => {
             ).map((offer) => {
               // Assuming your backend server is running on localhost:5000
               // and the images are served from the 'uploads' directory
-              const baseUrl = "http://localhost:5000/";
-              const imagePath = offer.imageUrl.replace(/\\/g, "/"); // Replace backslashes with forward slashes if needed
-              const fullImageUrl = baseUrl + imagePath;
-
+              const imageUrls = offer.imageUrls
+                ? offer.imageUrls.map(
+                    (path) => `${baseUrl}${path.replace(/\\/g, "/")}`
+                  )
+                : [];
               return (
                 <OffersCard
                   key={offer._id}
                   id={offer._id}
-                  imageUrl={fullImageUrl} // Assuming fullImageUrl is correctly defined earlier
+                  imageUrls={imageUrls} // Assuming fullImageUrl is correctly defined earlier
                   title={offer.title}
                   originalPrice={offer.originalPrice}
                   discountPrice={offer.discountPrice}
@@ -107,7 +116,7 @@ const Home = () => {
             <h2 className="text-lg font-semibold">ტოპ ბრენდები</h2>
             {!showAllBrands && (
               <button
-                onClick={handleShowAllBrands}
+                onClick={navigateToAllBrands}
                 className="text-indigo-600 hover:text-indigo-800"
               >
                 ყველა
