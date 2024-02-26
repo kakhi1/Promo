@@ -4,10 +4,15 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import OffersCard from "./OffersCard";
 import { FaPlus } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext";
+import OfferModal from "./OfferModal";
 
 const BrandArea = () => {
   const [brandDetails, setBrandDetails] = useState(null);
   const [showAllBrands, setShowAllBrands] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState(null);
+  const { userRole } = useAuth();
 
   console.log("brandetails:", brandDetails);
   const navigate = useNavigate();
@@ -34,6 +39,28 @@ const BrandArea = () => {
     fetchBrandDetails();
   }, []);
 
+  const handleModify = () => {
+    navigate(`/modifyoffer/${selectedOffer._id}`);
+    setIsModalOpen(false);
+  };
+
+  const handleDelete = async () => {
+    try {
+      // await axios.delete(
+      //   `http://localhost:5000/api/offers/${selectedOffer._id}`
+      // );
+      setBrandDetails({
+        ...brandDetails,
+        offers: brandDetails.offers.filter(
+          (offer) => offer._id !== selectedOffer._id
+        ),
+      });
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Failed to delete offer:", error);
+    }
+  };
+
   const baseUrl = "http://localhost:5000/";
   const navigateToAddOffers = () => {
     navigate("/adoffers");
@@ -44,10 +71,11 @@ const BrandArea = () => {
 
   // Optionally, control the display of offers based on `showAllBrands`
   const displayedOffers = showAllBrands ? offers : offers.slice(0, 4);
+  console.log("userRole in OffersCard:", userRole);
 
-  if (!brandDetails || offers.length === 0) {
-    return <div>Loading...</div>; // Or any other indicator you prefer
-  }
+  // if (!brandDetails || offers.length === 0) {
+  //   return <div>Loading...</div>; // Or any other indicator you prefer
+  // }
 
   return (
     <div className="pt-8 bg-white">
@@ -64,25 +92,35 @@ const BrandArea = () => {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {displayedOffers.map((offer) => (
-              <OffersCard
+              <div
                 key={offer._id}
-                id={offer._id}
-                imageUrls={
-                  offer.imageUrls
-                    ? offer.imageUrls.map(
-                        (path) => `${baseUrl}${path.replace(/\\/g, "/")}`
-                      )
-                    : []
-                }
-                title={offer.title}
-                originalPrice={offer.originalPrice}
-                discountPrice={offer.discountPrice}
-                views={offer.views}
-              />
+                className="cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedOffer(offer);
+                  setIsModalOpen(true);
+                }}
+              >
+                <OffersCard
+                  id={offer._id}
+                  imageUrls={
+                    offer.imageUrls
+                      ? offer.imageUrls.map(
+                          (path) => `${baseUrl}${path.replace(/\\/g, "/")}`
+                        )
+                      : []
+                  }
+                  title={offer.title}
+                  originalPrice={offer.originalPrice}
+                  discountPrice={offer.discountPrice}
+                  views={offer.views}
+                  userRole={userRole}
+                />
+              </div>
             ))}
             <div
               onClick={navigateToAddOffers}
-              className="min-w-[140px] flex items-center justify-center cursor-pointer text-sm gap-4 shadow-lg flex-col bg-productBg text-[#5E5FB2]"
+              className="min-w-[140px]  flex items-center justify-center cursor-pointer text-sm gap-4 shadow-lg flex-col bg-productBg text-[#5E5FB2]"
             >
               <FaPlus size={24} color="#5E5FB2" />
               <p>დამატება</p>
@@ -90,6 +128,14 @@ const BrandArea = () => {
           </div>
         </section>
       </div>
+      {isModalOpen && selectedOffer && (
+        <OfferModal
+          offer={selectedOffer}
+          onClose={() => setIsModalOpen(false)}
+          onModify={handleModify}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 };

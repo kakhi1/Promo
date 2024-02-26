@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -16,7 +16,7 @@ import Brands from "./components/Brands";
 import Categories from "./components/Categories";
 import About from "./components/About";
 import UserArea from "./components/UserArea";
-import { useAuth } from "./context/AuthContext";
+
 import "./index.css"; // Assuming Tailwind CSS is being used
 import Footer from "./components/Footer";
 import Admin from "./components/Admin";
@@ -31,26 +31,29 @@ import "react-toastify/dist/ReactToastify.css";
 import OffersInfo from "./components/OffersInfo";
 import BrandCard from "./components/BrandCard";
 import BrandInfo from "./components/BrandInfo";
+import { useAuth } from "./context/AuthContext";
+import { AuthContext } from "./context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import ModifyOffers from "./components/ModifyOffers";
 
 function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   // const { user } = useAuth(); // Assuming `useAuth` provides user state and auth functions
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const [userLocation, setUserLocation] = useState(null);
+  const { loginUser, logoutUser } = useAuth();
 
-  useEffect(() => {
-    console.log("Checking for token...");
-    const token = localStorage.getItem("userToken");
-    console.log("Retrieved token:", token);
+  // useEffect(() => {
+  //   console.log("Checking for token...");
+  //   const token = localStorage.getItem("userToken");
+  //   console.log("Retrieved token:", token);
 
-    if (token) {
-      // Add your token verification logic here
-      verifyTokenAndLogin(token);
-    }
-  }, []);
-
+  //   if (token) {
+  //     verifyTokenAndLogin(token); // This assumes verifyTokenAndLogin is now correctly exposed and callable
+  //   }
+  // }, [verifyTokenAndLogin]);
   useEffect(() => {
     if (user) {
       setIsLoginOpen(false);
@@ -85,7 +88,7 @@ function App() {
 
   // Convert latitude and longitude to state name
   async function convertLatLongToState(latitude, longitude) {
-    const apiKey = "a56a6295b711423d9a2df6169b2f74c9"; // Ensure you have the correct API key
+    const apiKey = ""; // Ensure you have the correct API key
     const url = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKey}&pretty=1&no_annotations=1`;
 
     try {
@@ -123,8 +126,7 @@ function App() {
           onRegisterClick={() => setIsRegisterOpen(true)}
           onCategoriesClick={() => setIsCategoriesOpen(true)}
         />
-        {/* <Offers /> */}
-        {/* <BrandCard /> */}
+        {/*     
         <main className="flex-grow py-5">
           <Routes>
             <Route
@@ -153,7 +155,6 @@ function App() {
             <Route path="/brands" element={<Brands />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/about" element={<About />} />
-
             <Route
               path="/user-area"
               element={
@@ -179,7 +180,7 @@ function App() {
               }
             />
             {/* Redirect based on user role */}
-            <Route
+        {/* <Route
               path="/redirect"
               element={
                 user ? (
@@ -196,28 +197,62 @@ function App() {
               }
             />
           </Routes>
+        </main>  */}
+        <main className="flex-grow py-5">
+          <Routes>
+            {/* Public Routes */}
+            <Route
+              path="/"
+              element={
+                user ? (
+                  user.role === "admin" ? (
+                    <Navigate to="/admin-area" />
+                  ) : user.role === "brand" ? (
+                    <Navigate to="/brand-area" />
+                  ) : (
+                    <Navigate to="/user-area" />
+                  )
+                ) : (
+                  <Home />
+                )
+              }
+            />
+            <Route path="/modifyoffer/:offerId" element={<ModifyOffers />} />
+            <Route path="/offers" element={<Offers />} />
+            <Route path="/ads" element={<Ads />} />
+            <Route path="/adbrands" element={<Adbrands />} />
+            <Route path="/adoffers" element={<Adoffers />} />
+            <Route path="/brands" element={<Brands />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/about" element={<About />} />
+            {/* Private Routes */}
+            <Route
+              path="/user-area"
+              element={user ? <UserArea /> : <Navigate to="/" />}
+            />
+            <Route
+              path="/admin-area"
+              element={
+                user && user.role === "admin" ? <Admin /> : <Navigate to="/" />
+              }
+            />
+            <Route
+              path="/brand-area"
+              element={
+                user && user.role === "brand" ? (
+                  <BrandArea />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
+            />
+            {/* Dynamic Routes */}
+            <Route path="/offer-card/:offerId" element={<OffersInfo />} />
+            <Route path="/brand-card/:brandId" element={<BrandInfo />} />
+            {/* Default Route */}
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
         </main>
-        {/* {isLoginOpen && (
-          <Modal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)}>
-            <LoginForm />
-          </Modal>
-        )}
-        {isRegisterOpen && (
-          <Modal
-            isOpen={isRegisterOpen}
-            onClose={() => setIsRegisterOpen(false)}
-          >
-            <RegisterForm />
-          </Modal>
-        )}
-        {isCategoriesOpen && (
-          <Modal
-            isOpen={isCategoriesOpen}
-            onClose={() => setIsCategoriesOpen(false)}
-          >
-            <Categories />
-          </Modal>
-        )} */}
         {isLoginOpen && (
           <Modal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)}>
             {/* Pass handleShowRegisterForm to LoginForm */}

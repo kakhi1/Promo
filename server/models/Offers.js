@@ -5,7 +5,7 @@ const offerSchema = new mongoose.Schema({
   description: { type: String, required: true },
   // brand: { type: mongoose.Schema.Types.ObjectId, ref: "Brand", required: true }, // Reference to the Brand model
   createdAt: { type: Date, default: Date.now }, // Automatically sets the date when the offer is created
-  category: String,
+  category: { type: String, required: true },
   state: [String],
   url: String,
   tags: [String], // Optional: Similar to Brand, you might want to tag offers for categorization

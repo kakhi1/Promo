@@ -27,7 +27,7 @@ router.get("/", offerController.getAllOffers);
 router.get("/:id", offerController.getOfferById);
 
 // PUT request to update an offer by ID
-router.put("/:id", offerController.updateOfferById);
+router.put("/:id", arrayUpload, offerController.updateOfferById);
 
 // DELETE request to delete an offer by ID
 router.delete("/:id", offerController.deleteOfferById);

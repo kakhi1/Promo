@@ -6,17 +6,45 @@ const Brand = require("../models/Brand");
 
 const JWT_SECRET = process.env.JWT_SECRET; // Ensure this is set in your environment
 
+// exports.verifyToken = (req, res) => {
+//   const token = req.headers.authorization?.split(" ")[1]; // Extract token from authorization header
+
+//   if (!token) {
+//     return res.status(401).json({ message: "Token is required" });
+//   }
+
+//   jwt.verify(token, JWT_SECRET, (err, decoded) => {
+//     if (err) {
+//       return res.status(401).json({ message: "Invalid or expired token" });
+//     }
+
+//     // Token is valid
+//     res.json({
+//       message: "Token is valid",
+//       userId: decoded.userId,
+//       role: decoded.role,
+//     });
+//   });
+// };
 exports.verifyToken = (req, res) => {
+  console.log("Verifying token...");
+
   const token = req.headers.authorization?.split(" ")[1]; // Extract token from authorization header
 
   if (!token) {
+    console.log("No token provided");
     return res.status(401).json({ message: "Token is required" });
   }
 
+  console.log("Token received:", token);
+
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) {
+      console.log("Error verifying token:", err);
       return res.status(401).json({ message: "Invalid or expired token" });
     }
+
+    console.log("Token is valid:", decoded);
 
     // Token is valid
     res.json({

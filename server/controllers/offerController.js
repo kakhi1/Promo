@@ -2,6 +2,15 @@ const Offer = require("../models/Offers");
 const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
 const Brand = require("../models/Brand");
+function parseInput(input) {
+  if (!input) return [];
+  return Array.isArray(input) ? input : JSON.parse(input);
+}
+
+// Util function to parse inputs that might be arrays or single values
+function parseInput(input) {
+  return Array.isArray(input) ? input : [input];
+}
 
 exports.incrementOfferViews = async (req, res) => {
   try {
@@ -172,15 +181,63 @@ exports.getOfferById = async (req, res) => {
 // Update an offer by ID
 exports.updateOfferById = async (req, res) => {
   try {
-    const offer = await Offer.findByIdAndUpdate(req.params.id, req.body, {
+    console.log("Updating offer with ID:", req.params.id);
+    console.log("Initial req.body:", req.body);
+    console.log("Initial req.files:", req.files);
+
+    // Assuming req.body.tags and req.body.state are JSON strings of arrays
+    let tags = JSON.parse(req.body.tags).map((tag) => tag.value);
+    let state = JSON.parse(req.body.state).map((state) => state.value);
+
+    console.log("Parsed tags:", tags);
+    console.log("Parsed state:", state);
+
+    // Prepare the update data with parsed tags and state,
+    // spread the rest of req.body to retain other fields as they were
+    let updateData = { ...req.body, tags, state };
+    // Remove the stringified fields that were parsed and replaced
+    delete updateData["tags"];
+    delete updateData["state"];
+
+    // Add parsed tags and state to the updateData
+    updateData.tags = tags;
+    updateData.state = state;
+
+    console.log(
+      "Constructed updateData before adjusting status and images:",
+      updateData
+    );
+
+    if (req.user && req.user.role === "brand") {
+      updateData.status = "pending";
+      console.log("Status set to pending due to brand role");
+    }
+
+    if (req.files && req.files.length > 0) {
+      const imageUrls = req.files.map((file) => file.path);
+      updateData.imageUrls = imageUrls;
+      console.log("Updated imageUrls with uploaded files:", imageUrls);
+    }
+
+    console.log(
+      "Final updateData being used for update operation:",
+      updateData
+    );
+
+    const offer = await Offer.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
       runValidators: true,
     });
+
     if (!offer) {
+      console.log("No offer found with the given ID.");
       return res.status(404).json({ success: false, error: "Offer not found" });
     }
+
+    console.log("Successfully updated offer:", offer);
     res.status(200).json({ success: true, data: offer });
   } catch (error) {
+    console.error("Error updating offer:", error);
     res.status(400).json({ success: false, error: error.message });
   }
 };

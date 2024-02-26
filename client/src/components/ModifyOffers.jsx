@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Select from "react-select";
 import { FaPlus, FaTrash } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+
 import { useAuth } from "../context/AuthContext";
 
-function Adoffers() {
+function ModifyOffers() {
+  const { userRole } = useAuth();
+  const { offerId } = useParams();
+  console.log(offerId);
   const fileInputRef = useRef(null);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -13,7 +17,7 @@ function Adoffers() {
   const [offerInfo, setOfferInfo] = useState({
     title: "",
     description: "",
-    category: "", // Now a single string, not String constructor
+    category: null, // Now a single string, not String constructor
     url: "", // Changed from 'url' to 'link' to match schema
     tags: [], // An array of strings, initialized as empty
     state: [], // An array of strings, initialized as empty
@@ -27,6 +31,9 @@ function Adoffers() {
   const [states, setStates] = useState([]);
   const [tags, setTags] = useState([]);
   const [errors, setErrors] = useState({});
+  console.log("All Categories:", allCategories);
+  console.log("States:", states);
+  console.log("Tags:", tags);
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -65,11 +72,14 @@ function Adoffers() {
     }
   };
 
-  const handleStateChange = (selectedOption) => {
-    setOfferInfo((prev) => ({ ...prev, state: selectedOption }));
-    if (errors.state) {
-      setErrors((prevErrors) => ({ ...prevErrors, state: undefined }));
-    }
+  const handleStateChange = (selectedOptions) => {
+    setOfferInfo((prev) => ({ ...prev, state: selectedOptions || [] }));
+    console.log("Updated states selected:", selectedOptions);
+  };
+
+  const handleTagsChange = (selectedOptions) => {
+    setOfferInfo((prev) => ({ ...prev, tags: selectedOptions || [] }));
+    console.log("Updated tags selected:", selectedOptions);
   };
 
   const handleCategoryChange = (selectedOption) => {
@@ -78,184 +88,121 @@ function Adoffers() {
       category: selectedOption ? selectedOption.value : "",
     }));
   };
-
-  const handleTagsChange = (selectedOptions) => {
-    setOfferInfo((prev) => ({ ...prev, tags: selectedOptions || [] }));
-    if (errors.tags) {
-      setErrors((prevErrors) => ({ ...prevErrors, tags: undefined }));
-    }
-  };
-
   // const handleSubmit = async (e) => {
   //   e.preventDefault();
-  //   // Initialize an errors object
-  //   let newErrors = {};
-
-  //   // Required fields validation
-  //   if (!offerInfo.title) newErrors.title = "გთხოვ შეავსოთ დასახელება";
-  //   if (!offerInfo.description)
-  //     newErrors.description = "გთხოვ შეავსოთ პროდუქციის აღწერა";
-  //   if (!offerInfo.category) newErrors.category = "მიუთითეთ კატეგორია";
-  //   if (!offerInfo.url) newErrors.url = "გთხოვ მიუთით მისამართი (url)";
-  //   if (!offerInfo.tags.length) newErrors.tags = "გთხოვ მონიშნოთ თაგი(ები)";
-  //   if (!offerInfo.state.length) newErrors.state = "გთხოვ მიუთითოთ ქალაქი";
-  //   if (offerImages.length === 0)
-  //     newErrors.offerImage = "გთხოვ ატვირთოთ სურათი";
-
-  //   // Check if there are any errors
-  //   if (Object.keys(newErrors).length > 0) {
-  //     setErrors(newErrors);
-  //     return; // Stop the form submission
-  //   }
-
-  //   // If no errors, proceed with form submission
-  //   setErrors({}); // Reset errors
-  //   if (!user || !user.id) {
-  //     console.error("User ID (brand ID) is not available.");
-  //     return; // Handle this case appropriately
-  //   }
-
-  //   console.log("offerImages", offerImages);
+  //   // Validation checks remain the same
 
   //   const formData = new FormData();
-
-  //   // Append the first image if present and defined
-  //   if (offerImages.length > 0 && offerImages[0]) {
-  //     formData.append("image", offerImages[0]);
-  //   } else {
-  //     console.error("No images to append."); // Helps identify if there's an attempt to append an undefined image
-  //   }
-
-  //   // Append simple string values directly
-  //   formData.append("title", offerInfo.title);
-  //   formData.append("description", offerInfo.description);
-  //   formData.append("url", offerInfo.url); // Make sure this matches your backend expectation, whether it's 'url' or 'link'
-  //   formData.append("brand", user.brand);
-  //   formData.append("originalPrice", offerInfo.originalPrice);
-  //   // Append discountPrice only if it's provided, given it can be optional
-  //   if (offerInfo.discountPrice) {
-  //     formData.append("discountPrice", offerInfo.discountPrice);
-  //   }
-  //   // Handle arrays; directly append each item as a separate entry if backend expects them as arrays
-  //   offerInfo.tags.forEach((tag) => formData.append("tags", tag.value));
-  //   offerInfo.state.forEach((state) => formData.append("state", state.value));
-
-  //   // Handle category, assuming it's a single object selection
-  //   if (offerInfo.category)
-  //     formData.append("category", offerInfo.category.value);
-
-  //   // Append image if present
-  //   // if (offerImage) formData.append("image", offerImage);
-  //   // formData.append("image", file); // Assuming 'file' is a File object
-  //   // offerImages.forEach((imageFile, index) => {
-  //   //   formData.append(`images[${index}]`, imageFile);
-  //   // });
-
-  //   console.log("Sending file to backend:", file);
-
-  //   formData.append("brandId", user.id);
+  //   offerImages.forEach((file) => formData.append("images", file));
+  //   // Append other offerInfo fields to formData
+  //   Object.entries(offerInfo).forEach(([key, value]) => {
+  //     if (Array.isArray(value)) {
+  //       value.forEach((item) => formData.append(key, item.value || item));
+  //     } else {
+  //       formData.append(key, value);
+  //     }
+  //   });
 
   //   try {
-  //     const response = await fetch("http://localhost:5000/api/offers", {
-  //       method: "POST",
-  //       body: formData,
-  //     });
+  //     const response = await fetch(
+  //       `http://localhost:5000/api/offers/${offerId}`,
+  //       {
+  //         method: "PUT",
+  //         body: formData,
+  //         // Ensure you include headers or authentication as required by your API
+  //       }
+  //     );
 
-  //     const data = await response.json(); // Assuming the server responds with JSON
-  //     console.log(data);
-  //     if (response.ok) {
-  //       console.log("Offer created:", data);
-  //       navigate("/"); // Navigate to the homepage upon success
-  //     } else {
-  //       // Handle server-side validation errors (e.g., 400 responses)
-  //       console.error("Error creating offer:", data.error || "Unknown error");
-  //       // Optionally, update state to display error messages to the user
-  //       setErrors(
-  //         data.errors || { general: "An error occurred. Please try again." }
-  //       );
+  //     if (!response.ok) {
+  //       throw new Error("Error updating offer");
   //     }
-  //     console.log([...formData.entries()]);
+
+  //     const updatedOffer = await response.json();
+  //     console.log("offerDetails", updatedOffer); // Check the fetched data structure
+
+  //     console.log("Offer updated successfully:", updatedOffer);
+  //     navigate(`/offer-details/${offerId}`); // Redirect to the updated offer's details page or another appropriate route
   //   } catch (error) {
-  //     // Handle network errors or other unexpected errors
-  //     console.error("Submission error:", error);
-  //     setErrors({ general: "A network error occurred. Please try again." });
+  //     console.error("Error updating offer:", error);
+  //     setErrors({
+  //       general: "An error occurred during the update. Please try again.",
+  //     });
   //   }
   // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    let newErrors = {};
+    console.log("Submitting form...");
+    console.log("User role:", userRole);
 
-    // Validation checks (assuming offerInfo and offerImages are correctly defined in your component's state)
-    if (!offerInfo.title) newErrors.title = "Please fill out the title";
-    if (!offerInfo.description)
-      newErrors.description = "Please fill out the description";
-    if (!offerInfo.category) newErrors.category = "Please select a category";
-    if (!offerInfo.url) newErrors.url = "Please provide a URL";
-    if (!offerInfo.tags.length)
-      newErrors.tags = "Please select at least one tag";
-    if (!offerInfo.state.length)
-      newErrors.state = "Please select at least one state";
-    if (offerImages.length === 0)
-      newErrors.offerImage = "Please upload at least one image";
+    let updatedOfferInfo = { ...offerInfo };
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return; // Stop form submission if there are errors
+    // If userRole is 'brand', then the offer's status should be set to 'pending'
+    if (userRole === "brand") {
+      console.log("User is a brand, setting status to pending...");
+      updatedOfferInfo.status = "pending";
+    } else {
+      console.log("User is not a brand, applying non-brand specific logic...");
     }
 
-    setErrors({}); // Reset errors before proceeding
-    console.log(
-      "Submitting category:",
-      offerInfo.category,
-      typeof offerInfo.category
-    );
+    // Debugging: Log the updated offer info before sending
+    console.log("Updated offer info before sending:", updatedOfferInfo);
 
+    // Prepare FormData for submission
     const formData = new FormData();
+    // offerImages.forEach((file) => formData.append("images", file));
+    // Object.entries(updatedOfferInfo).forEach(([key, value]) => {
+    //   if (Array.isArray(value)) {
+    //     value.forEach((item) => formData.append(key, item.value || item));
+    //   } else {
+    //     formData.append(key, value);
+    //   }
+    // });
+    offerImages.forEach((file) => formData.append("images", file));
 
-    // Append files to formData
-    offerImages.forEach((file) => {
-      formData.append("images", file);
-    });
-    formData.append("brand", user.brand);
-    // formData.append("category", offerInfo.category);
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
-
-    // Append other form data
-    Object.entries(offerInfo).forEach(([key, value]) => {
-      // For array values, append each value under the same key
-      if (Array.isArray(value)) {
-        value.forEach((item) => formData.append(key, item.value || item));
+    Object.entries(updatedOfferInfo).forEach(([key, value]) => {
+      if (key === "tags" || key === "state" || key === "category") {
+        // Convert object or array of objects to a JSON string
+        formData.append(key, JSON.stringify(value));
+      } else if (Array.isArray(value)) {
+        value.forEach((item) => formData.append(key, item));
       } else {
         formData.append(key, value);
       }
     });
-
-    // Log formData for debugging (optional)
+    // Debugging: Log FormData contents
     for (let [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
+      console.log(`${key}: ${value}`);
     }
+    // Retrieve the token
+    const token = localStorage.getItem("userToken");
 
     try {
-      const response = await fetch("http://localhost:5000/api/offers", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        `http://localhost:5000/api/offers/${offerId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+          // Include headers for authentication as required by your API
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(
-          "Server responded with an error: " + response.statusText
-        );
+        throw new Error("Error updating offer");
       }
 
-      const data = await response.json();
-      console.log("Offer created:", data);
-      navigate("/"); // Adjust as needed for your routing setup
+      const updatedOffer = await response.json();
+      console.log("Offer updated successfully:", updatedOffer);
+      navigate(`/offer-details/${offerId}`); // Adjust this to match your routing setup
     } catch (error) {
-      console.error("Submission error:", error);
-      setErrors({ general: "A network error occurred. Please try again." });
+      console.error("Error updating offer:", error);
+      setErrors({
+        general: "An error occurred during the update. Please try again.",
+      });
     }
   };
 
@@ -288,12 +235,70 @@ function Adoffers() {
 
     fetchData();
   }, []);
+  console.log("userRole in Offersmodify:", userRole);
 
+  useEffect(() => {
+    const fetchOfferDetails = async () => {
+      if (allCategories.length > 0 && states.length > 0 && tags.length > 0) {
+        try {
+          const response = await fetch(
+            `http://localhost:5000/api/offers/${offerId}`
+          );
+          if (!response.ok) {
+            throw new Error("Failed to fetch offer details");
+          }
+          const offerDetails = await response.json();
+          const offer = offerDetails.data;
+
+          setOfferInfo((prev) => ({
+            ...prev,
+            title: offer.title,
+            description: offer.description,
+            category:
+              allCategories.find((cat) => cat.value === offer.category) || null,
+            state: offer.state.map(
+              (stateId) =>
+                states.find((st) => st.value === stateId) || {
+                  value: stateId,
+                  label: "Unknown State",
+                }
+            ),
+            tags: offer.tags.map(
+              (tagId) =>
+                tags.find((tag) => tag.value === tagId) || {
+                  value: tagId,
+                  label: "Unknown Tag",
+                }
+            ),
+            url: offer.url,
+            originalPrice: offer.originalPrice.toString(),
+            discountPrice: offer.discountPrice.toString(),
+          }));
+
+          // Assuming your images URLs are stored in a way that needs transformation
+          setImagesPreview(
+            offer.imageUrls.map(
+              (url) => `http://localhost:5000/${url.replace(/\\/g, "/")}`
+            )
+          );
+        } catch (error) {
+          console.error("Error fetching offer details:", error);
+        }
+      }
+    };
+
+    fetchOfferDetails();
+    // This useEffect depends on allCategories, states, and tags being loaded, hence they are in the dependency array
+  }, [offerId, allCategories, states, tags]);
+
+  if (allCategories.length === 0 || states.length === 0 || tags.length === 0) {
+    return <div>Loading...</div>;
+  }
   return (
     <div className="flex">
       <div className="flex items-center flex-col justify-between h-full w-full">
         <h1 className="text-start w-full md:ml-24 ml-8 text-base font-semibold pt-4 ">
-          ახალი შეთავაზების დამატება
+          შეთავაზების შესწორება
         </h1>
         <div className="flex md:flex-row flex-col justify-between md:h-full w-full pt-4">
           <div className="md:w-1/3 w-full h-full flex flex-col items-start justify-start gap-10 md:ml-10 md:mt-10 ml-4">
@@ -316,41 +321,6 @@ function Adoffers() {
               onChange={handleImageUpload}
             />
 
-            {/* Display the selected image previews */}
-            {/* {imagesPreview.map((image, index) => (
-              <div
-                key={index}
-                style={{
-                  position: "relative",
-                  display: "inline-block",
-                  marginRight: "10px",
-                }}
-              >
-                <img
-                  src={image}
-                  alt={`Uploaded ${index}`}
-                  style={{ width: "100px", height: "100px" }}
-                />
-                <button
-                  onClick={() => handleImageDelete(index)}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    right: 0,
-                    cursor: "pointer",
-                  }}
-                >
-                  <FaTrash />
-                </button>
-              </div>
-            ))} */}
-            {/* <input
-              type="file"
-              id="imageUpload"
-              multiple
-              style={{ display: "none" }}
-              onChange={handleImageUpload}
-            /> */}
             <div className="flex flex-wrap gap-2">
               {imagesPreview.map((image, index) => (
                 <div key={index} className="relative">
@@ -407,6 +377,7 @@ function Adoffers() {
               <input
                 type="text"
                 name="title"
+                value={offerInfo.title}
                 placeholder="დასახელება"
                 onChange={handleChange}
                 className="input input-bordered w-full mb-2 border-2 border-[#CED4DA] h-8 rounded-md pl-6"
@@ -417,6 +388,7 @@ function Adoffers() {
               <textarea
                 name="description"
                 placeholder="შეიყვანე პროდუქტის აღწერა"
+                value={offerInfo.description}
                 onChange={handleChange}
                 className="textarea textarea-bordered w-full h-32 mb-2 border-2 border-[#CED4DA] rounded-md p-6"
               ></textarea>{" "}
@@ -434,6 +406,7 @@ function Adoffers() {
                     isMulti
                     name="tags"
                     options={tags}
+                    value={offerInfo.tags}
                     className="basic-multi-select w-full"
                     classNamePrefix="select"
                     onChange={handleTagsChange}
@@ -450,6 +423,7 @@ function Adoffers() {
                   <Select
                     isMulti
                     name="state"
+                    value={offerInfo.state}
                     options={states}
                     className="basic-multi-select w-full"
                     classNamePrefix="select"
@@ -467,6 +441,7 @@ function Adoffers() {
                   <input
                     type="text"
                     name="url"
+                    value={offerInfo.url}
                     placeholder="URL"
                     onChange={handleChange}
                     className="input input-bordered w-full mb-2 border-2 border-[#CED4DA] h-8 rounded-md pl-6"
@@ -482,6 +457,7 @@ function Adoffers() {
                   <Select
                     name="category"
                     options={allCategories}
+                    value={offerInfo.category}
                     className="input border-2 border-[#CED4DA] h-8 rounded-md w-full"
                     classNamePrefix="select"
                     onChange={handleCategoryChange}
@@ -505,7 +481,7 @@ function Adoffers() {
                   className="btn btn-primary mt-4 bg-[#5E5FB2] hover:bg-slate-400 text-white w-[156px] h-[46px]"
                   onClick={handleSubmit}
                 >
-                  გამოქვეყნება
+                  შესწორება
                 </button>
               </div>
             </div>
@@ -516,4 +492,4 @@ function Adoffers() {
   );
 }
 
-export default Adoffers;
+export default ModifyOffers;
