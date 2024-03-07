@@ -86,118 +86,21 @@ function Adoffers() {
     }
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   // Initialize an errors object
-  //   let newErrors = {};
-
-  //   // Required fields validation
-  //   if (!offerInfo.title) newErrors.title = "გთხოვ შეავსოთ დასახელება";
-  //   if (!offerInfo.description)
-  //     newErrors.description = "გთხოვ შეავსოთ პროდუქციის აღწერა";
-  //   if (!offerInfo.category) newErrors.category = "მიუთითეთ კატეგორია";
-  //   if (!offerInfo.url) newErrors.url = "გთხოვ მიუთით მისამართი (url)";
-  //   if (!offerInfo.tags.length) newErrors.tags = "გთხოვ მონიშნოთ თაგი(ები)";
-  //   if (!offerInfo.state.length) newErrors.state = "გთხოვ მიუთითოთ ქალაქი";
-  //   if (offerImages.length === 0)
-  //     newErrors.offerImage = "გთხოვ ატვირთოთ სურათი";
-
-  //   // Check if there are any errors
-  //   if (Object.keys(newErrors).length > 0) {
-  //     setErrors(newErrors);
-  //     return; // Stop the form submission
-  //   }
-
-  //   // If no errors, proceed with form submission
-  //   setErrors({}); // Reset errors
-  //   if (!user || !user.id) {
-  //     console.error("User ID (brand ID) is not available.");
-  //     return; // Handle this case appropriately
-  //   }
-
-  //   console.log("offerImages", offerImages);
-
-  //   const formData = new FormData();
-
-  //   // Append the first image if present and defined
-  //   if (offerImages.length > 0 && offerImages[0]) {
-  //     formData.append("image", offerImages[0]);
-  //   } else {
-  //     console.error("No images to append."); // Helps identify if there's an attempt to append an undefined image
-  //   }
-
-  //   // Append simple string values directly
-  //   formData.append("title", offerInfo.title);
-  //   formData.append("description", offerInfo.description);
-  //   formData.append("url", offerInfo.url); // Make sure this matches your backend expectation, whether it's 'url' or 'link'
-  //   formData.append("brand", user.brand);
-  //   formData.append("originalPrice", offerInfo.originalPrice);
-  //   // Append discountPrice only if it's provided, given it can be optional
-  //   if (offerInfo.discountPrice) {
-  //     formData.append("discountPrice", offerInfo.discountPrice);
-  //   }
-  //   // Handle arrays; directly append each item as a separate entry if backend expects them as arrays
-  //   offerInfo.tags.forEach((tag) => formData.append("tags", tag.value));
-  //   offerInfo.state.forEach((state) => formData.append("state", state.value));
-
-  //   // Handle category, assuming it's a single object selection
-  //   if (offerInfo.category)
-  //     formData.append("category", offerInfo.category.value);
-
-  //   // Append image if present
-  //   // if (offerImage) formData.append("image", offerImage);
-  //   // formData.append("image", file); // Assuming 'file' is a File object
-  //   // offerImages.forEach((imageFile, index) => {
-  //   //   formData.append(`images[${index}]`, imageFile);
-  //   // });
-
-  //   console.log("Sending file to backend:", file);
-
-  //   formData.append("brandId", user.id);
-
-  //   try {
-  //     const response = await fetch("http://localhost:5000/api/offers", {
-  //       method: "POST",
-  //       body: formData,
-  //     });
-
-  //     const data = await response.json(); // Assuming the server responds with JSON
-  //     console.log(data);
-  //     if (response.ok) {
-  //       console.log("Offer created:", data);
-  //       navigate("/"); // Navigate to the homepage upon success
-  //     } else {
-  //       // Handle server-side validation errors (e.g., 400 responses)
-  //       console.error("Error creating offer:", data.error || "Unknown error");
-  //       // Optionally, update state to display error messages to the user
-  //       setErrors(
-  //         data.errors || { general: "An error occurred. Please try again." }
-  //       );
-  //     }
-  //     console.log([...formData.entries()]);
-  //   } catch (error) {
-  //     // Handle network errors or other unexpected errors
-  //     console.error("Submission error:", error);
-  //     setErrors({ general: "A network error occurred. Please try again." });
-  //   }
-  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     let newErrors = {};
 
     // Validation checks (assuming offerInfo and offerImages are correctly defined in your component's state)
-    if (!offerInfo.title) newErrors.title = "Please fill out the title";
+    if (!offerInfo.title) newErrors.title = "გთხოვ შეავსოთ დასახელება";
     if (!offerInfo.description)
-      newErrors.description = "Please fill out the description";
-    if (!offerInfo.category) newErrors.category = "Please select a category";
-    if (!offerInfo.url) newErrors.url = "Please provide a URL";
-    if (!offerInfo.tags.length)
-      newErrors.tags = "Please select at least one tag";
-    if (!offerInfo.state.length)
-      newErrors.state = "Please select at least one state";
+      newErrors.description = "გთხოვ შეავსოთ პროდუქციის აღწერა";
+    if (!offerInfo.category) newErrors.category = "მიუთითეთ კატეგორია";
+    if (!offerInfo.url) newErrors.url = "გთხოვ მიუთით მისამართი (url)";
+    if (!offerInfo.tags.length) newErrors.tags = "გთხოვ მონიშნოთ თაგი(ები)";
+    if (!offerInfo.state.length) newErrors.state = "გთხოვ მიუთითოთ ქალაქი";
     if (offerImages.length === 0)
-      newErrors.offerImage = "Please upload at least one image";
+      newErrors.offerImage = "გთხოვ ატვირთოთ სურათი";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -251,7 +154,7 @@ function Adoffers() {
       }
 
       const data = await response.json();
-      console.log("Offer created:", data);
+
       navigate("/"); // Adjust as needed for your routing setup
     } catch (error) {
       console.error("Submission error:", error);
@@ -315,42 +218,6 @@ function Adoffers() {
               style={{ display: "none" }}
               onChange={handleImageUpload}
             />
-
-            {/* Display the selected image previews */}
-            {/* {imagesPreview.map((image, index) => (
-              <div
-                key={index}
-                style={{
-                  position: "relative",
-                  display: "inline-block",
-                  marginRight: "10px",
-                }}
-              >
-                <img
-                  src={image}
-                  alt={`Uploaded ${index}`}
-                  style={{ width: "100px", height: "100px" }}
-                />
-                <button
-                  onClick={() => handleImageDelete(index)}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    right: 0,
-                    cursor: "pointer",
-                  }}
-                >
-                  <FaTrash />
-                </button>
-              </div>
-            ))} */}
-            {/* <input
-              type="file"
-              id="imageUpload"
-              multiple
-              style={{ display: "none" }}
-              onChange={handleImageUpload}
-            /> */}
             <div className="flex flex-wrap gap-2">
               {imagesPreview.map((image, index) => (
                 <div key={index} className="relative">

@@ -27,7 +27,10 @@ function Header({ onLoginClick, onCategoriesClick }) {
     setIsDropdownOpen(false);
     navigate("/"); // Adjust as needed
   };
-
+  const navigateToUserArea = () => {
+    navigate("/user-area"); // Update with your actual route
+    setIsMobileMenuOpen(false); // Close mobile menu if open
+  };
   return (
     <header className="bg-Bgcolor text-productBg w-full">
       <div className="flex justify-between p-5 items-center w-full">
@@ -81,6 +84,16 @@ function Header({ onLoginClick, onCategoriesClick }) {
               >
                 შესახებ
               </Link>
+              {user && (
+                <Link
+                  to="/user-area" // Adjust the route as needed
+                  className="text-white p-2"
+                  onClick={navigateToUserArea} // Ensures mobile menu closes upon navigation
+                >
+                  მომხმარებელი
+                </Link>
+              )}
+
               {/* Dynamic Authentication Button */}
               {user ? (
                 <button
@@ -169,6 +182,21 @@ function Header({ onLoginClick, onCategoriesClick }) {
               />
               <span>შესახებ</span>
             </Link>
+            {/* Conditional rendering for User Area Link/Button */}
+            {user && (
+              <Link
+                to="/user-area" // Adjust the route as needed
+                className="hover:text-white flex-col items-center justify-center"
+                onClick={navigateToUserArea} // This ensures the mobile menu closes if this function is used there
+              >
+                <LuUser
+                  size={25}
+                  color="#DCEEF8"
+                  className="w-full flex items-center"
+                />
+                <span>მომხმარებელი</span>
+              </Link>
+            )}
 
             {user ? (
               <div className="relative">

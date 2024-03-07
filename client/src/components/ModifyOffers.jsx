@@ -31,9 +31,6 @@ function ModifyOffers() {
   const [states, setStates] = useState([]);
   const [tags, setTags] = useState([]);
   const [errors, setErrors] = useState({});
-  console.log("All Categories:", allCategories);
-  console.log("States:", states);
-  console.log("Tags:", tags);
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -88,48 +85,6 @@ function ModifyOffers() {
       category: selectedOption ? selectedOption.value : "",
     }));
   };
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   // Validation checks remain the same
-
-  //   const formData = new FormData();
-  //   offerImages.forEach((file) => formData.append("images", file));
-  //   // Append other offerInfo fields to formData
-  //   Object.entries(offerInfo).forEach(([key, value]) => {
-  //     if (Array.isArray(value)) {
-  //       value.forEach((item) => formData.append(key, item.value || item));
-  //     } else {
-  //       formData.append(key, value);
-  //     }
-  //   });
-
-  //   try {
-  //     const response = await fetch(
-  //       `http://localhost:5000/api/offers/${offerId}`,
-  //       {
-  //         method: "PUT",
-  //         body: formData,
-  //         // Ensure you include headers or authentication as required by your API
-  //       }
-  //     );
-
-  //     if (!response.ok) {
-  //       throw new Error("Error updating offer");
-  //     }
-
-  //     const updatedOffer = await response.json();
-  //     console.log("offerDetails", updatedOffer); // Check the fetched data structure
-
-  //     console.log("Offer updated successfully:", updatedOffer);
-  //     navigate(`/offer-details/${offerId}`); // Redirect to the updated offer's details page or another appropriate route
-  //   } catch (error) {
-  //     console.error("Error updating offer:", error);
-  //     setErrors({
-  //       general: "An error occurred during the update. Please try again.",
-  //     });
-  //   }
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -137,6 +92,7 @@ function ModifyOffers() {
     console.log("User role:", userRole);
 
     let updatedOfferInfo = { ...offerInfo };
+    console.log("offerInfo", offerInfo);
 
     // If userRole is 'brand', then the offer's status should be set to 'pending'
     if (userRole === "brand") {
@@ -151,14 +107,8 @@ function ModifyOffers() {
 
     // Prepare FormData for submission
     const formData = new FormData();
-    // offerImages.forEach((file) => formData.append("images", file));
-    // Object.entries(updatedOfferInfo).forEach(([key, value]) => {
-    //   if (Array.isArray(value)) {
-    //     value.forEach((item) => formData.append(key, item.value || item));
-    //   } else {
-    //     formData.append(key, value);
-    //   }
-    // });
+
+    formData.append("role", user.role);
     offerImages.forEach((file) => formData.append("images", file));
 
     Object.entries(updatedOfferInfo).forEach(([key, value]) => {

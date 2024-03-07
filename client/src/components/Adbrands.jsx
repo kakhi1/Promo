@@ -145,13 +145,6 @@ function Adbrands() {
     fetchData();
   }, []);
 
-  const handleCategorySearchChange = (inputValue) => {
-    setCategorySearch(inputValue);
-    const filtered = allCategories.filter((cat) =>
-      cat.name.toLowerCase().includes(inputValue.toLowerCase())
-    );
-    setFilteredCategories(filtered);
-  };
   return (
     <div className="flex ">
       {" "}

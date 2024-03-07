@@ -1,27 +1,53 @@
 import React, { useEffect, useState, useRef } from "react";
+import axios from "axios";
 import { useParams } from "react-router-dom";
 import { IoEyeOutline } from "react-icons/io5";
 import { FaLariSign } from "react-icons/fa6";
 import { FaHeart } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import { RiShareForwardBoxLine } from "react-icons/ri";
 import { IoChevronDownOutline, IoChevronUpOutline } from "react-icons/io5";
+import BrandCard from "./BrandCard";
+import OffersCard from "./OffersCard";
+import { FaCopy } from "react-icons/fa";
+import AdComponent from "./AdComponent";
 
 const OffersInfo = () => {
   const { offerId } = useParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { isAuthenticated } = useAuth();
+  const [favorites, setFavorites] = useState([]);
+
   const [offer, setOffer] = useState(null);
   const [brand, setBrand] = useState(null);
   const [isLiked, setIsLiked] = useState(false);
   const [isTextExpanded, setTextExpanded] = useState(false);
   const [clickCount, setClickCount] = useState(0);
   const [showShareOptions, setShowShareOptions] = useState(false);
+
   const shareOptionsRef = useRef(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [suggestedOffers, setSuggestedOffers] = useState([]);
+  const [isFetchingOffers, setIsFetchingOffers] = useState(false);
+  const [fetchOffersError, setFetchOffersError] = useState(null);
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
+  const [displayedOffers, setDisplayedOffers] = useState([]);
+  const [showAllProducts, setShowAllProducts] = useState(false);
+  const [brands, setBrands] = useState([]);
+  const [showAllBrands, setShowAllBrands] = useState(false);
+  const { isAuthenticated, userRole } = useAuth();
+  console.log(offerId);
+  const { user } = useAuth();
+  const token = user?.token;
+  const userId = user?.id || user?._id;
+  useEffect(() => {
+    console.log("Token updated in Offersინფო:", token);
+  }, [token]);
+  const isMobile = window.innerWidth < 768;
+  console.log("isAuthenticated in offersinfo", isAuthenticated);
+  console.log("Token for request:", token);
+  console.log("user role in offersinfo:", userRole);
 
   // Function to navigate to the next image
   const nextImage = () => {
@@ -40,47 +66,157 @@ const OffersInfo = () => {
     setTextExpanded(!isTextExpanded);
   };
 
-  console.log("offer", offer);
-  console.log("brand", brand);
-  const toggleFavorite = () => {
-    // Stop the click event from bubbling up to the parent
-    // event.stopPropagation();
+  const incrementVisitCount = async (offerId) => {
+    if (!offerId) {
+      console.error("offerId is undefined or not provided");
+      return;
+    }
 
-    if (!isAuthenticated) {
-      // If the user is not authenticated, show a warning message
-      toast.warn("ფავორიტებში დასამატებლად გთხოვთ გაიაროთ რეგისტრაცია");
-    } else {
-      setIsLiked(!isLiked); // Toggle the like state
-      // Add logic to handle adding/removing from favorites in your backend or state management
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/offers/visit/${offerId}`
+      );
+    } catch (error) {
+      console.error("Failed to increment visit:", error);
     }
   };
 
-  const facebookShare = () => {
+  const handleBuyClick = () => {
+    // Check if the offer object has a url property
+    if (offer && offer.url) {
+      incrementVisitCount(offerId);
+      // Open the offer's url in a new tab
+      window.open(offer.url, "_blank");
+    } else {
+      // Optionally handle the case where the URL is not available
+      console.error("No URL available for this offer.");
+      // You could display a message to the user here if needed
+    }
+  };
+  const recordShare = async () => {
     if (!isAuthenticated) {
-      toast.warn("გაზიარებისთვის გთხოვთ გაიაროთ რეგისტრაცია");
+      console.log("User must be authenticated to share.");
+      return;
+    }
+
+    try {
+      await axios.post(
+        `http://localhost:5000/api/offers/${offerId}/share`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log("Share recorded successfully in the backend.");
+      // Optionally, update your UI or state to reflect the share
+    } catch (error) {
+      console.error("Failed to record share:", error);
+      // Handle error (e.g., display an error message)
+    }
+  };
+  const facebookShare = (event) => {
+    event.stopPropagation();
+    if (!isAuthenticated) {
+      toast.warn("გთხოვთ გაიაროთ რეგისტრაცია.");
       return;
     }
     const shareUrl = encodeURIComponent(window.location.href);
     const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
+    console.log(`Opening Facebook share URL: ${facebookShareUrl}`);
     window.open(facebookShareUrl, "_blank");
-    setShowShareOptions(false); // Hide options after sharing
+    recordShare();
+    // setShowShareOptions(false); // Hide options after sharing
   };
 
-  const copyLinkToClipboard = () => {
+  const copyLinkToClipboard = (event) => {
+    event.stopPropagation();
+    console.log("Copying link to clipboard");
     if (!isAuthenticated) {
-      toast.warn("გაზიარებისთვის გთხოვთ გაიაროთ რეგისტრაცია");
+      toast.warn("Please log in to copy the link.");
       return;
     }
     const url = window.location.href;
     navigator.clipboard.writeText(url).then(
       () => {
-        toast.success("Link copied to clipboard. Share it on Instagram!");
+        toast.success("Link copied to clipboard!");
       },
       () => {
         toast.error("Failed to copy link.");
       }
     );
-    setShowShareOptions(false); // Hide options after copying
+    // setShowShareOptions(false); // Hide options after copying
+  };
+
+  // favorites check add remove logic
+
+  useEffect(() => {
+    const fetchOfferDetails = async () => {
+      try {
+        // Fetch offer details
+        const offerResponse = await axios.get(
+          `http://localhost:5000/api/offers/${offerId}`
+        );
+        setOffer(offerResponse.data);
+        // Check if the offer is in the user's favorites if authenticated
+        if (!isAuthenticated || userRole !== "user") {
+          return;
+        }
+      } catch (error) {
+        console.error("Error fetching offer details:", error);
+        toast.error("Failed to load offer details.");
+      }
+    };
+
+    fetchOfferDetails();
+  }, [offerId, userId, isAuthenticated, token]);
+
+  useEffect(() => {
+    // Only proceed if the user is authenticated and has the 'user' role
+    if (isAuthenticated && userRole === "user") {
+      const checkFavoriteStatus = async () => {
+        try {
+          const response = await axios.get(
+            `http://localhost:5000/api/users/${userId}/favorites/${offerId}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          setIsLiked(response.data.isInFavorites);
+        } catch (error) {
+          console.error("Failed to check favorite status:", error);
+        }
+      };
+
+      checkFavoriteStatus();
+    }
+  }, [offerId, userId, isAuthenticated, userRole, token]);
+
+  const toggleFavorite = async (event) => {
+    event.stopPropagation();
+
+    if (!isAuthenticated || userRole !== "user") {
+      toast.warn("მხოლოდ მომხმარებელს შეუძლია ფავორიტებში დამატება");
+      return;
+    }
+
+    const url = `http://localhost:5000/api/users/${userId}/favorites/${offerId}`; // Ensure the offerId is used here
+    const method = isLiked ? "delete" : "post";
+
+    try {
+      const response = await axios({
+        method: method,
+        url: url,
+        headers: { Authorization: `Bearer ${token}` },
+        data: {}, // For POST, you might need to send data. If not, this can be an empty object.
+      });
+
+      setIsLiked(!isLiked);
+      toast.success(`პროდუქცია ${isLiked ? "წაიშალა" : "დაემატა"} ფავორიტებში`);
+      // Optionally, refresh the favorites status or the component to reflect the change
+    } catch (error) {
+      console.error("Failed to update favorites:", error);
+      toast.error("Failed to update favorites. Make sure you're logged in.");
+    }
   };
 
   useEffect(() => {
@@ -119,10 +255,6 @@ const OffersInfo = () => {
         const offerData = await offerResponse.json();
         const brandData = await brandResponse.json();
 
-        // Log to verify structures
-        console.log("Offer Data:", offerData);
-        console.log("Brand Data:", brandData);
-
         // Adjust state setting based on response structure
         setOffer(offerData.data); // This remains the same as your offer data contains a .data property
 
@@ -147,6 +279,79 @@ const OffersInfo = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [offerId]);
+  useEffect(() => {
+    // Assuming you set brand data correctly and brandData contains _id
+    if (brand && brand._id) {
+      fetchBrands(brand._id); // Pass brand._id to fetchBrands function
+    }
+  }, [brand]);
+
+  // fetch suggested offers and brands
+  useEffect(() => {
+    fetchBrands;
+    fetchOffers();
+  }, [offerId]);
+  useEffect(() => {
+    const handleResize = () => {
+      setViewportWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    // Clean up the event listener on component unmount
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  const fetchBrands = async (brandId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/brands/${brandId}/suggestions`
+      );
+      const data = await response.json();
+      setBrands(data.data);
+
+      if (!response.ok)
+        throw new Error(data.message || "Failed to fetch brands.");
+      setBrands(data);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError(err.message);
+    }
+  };
+
+  const onFavoriteToggle = async () => {
+    fetchOffers();
+
+    // Additionally fetch favorites if needed
+  };
+  const handleShowAllProducts = () => {
+    setShowAllProducts(!showAllProducts);
+  };
+  const handleShowAllbrands = () => {
+    setShowAllBrands(!showAllBrands);
+  };
+
+  useEffect(() => {
+    // Assuming `suggestedOffers` is already populated with the fetched offers
+    const sliceAmount = viewportWidth < 768 ? 2 : 4; // Display 2 offers for mobile, 4 for larger screens
+    setDisplayedOffers(suggestedOffers.slice(0, sliceAmount));
+  }, [suggestedOffers, viewportWidth]);
+  const fetchOffers = async () => {
+    setIsFetchingOffers(true);
+    setFetchOffersError(null);
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/offers/suggestions/${offerId}`
+      );
+      setSuggestedOffers(response.data); // Assuming the API returns an array of offers directly
+      setIsFetchingOffers(false);
+    } catch (error) {
+      console.error("Failed to fetch suggested offers:", error);
+      setFetchOffersError(error.message || "Failed to fetch data");
+      setIsFetchingOffers(false);
+    }
+  };
+
+  /////////////////////////////////
 
   if (loading) {
     return <div>Loading...</div>;
@@ -179,10 +384,15 @@ const OffersInfo = () => {
   const imagePath = brand.imageUrl.replace(/\\/g, "/"); // Replace backslashes with forward slashes if needed
   const brandImageUrl = baseUrl + imagePath;
 
+  // Inline style for controlling max-height
+  const descriptionStyle = {
+    maxHeight: isTextExpanded ? "100vh" : "20rem", // '20rem' as a starting point, adjust as needed
+  };
+
   return (
     <main className="flex md:flex-row flex-col-reverse  px-5">
-      <div className="md:w-4/5 w-full">
-        <section className="md:h-[10%] md:flex md:flex-row flex-col justify-between w-full items-center gap-2  ">
+      <div className="md:w-4/5 w-full gap-2">
+        <section className=" md:flex md:flex-row flex-col justify-between w-full items-center gap-2  ">
           <div className="md:flex  justify-start items-center gap-2 h-full  grid grid-cols-4 ">
             {/* views  */}
             <div className="flex items-center justify-end gap-1 ml-2  order-none md:order-last">
@@ -226,55 +436,35 @@ const OffersInfo = () => {
           </div>
           {/* share and favorites */}
           <div className="md:flex gap-2 mb-2 hidden ">
-            <div>
-              {" "}
-              <RiShareForwardBoxLine
-                onClick={() => setShowShareOptions(!showShareOptions)}
+            <div className="flex gap-1">
+              <FaCopy
+                onClick={copyLinkToClipboard}
                 size={22}
                 color="#6D9FBB"
-                className="lg:cursor-pointer "
-              />{" "}
-              {showShareOptions && (
-                <div
-                  className="absolute z-10 w-40 bg-white shadow-md rounded-lg overflow-hidden mt-2 p-4 flex flex-col items-center gap-4"
-                  ref={shareOptionsRef}
-                >
-                  {" "}
-                  <button
-                    className="text-blue-600 hover:text-blue-800"
-                    onClick={facebookShare}
-                  >
-                    Facebook Icon
-                  </button>
-                  <button
-                    className="text-blue-600 hover:text-blue-800"
-                    onClick={copyLinkToClipboard}
-                  >
-                    Instagram Icon
-                  </button>
-                </div>
-              )}
+                className="lg:cursor-pointer"
+              />
+              <RiShareForwardBoxLine
+                onClick={facebookShare}
+                size={22}
+                color="#6D9FBB"
+                className="lg:cursor-pointer"
+              />
             </div>
             <FaHeart
-              className={`top-2 right-2 cursor-pointer ${
+              className={`top-2 right-2 lg:cursor-pointer text-[25px] ${
                 isLiked ? "fill-red-500" : "stroke-current text-gray-500"
               }`}
-              onClick={() => toggleFavorite()}
-              size={22}
+              onClick={(event) => toggleFavorite(event)}
             />
           </div>
         </section>
         {/* main section  */}
-        <section className="md:h-[50%] flex flex-col items-center  mt-4  ">
+        <section className="flex flex-col items-center  mt-4  ">
           {/* offer image */}
           <div className="w-full h-full flex md:flex-row flex-col gap-6 ">
             <div className=" relative flex items-center justify-center md:w-[35%] w-full">
               {offer.imageUrls && offer.imageUrls.length > 0 && (
                 <img
-                  // src={`${baseUrl}${offer.imageUrls[currentImageIndex].replace(
-                  //   /\\/g,
-                  //   "/"
-                  // )}`}
                   src={fullImageUrl}
                   alt={offer.title}
                   className=" h-[300px] bg-cover"
@@ -289,86 +479,149 @@ const OffersInfo = () => {
                 </button>
               </div>
               <div className="flex gap-2 mb-2 absolute md:hidden right-5 -bottom-7 ">
-                <div>
-                  {" "}
-                  <RiShareForwardBoxLine
-                    onClick={() => setShowShareOptions(!showShareOptions)}
+                <div className="flex gap-1">
+                  <FaCopy
+                    onClick={copyLinkToClipboard}
                     size={22}
                     color="#6D9FBB"
-                    className="lg:cursor-pointer "
-                  />{" "}
-                  {showShareOptions && (
-                    <div
-                      className="absolute z-10 w-40 bg-white shadow-md rounded-lg overflow-hidden mt-2 p-4 flex flex-col right-0 items-center gap-4"
-                      ref={shareOptionsRef}
-                    >
-                      {" "}
-                      <button
-                        className="text-blue-600 hover:text-blue-800"
-                        onClick={facebookShare}
-                      >
-                        Facebook Icon
-                      </button>
-                      <button
-                        className="text-blue-600 hover:text-blue-800"
-                        onClick={copyLinkToClipboard}
-                      >
-                        Instagram Icon
-                      </button>
-                    </div>
-                  )}
+                    className="lg:cursor-pointer"
+                  />
+                  <RiShareForwardBoxLine
+                    onClick={facebookShare}
+                    size={22}
+                    color="#6D9FBB"
+                    className="lg:cursor-pointer"
+                  />
                 </div>
                 <FaHeart
                   className={`top-2 right-2 cursor-pointer ${
                     isLiked ? "fill-red-500" : "stroke-current text-gray-500"
                   }`}
-                  onClick={() => toggleFavorite()}
+                  onClick={(event) => toggleFavorite(event)}
                   size={22}
                 />
               </div>{" "}
             </div>
 
             {/* Display the offer's description. If isTextExpanded is false, show a truncated version */}
-            <p className="whitespace-pre-line text-left mt-10">
-              {isTextExpanded
-                ? offer.description
-                : `${offer.description.substring(0, 100)}...`}
-            </p>
+            <div
+              className={`mt-4 overflow-x-auto w-[65%] ${
+                isTextExpanded ? "whitespace-nowrap" : "whitespace-normal"
+              }`}
+            >
+              <p className="whitespace-pre-line text-left mt-10">
+                {isTextExpanded
+                  ? offer.description
+                  : `${offer.description.substring(0, 100)}...`}
+              </p>
+            </div>
           </div>
           <div className="flex w-full md:flex-row flex-col-reverse gap-6 items-start">
             <div className="flex items-center   md:w-[35%] ">
               {" "}
-              <button className="lg:w-[300px] w-[300px] md:w-[200px] h-[40px] flex order-last md:order-none rounded-sm  items-center justify-center text-white text-xl bg-[#5E5FB2] lg:hover:bg-Bgcolor">
+              <button
+                onClick={handleBuyClick}
+                className="lg:w-[300px] w-[300px] md:w-[200px] h-[40px] flex order-last md:order-none rounded-sm  items-center justify-center text-white text-xl bg-[#5E5FB2] lg:hover:bg-Bgcolor"
+              >
                 შეიძინე
               </button>{" "}
             </div>
             <div className=" flex  items-center  md:justify-center justify-end lg:w-[300px] w-[300px] md:w-[200px]  h-[40px] gap-2">
-              {/* Button to toggle text expansion */}
               <button
-                onClick={toggleTextExpansion}
-                className=" justify-center  text-[#5E5FB2] md:text-base text-sm font-normal rounded-sm flex items-center gap-2 lg:w-[300px] md:w-[200px]  w-[90px] h-[40px] bg-productBg  "
+                onClick={() => setTextExpanded(!isTextExpanded)}
+                className="justify-center  text-[#5E5FB2] md:text-base text-sm font-normal rounded-sm flex items-center gap-2 lg:w-[300px] md:w-[200px]  w-[90px] h-[40px] bg-productBg transition duration-300 ease-in-out  focus:outline-none"
               >
                 {isTextExpanded ? (
                   <>
-                    ნაკლები{" "}
-                    <IoChevronUpOutline color="#5E5FB2" className="mb-1" />
+                    ნაკლები <IoChevronUpOutline className="mb-1" />
                   </>
                 ) : (
                   <>
-                    მეტი{" "}
-                    <IoChevronDownOutline color="#5E5FB2" className="mb-1" />
+                    მეტი <IoChevronDownOutline className="mb-1" />
                   </>
                 )}
               </button>
             </div>
           </div>
         </section>
-        <ToastContainer />
-        <section className=" h-[40%]"></section>
+        {/* suggest section */}
+        <section className="">
+          {/* Products Grid */}
+          <div className="flex justify-between items-center pb-4 pt-6 ">
+            <h2 className="text-lg font-semibold">მსგავსი შეთავაზებები</h2>
+            <button
+              onClick={handleShowAllProducts}
+              className="text-indigo-600 hover:text-indigo-800"
+            >
+              {showAllProducts ? "ნაკლები" : "ყველა"}
+            </button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 xl2:grid-cols-6 gap-4 mb-8 ">
+            {isFetchingOffers ? (
+              <div>Loading suggested offers...</div>
+            ) : fetchOffersError ? (
+              <div>Error fetching offers: {fetchOffersError}</div>
+            ) : (
+              displayedOffers.map((offer) => (
+                <OffersCard
+                  key={offer._id}
+                  id={offer._id}
+                  imageUrls={offer.imageUrls.map(
+                    (path) => `${baseUrl}${path.replace(/\\/g, "/")}`
+                  )}
+                  title={offer.title}
+                  originalPrice={offer.originalPrice}
+                  discountPrice={offer.discountPrice}
+                  views={offer.views}
+                  userRole={user?.role}
+                  onFavoriteToggle={onFavoriteToggle}
+                />
+              ))
+            )}
+          </div>
+          <div className="flex justify-between items-center py-4">
+            <h2 className="text-lg font-semibold">მსგავსი ბრენდები</h2>
+            <button
+              onClick={handleShowAllbrands}
+              className="text-indigo-600 hover:text-indigo-800"
+            >
+              {showAllBrands ? "ნაკლები" : "ყველა"}
+            </button>
+          </div>
+
+          {/* Brands Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {(showAllBrands
+              ? brands
+              : isMobile
+              ? brands.slice(0, 4)
+              : brands.slice(0, 8)
+            ).map((brand) => {
+              // Assuming your backend server is running on localhost:5000
+              // and the images are served from the 'uploads' directory
+              const baseUrl = "http://localhost:5000/";
+              const imagePath = brand.imageUrl.replace(/\\/g, "/"); // Replace backslashes with forward slashes if needed
+              const fullImageUrl = baseUrl + imagePath;
+
+              return (
+                <BrandCard
+                  key={brand._id}
+                  id={brand._id}
+                  name={brand.name}
+                  imageUrl={fullImageUrl} // Adjust as necessary for the path
+                  offerCount={brand.offers.length} // Make sure your API provides this
+                />
+              );
+            })}
+          </div>
+        </section>
       </div>
-      {/* Ad Section - On top for mobile */}
+
+      {/* add section */}
       <div className="w-full bg-gray-300 h-56 mb-4 md:mb-0 md:w-1/5 md:h-screen md:ml-4">
-        <div className="p-4">Ad Content Here</div>
+        <div className="p-4">
+          <AdComponent pageType="userarea" />
+        </div>
       </div>
     </main>
   );

@@ -1,7 +1,9 @@
+const mongoose = require("mongoose");
 const Offer = require("../models/Offers");
 const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
 const Brand = require("../models/Brand");
+
 function parseInput(input) {
   if (!input) return [];
   return Array.isArray(input) ? input : JSON.parse(input);
@@ -136,17 +138,6 @@ exports.rejectOfferById = async (req, res) => {
   }
 };
 
-// Get all offers
-// exports.getAllOffers = async (req, res) => {
-//   try {
-//     const brandId = req.query.brandId;
-//     const query = brandId ? { brand: brandId } : {};
-//     const offers = await Offer.find();
-//     res.status(200).json({ success: true, data: offers });
-//   } catch (error) {
-//     res.status(400).json({ success: false, error: error.message });
-//   }
-// };
 exports.getAllOffers = async (req, res) => {
   try {
     const brandId = req.query.brandId;
@@ -164,7 +155,14 @@ exports.getAllOffers = async (req, res) => {
     res.status(400).json({ success: false, error: error.message });
   }
 };
-
+exports.getAllOffersWithoutFilter = async (req, res) => {
+  try {
+    const offers = await Offer.find({});
+    res.status(200).json({ success: true, data: offers });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
 // Get a single offer by ID
 exports.getOfferById = async (req, res) => {
   try {
@@ -208,9 +206,15 @@ exports.updateOfferById = async (req, res) => {
       updateData
     );
 
-    if (req.user && req.user.role === "brand") {
+    // if (req.user && req.user.role === "brand") {
+    //   updateData.status = "pending";
+    //   console.log("Status set to pending due to brand role");
+    // }
+    // If the user is an admin, approve the offer directly
+    if (req.body.role === "admin") {
+      updateData.status = "approved";
+    } else if (req.body.role === "brand") {
       updateData.status = "pending";
-      console.log("Status set to pending due to brand role");
     }
 
     if (req.files && req.files.length > 0) {
@@ -252,5 +256,164 @@ exports.deleteOfferById = async (req, res) => {
     res.status(200).json({ success: true, data: {} });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
+  }
+};
+
+exports.getOffersByBrand = async (req, res) => {
+  const { brandId } = req.params;
+  const sortViews = req.query.sort;
+
+  try {
+    // Build the query object to filter offers by brandId
+    let query = Offer.find({ brand: brandId });
+
+    // If 'sort=views' is specified, sort the results by views
+    if (sortViews === "views") {
+      query = query.sort({ views: -1 }); // Sort by views in descending order
+    }
+
+    const offers = await query.exec();
+
+    if (!offers.length) {
+      return res
+        .status(404)
+        .json({ message: "No offers found for this brand." });
+    }
+
+    res.json(offers);
+  } catch (error) {
+    console.error("Error fetching offers by brand:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+exports.getSuggestedOffers = async (req, res) => {
+  const { offerId } = req.params;
+  try {
+    const referenceOffer = await Offer.findById(offerId).select(
+      "state tag category"
+    );
+
+    if (!referenceOffer) {
+      return res.status(404).json({ message: "Offer not found" });
+    }
+
+    // Ensure values passed to $in are arrays, defaulting to an empty array if undefined
+    const stateArray = Array.isArray(referenceOffer.state)
+      ? referenceOffer.state.map((id) => new mongoose.Types.ObjectId(id))
+      : [];
+    const tagArray = Array.isArray(referenceOffer.tag)
+      ? referenceOffer.tag
+      : [];
+
+    let suggestedOffers = await Offer.find({
+      _id: { $ne: offerId },
+      ...(stateArray.length && { state: { $in: stateArray } }),
+      ...(tagArray.length && { tag: { $in: tagArray } }),
+      category: referenceOffer.category,
+    }).limit(12);
+
+    // Additional fallback queries if suggestedOffers is empty...
+
+    return res.status(200).json(suggestedOffers);
+  } catch (error) {
+    console.error(
+      `Error fetching suggested offers for offerId: ${offerId}`,
+      error
+    );
+    return res.status(500).json({
+      message: "Error fetching suggested offers",
+      error: error.message,
+    });
+  }
+};
+// Controller to increment the share count for an offer
+exports.addShare = async (req, res) => {
+  const { offerId } = req.params;
+
+  try {
+    const offer = await Offer.findById(offerId);
+    if (!offer) {
+      return res.status(404).json({ message: "Offer not found" });
+    }
+
+    // Increment the shares count and save the document
+    offer.shares += 1;
+    await offer.save();
+
+    res.json({
+      message: "Offer share count incremented successfully",
+      shares: offer.shares,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error incrementing offer's share count",
+      error: error.message,
+    });
+  }
+};
+
+// Controller to fetch the share count for an offer
+exports.fetchShares = async (req, res) => {
+  const { offerId } = req.params;
+
+  try {
+    const offer = await Offer.findById(offerId, "shares");
+    if (!offer) {
+      return res.status(404).json({ message: "Offer not found" });
+    }
+
+    res.json({ shares: offer.shares });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching offer's shares", error: error.message });
+  }
+};
+
+// click count for each  offers
+exports.incrementOfferVisits = async (req, res) => {
+  try {
+    const offerId = req.params.id;
+    await Offer.findByIdAndUpdate(offerId, { $inc: { visits: 1 } });
+    res.send({ message: "Offer visit counted successfully." });
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+};
+
+// get all  views, shares, clicks
+
+exports.countAllMetrics = async (req, res) => {
+  try {
+    const metrics = await Offer.aggregate([
+      {
+        $group: {
+          _id: null, // Group by null to aggregate over the entire collection
+          totalViews: { $sum: "$views" },
+          totalShares: { $sum: "$shares" },
+          totalVisits: { $sum: "$visits" },
+        },
+      },
+    ]);
+
+    // The aggregate operation returns an array, so we take the first element
+    if (metrics.length > 0) {
+      res.status(200).json({
+        success: true,
+        data: metrics[0],
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: "No metrics found",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
   }
 };

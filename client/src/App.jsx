@@ -35,25 +35,39 @@ import { useAuth } from "./context/AuthContext";
 import { AuthContext } from "./context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import ModifyOffers from "./components/ModifyOffers";
+import ModifyBrands from "./components/ModifyBrands";
+import "react-toastify/dist/ReactToastify.css";
+import Adadd from "./components/Adadd";
+import ModifyAd from "./components/ModifyAd";
+import AdComponent from "./components/AdComponent";
+import Tags from "./components/Tags";
 
 function App() {
+  const { user, isAuthenticated, userRole } = useAuth();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   // const { user } = useAuth(); // Assuming `useAuth` provides user state and auth functions
-  const { user } = useAuth();
   const [userLocation, setUserLocation] = useState(null);
   const { loginUser, logoutUser } = useAuth();
+  const userId = user?.id || user?._id;
+  console.log("userRole", userRole);
+  console.log("userId in app", userId);
+  useEffect(() => {
+    logUserActivity(); // Log user activity when the app loads
+  }, []);
 
-  // useEffect(() => {
-  //   console.log("Checking for token...");
-  //   const token = localStorage.getItem("userToken");
-  //   console.log("Retrieved token:", token);
-
-  //   if (token) {
-  //     verifyTokenAndLogin(token); // This assumes verifyTokenAndLogin is now correctly exposed and callable
-  //   }
-  // }, [verifyTokenAndLogin]);
+  const logUserActivity = async () => {
+    try {
+      // Make an API call to log user activity
+      await axios.post("http://localhost:5000/api/user-activity", {
+        activity: "App Loaded",
+      });
+      console.log("User activity logged: App Loaded");
+    } catch (error) {
+      console.error("Error logging user activity:", error);
+    }
+  };
   useEffect(() => {
     if (user) {
       setIsLoginOpen(false);
@@ -68,9 +82,13 @@ function App() {
         async (position) => {
           const { latitude, longitude } = position.coords;
           try {
-            const state = await convertLatLongToState(latitude, longitude);
-            setUserLocation(state);
-            toast.success(`Location detected: ${state}`);
+            const city = await convertLatLongToState(
+              latitude,
+              longitude,
+              userId
+            );
+            setUserLocation(city);
+            // toast.success(`Location detected: ${city}`);
           } catch (error) {
             console.error("Geolocation fetching failed:", error);
             toast.error(
@@ -86,33 +104,39 @@ function App() {
     }
   }, [user]);
 
-  // Convert latitude and longitude to state name
-  async function convertLatLongToState(latitude, longitude) {
-    const apiKey = ""; // Ensure you have the correct API key
+  async function convertLatLongToState(latitude, longitude, userId) {
+    const apiKey = "";
     const url = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKey}&pretty=1&no_annotations=1`;
 
     try {
       const response = await axios.get(url);
       const data = response.data;
-      console.log(data); // Log the data to inspect the structure
-
       if (data.results.length > 0 && data.results[0].components) {
-        const components = data.results[0].components;
-        if (components.state) {
-          return components.state; // Return the state name
+        const city =
+          data.results[0].components.city ||
+          data.results[0].components._normalized_city;
+        if (city) {
+          await axios.put(`http://localhost:5000/api/users/${userId}/state`, {
+            englishStateName: city,
+          });
+          return city;
         } else {
-          console.error("State not found in response components:", components);
-          return "State not found"; // Handle no state found in components
+          console.error(
+            "City not found in response components:",
+            data.results[0].components
+          );
+          return "Location not found";
         }
       } else {
         console.error("No results found in the API response:", data);
-        return "State not found"; // Handle no results case
+        return "Location not found";
       }
     } catch (error) {
-      console.error("Error fetching geolocation state:", error);
-      throw error; // Rethrow or handle error as appropriate
+      console.error("Error fetching geolocation city:", error);
+      throw error;
     }
   }
+
   const handleShowRegisterForm = () => {
     setIsLoginOpen(false); // Close the login modal if open
     setIsRegisterOpen(true); // Open the registration modal
@@ -121,83 +145,24 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen flex flex-col justify-between">
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
         <Header
           onLoginClick={() => setIsLoginOpen(true)}
           onRegisterClick={() => setIsRegisterOpen(true)}
           onCategoriesClick={() => setIsCategoriesOpen(true)}
         />
-        {/*     
-        <main className="flex-grow py-5">
-          <Routes>
-            <Route
-              path="/"
-              element={
-                user ? (
-                  user.role === "admin" ? (
-                    <Navigate to="/admin-area" />
-                  ) : user.role === "brand" ? (
-                    <Navigate to="/brand-area" /> // Redirect to brand area if the user is a brand
-                  ) : (
-                    <Navigate to="/user-area" /> // Default to user area for regular users
-                  )
-                ) : (
-                  <Home /> // Show home page for unauthenticated users
-                )
-              }
-            />
-            <Route path="/" element={<Home />} />
-            <Route path="/offer-card/:offerId" element={<OffersInfo />} />
-            <Route path="/brand-card/:brandId" element={<BrandInfo />} />
-            <Route path="/offers" element={<Offers />} />
-            <Route path="/ads" element={<Ads />} />
-            <Route path="/adbrands" element={<Adbrands />} />
-            <Route path="/adoffers" element={<Adoffers />} />
-            <Route path="/brands" element={<Brands />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/about" element={<About />} />
-            <Route
-              path="/user-area"
-              element={
-                <PrivateRoute>
-                  <UserArea />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/admin-area"
-              element={
-                <PrivateRoute roleRequired="admin">
-                  <Admin />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/brand-area"
-              element={
-                <PrivateRoute roleRequired="brand">
-                  <BrandArea />
-                </PrivateRoute>
-              }
-            />
-            {/* Redirect based on user role */}
-        {/* <Route
-              path="/redirect"
-              element={
-                user ? (
-                  user.role === "admin" ? (
-                    <Navigate to="/admin-area" />
-                  ) : user.role === "brand" ? (
-                    <Navigate to="/brand-area" />
-                  ) : (
-                    <Navigate to="/user-area" />
-                  )
-                ) : (
-                  <Navigate to="/" />
-                )
-              }
-            />
-          </Routes>
-        </main>  */}
+        <Tags />
+
         <main className="flex-grow py-5">
           <Routes>
             {/* Public Routes */}
@@ -210,36 +175,53 @@ function App() {
                   ) : user.role === "brand" ? (
                     <Navigate to="/brand-area" />
                   ) : (
-                    <Navigate to="/user-area" />
+                    // <Navigate to="/user-area" />
+                    <Home />
                   )
                 ) : (
                   <Home />
                 )
               }
             />
+            <Route path="/" element={<Home />} />
             <Route path="/modifyoffer/:offerId" element={<ModifyOffers />} />
-            <Route path="/offers" element={<Offers />} />
+            <Route path="/modify-brand/:id" element={<ModifyBrands />} />
+            <Route path="/modify-ad/:adId" element={<ModifyAd />} />
             <Route path="/ads" element={<Ads />} />
             <Route path="/adbrands" element={<Adbrands />} />
             <Route path="/adoffers" element={<Adoffers />} />
+            <Route path="/adadd" element={<Adadd />} />
             <Route path="/brands" element={<Brands />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/about" element={<About />} />
+
             {/* Private Routes */}
-            <Route
+            {/* <Route
               path="/user-area"
               element={user ? <UserArea /> : <Navigate to="/" />}
+            /> */}
+            <Route
+              path="/user-area"
+              element={
+                <PrivateRoute>
+                  <UserArea />
+                </PrivateRoute>
+              }
             />
             <Route
               path="/admin-area"
               element={
-                user && user.role === "admin" ? <Admin /> : <Navigate to="/" />
+                isAuthenticated && user?.role === "admin" ? (
+                  <Admin />
+                ) : (
+                  <Navigate to="/" />
+                )
               }
             />
             <Route
               path="/brand-area"
               element={
-                user && user.role === "brand" ? (
+                isAuthenticated && user?.role === "brand" ? (
                   <BrandArea />
                 ) : (
                   <Navigate to="/" />
@@ -249,6 +231,7 @@ function App() {
             {/* Dynamic Routes */}
             <Route path="/offer-card/:offerId" element={<OffersInfo />} />
             <Route path="/brand-card/:brandId" element={<BrandInfo />} />
+
             {/* Default Route */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

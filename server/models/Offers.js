@@ -12,6 +12,7 @@ const offerSchema = new mongoose.Schema({
   state: [String], // Optional: If offers are state-specific
   imageUrls: [{ type: String }], // Optional: If you want to include an image with the offer
   views: { type: Number, default: 0 },
+  visits: { type: Number, default: 0 }, // Track the number of clicks offers urls
   shares: { type: Number, default: 0 },
   brand: {
     type: mongoose.Schema.Types.ObjectId,
