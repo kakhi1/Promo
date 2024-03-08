@@ -380,10 +380,17 @@ const Admin = () => {
                     discountPrice={offer.discountPrice}
                     views={offer.views}
                     userRole={userRole}
+                    onModify={handleModify}
+                    onDelete={handleDelete}
+                    status={offer.status}
                   />
+                  {/* Additional element to display pending status */}
+                  {offer.status === "pending" && (
+                    <p className="text-red-500 font-bold">დასადასტურებელია</p>
+                  )}
                 </div>
               ))}
-              {isModalOpen && selectedOffer && (
+              {/* {isModalOpen && selectedOffer && (
                 <OfferModal
                   offer={selectedOffer}
                   position={modalPosition}
@@ -407,7 +414,7 @@ const Admin = () => {
                   onModify={handleModify}
                   onDelete={handleDelete}
                 />
-              )}
+              )} */}
               <div
                 onClick={navigateToAddOffers}
                 className="max-w-[280px] md:h-[285px] h-[200px] flex items-center justify-center cursor-pointer text-sm gap-4 shadow-lg flex-col bg-productBg text-[#5E5FB2]"

@@ -142,56 +142,9 @@ exports.register = async (req, res) => {
   }
 };
 
-// exports.login = async (req, res) => {
-//   const { email, password } = req.body;
-//   console.log("Attempting login for:", email);
-//   try {
-//     let user = await User.findOne({ email });
-
-//     if (!user) {
-//       console.log("Email not found:", email);
-//       return res.status(400).json({ message: "Invalid Credentials" });
-//     }
-
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) {
-//       return res.status(400).json({ message: "Invalid Credentials" });
-//     }
-
-//     // Determine the role based on user document flags
-//     let role = "user"; // Default role
-//     if (user.isAdmin) {
-//       role = "admin";
-//     } else if (user.isBrand) {
-//       role = "brand";
-//     }
-
-//     const token = jwt.sign({ userId: user._id, role }, process.env.JWT_SECRET, {
-//       expiresIn: "1h",
-//     });
-
-//     const responseObj = {
-//       message: "Logged in successfully",
-//       entity: {
-//         id: user._id.toString(),
-//         name: user.name,
-//         email: user.email,
-//         role, // Reflects the determined role
-//         brand: user.brand,
-//       },
-//       token,
-//     };
-
-//     res.status(200).json(responseObj);
-//     console.log("Sending login response:", responseObj);
-//   } catch (error) {
-//     console.error("Login error:", error);
-//     res.status(500).json({ message: "Error logging in", error: error.message });
-//   }
-// };
 exports.login = async (req, res) => {
   const { email, password } = req.body;
-  console.log("Attempting login for:", email);
+
   try {
     let user = await User.findOne({ email });
 
@@ -220,7 +173,6 @@ exports.login = async (req, res) => {
         },
         { upsert: true, new: true }
       );
-      console.log("User's login count and activity updated");
     } catch (error) {
       console.error("Error updating user login count and activity:", error);
     }
@@ -253,7 +205,6 @@ exports.login = async (req, res) => {
     };
 
     res.status(200).json(responseObj);
-    console.log("Sending login response:", responseObj);
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Error logging in", error: error.message });

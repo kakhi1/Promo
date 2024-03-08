@@ -18,6 +18,8 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("userToken") || null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedTag, setSelectedTag] = useState(null);
   useEffect(() => {
     const axiosInstance = axios.create();
     axiosInstance.interceptors.request.use((config) => {
@@ -26,7 +28,10 @@ export const AuthProvider = ({ children }) => {
     });
     // Set axiosInstance to state or context if needed
   }, [token]);
-
+  const clearCategoryAndTag = () => {
+    setSelectedCategory(null);
+    setSelectedTag(null);
+  };
   useEffect(() => {
     const verifyTokenAndLogin = async () => {
       if (!token) return;
@@ -85,13 +90,22 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     localStorage.removeItem("user");
     localStorage.removeItem("userToken"); // Ensure token is cleared on logout
+    clearCategoryAndTag();
   };
 
   const isAuthenticated = !!user;
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, user, userRole, token, login, logout }} // Include userRole in the context value
+      value={{
+        isAuthenticated,
+        user,
+        userRole,
+        token,
+        login,
+        logout,
+        clearCategoryAndTag,
+      }} // Include userRole in the context value
     >
       {children}
     </AuthContext.Provider>

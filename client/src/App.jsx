@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -21,25 +21,24 @@ import "./index.css"; // Assuming Tailwind CSS is being used
 import Footer from "./components/Footer";
 import Admin from "./components/Admin";
 import Ads from "./components/Ads";
-import Offers from "./components/Offers";
+
 import Adbrands from "./components/Adbrands";
 import BrandArea from "./components/BrandArea";
 import Adoffers from "./components/Adoffers";
-import OffersCard from "./components/OffersCard";
+
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import OffersInfo from "./components/OffersInfo";
-import BrandCard from "./components/BrandCard";
+
 import BrandInfo from "./components/BrandInfo";
 import { useAuth } from "./context/AuthContext";
-import { AuthContext } from "./context/AuthContext";
-import { useNavigate } from "react-router-dom";
+
 import ModifyOffers from "./components/ModifyOffers";
 import ModifyBrands from "./components/ModifyBrands";
 import "react-toastify/dist/ReactToastify.css";
 import Adadd from "./components/Adadd";
 import ModifyAd from "./components/ModifyAd";
-import AdComponent from "./components/AdComponent";
+
 import Tags from "./components/Tags";
 
 function App() {
@@ -47,12 +46,15 @@ function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
-  // const { user } = useAuth(); // Assuming `useAuth` provides user state and auth functions
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const { loginUser, logoutUser } = useAuth();
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedTag, setSelectedTag] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const userId = user?.id || user?._id;
-  console.log("userRole", userRole);
-  console.log("userId in app", userId);
   useEffect(() => {
     logUserActivity(); // Log user activity when the app loads
   }, []);
@@ -63,11 +65,11 @@ function App() {
       await axios.post("http://localhost:5000/api/user-activity", {
         activity: "App Loaded",
       });
-      console.log("User activity logged: App Loaded");
     } catch (error) {
       console.error("Error logging user activity:", error);
     }
   };
+
   useEffect(() => {
     if (user) {
       setIsLoginOpen(false);
@@ -75,6 +77,22 @@ function App() {
       setIsCategoriesOpen(false);
     }
   }, [user]);
+  const refreshOffersAndBrands = () => {
+    setRefreshTrigger((prev) => !prev);
+  };
+
+  const handleTagSelect = (tag) => {
+    setSelectedTag(tag);
+    // Note: Due to React's asynchronous state updates,
+    // logging 'selectedTag' immediately after 'setSelectedTag' won't show the updated state.
+  };
+
+  useEffect(() => {}, [selectedTag]);
+
+  const handleSelectCategory = (category) => {
+    setSelectedCategory(category);
+    setIsCategoriesOpen(false);
+  };
 
   useEffect(() => {
     if (user && navigator.geolocation) {
@@ -105,7 +123,7 @@ function App() {
   }, [user]);
 
   async function convertLatLongToState(latitude, longitude, userId) {
-    const apiKey = "";
+    const apiKey = process.env.REACT_APP_GEOLOCATION_API_KEY;
     const url = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKey}&pretty=1&no_annotations=1`;
 
     try {
@@ -142,6 +160,10 @@ function App() {
     setIsRegisterOpen(true); // Open the registration modal
   };
 
+  // Function to handle the "Forgot Password" click event
+  const handleForgotPasswordClick = () => {
+    setShowForgotPasswordModal(true); // Set the state to show the modal
+  };
   return (
     <Router>
       <div className="min-h-screen flex flex-col justify-between">
@@ -160,12 +182,16 @@ function App() {
           onLoginClick={() => setIsLoginOpen(true)}
           onRegisterClick={() => setIsRegisterOpen(true)}
           onCategoriesClick={() => setIsCategoriesOpen(true)}
+          onLogoClick={refreshOffersAndBrands}
+          onSearch={(query) => setSearchQuery(query)}
+          onForgotPasswordClick={handleForgotPasswordClick}
         />
-        <Tags />
+        <Tags onTagSelect={handleTagSelect} />
 
         <main className="flex-grow py-5">
           <Routes>
             {/* Public Routes */}
+
             <Route
               path="/"
               element={
@@ -176,14 +202,35 @@ function App() {
                     <Navigate to="/brand-area" />
                   ) : (
                     // <Navigate to="/user-area" />
-                    <Home />
+                    <Home
+                      selectedCategory={selectedCategory}
+                      selectedTag={selectedTag}
+                      refreshTrigger={refreshTrigger}
+                      searchQuery={searchQuery}
+                    />
                   )
                 ) : (
-                  <Home />
+                  <Home
+                    selectedCategory={selectedCategory}
+                    selectedTag={selectedTag}
+                    refreshTrigger={refreshTrigger}
+                    searchQuery={searchQuery}
+                  />
                 )
               }
             />
-            <Route path="/" element={<Home />} />
+            <Route
+              path="/"
+              element={
+                <Home
+                  selectedCategory={selectedCategory}
+                  selectedTag={selectedTag}
+                  refreshTrigger={refreshTrigger}
+                  searchQuery={searchQuery}
+                />
+              }
+            />
+            {/* Rest of the Routes remain unchanged */}
             <Route path="/modifyoffer/:offerId" element={<ModifyOffers />} />
             <Route path="/modify-brand/:id" element={<ModifyBrands />} />
             <Route path="/modify-ad/:adId" element={<ModifyAd />} />
@@ -191,19 +238,48 @@ function App() {
             <Route path="/adbrands" element={<Adbrands />} />
             <Route path="/adoffers" element={<Adoffers />} />
             <Route path="/adadd" element={<Adadd />} />
-            <Route path="/brands" element={<Brands />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/about" element={<About />} />
+            <Route
+              path="/brands"
+              element={
+                <Brands
+                  selectedCategory={selectedCategory}
+                  selectedTag={selectedTag}
+                  searchQuery={searchQuery}
+                />
+              }
+            />
+            <Route
+              path="/categories"
+              element={
+                <Categories
+                  onSelectCategory={() => console.log("Test function passed")}
+                />
+              }
+            />
+            <Route
+              path="/about"
+              element={<About onRegisterClick={handleShowRegisterForm} />}
+            />
 
             {/* Private Routes */}
             {/* <Route
               path="/user-area"
               element={user ? <UserArea /> : <Navigate to="/" />}
             /> */}
-            <Route
+            {/* <Route
               path="/user-area"
               element={
                 <PrivateRoute>
+                  <UserArea />
+                </PrivateRoute>
+              }
+
+            /> */}
+
+            <Route
+              path="/user-area"
+              element={
+                <PrivateRoute allowedRoles={["user"]}>
                   <UserArea />
                 </PrivateRoute>
               }
@@ -239,7 +315,10 @@ function App() {
         {isLoginOpen && (
           <Modal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)}>
             {/* Pass handleShowRegisterForm to LoginForm */}
-            <LoginForm onRegisterClick={handleShowRegisterForm} />
+            <LoginForm
+              onRegisterClick={handleShowRegisterForm}
+              onForgotPasswordClick={handleForgotPasswordClick}
+            />
           </Modal>
         )}
 
@@ -252,12 +331,28 @@ function App() {
           </Modal>
         )}
 
-        {isCategoriesOpen && (
+        {/* {isCategoriesOpen && (
           <Modal
             isOpen={isCategoriesOpen}
             onClose={() => setIsCategoriesOpen(false)}
           >
             <Categories />
+          </Modal>
+        )} */}
+        {isCategoriesOpen && (
+          <Modal
+            isOpen={isCategoriesOpen}
+            onClose={() => setIsCategoriesOpen(false)}
+          >
+            <Categories onSelectCategory={handleSelectCategory} />
+          </Modal>
+        )}
+        {/* Forgot Password Modal */}
+        {/* Forgot Password Modal */}
+        {showForgotPasswordModal && (
+          <Modal onClose={() => setShowForgotPasswordModal(false)}>
+            {/* Pass any necessary props to the ForgotPasswordForm component */}
+            <ForgotPasswordForm />
           </Modal>
         )}
         <Footer />

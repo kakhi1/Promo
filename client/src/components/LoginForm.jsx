@@ -65,7 +65,6 @@ function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
     console.log("Forgot Password Clicked");
     onForgotPasswordClick(); // This should be a function passed down as a prop that handles forgot password action
   };
-
   const handleRegistrationRedirect = () => {
     console.log("Redirect to Registration");
     onRegisterClick(); // Ensure this is linked to toggle the registration modal in App.jsx
@@ -125,13 +124,13 @@ function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
           </label>
 
           {/* Forgot Password Link */}
-          <button
+          {/* <button
             type="button"
-            onClick={handleForgotPassword}
+            onClick={onForgotPasswordClick}
             className="text-[#E63946] hover:text-red-800 font-normal text-xs"
           >
             დაგავიწყდა პაროლი?
-          </button>
+          </button> */}
         </div>
 
         {/* Submit Button */}

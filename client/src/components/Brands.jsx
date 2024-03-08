@@ -4,11 +4,10 @@ import BrandCard from "./BrandCard";
 import axios from "axios";
 import AdComponent from "./AdComponent";
 
-const Brands = () => {
+const Brands = ({ selectedCategory, selectedTag, searchQuery }) => {
   const [brands, setBrands] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [brandsPerPage] = useState(20); // Maximum brands per page
-  const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
 
   const [loading, setLoading] = useState(true);
@@ -17,33 +16,69 @@ const Brands = () => {
   useEffect(() => {
     const fetchBrands = async () => {
       setLoading(true);
+      let url = "http://localhost:5000/api/brands";
+
+      // Initialize URLSearchParams to handle query parameters.
+      const params = new URLSearchParams();
+
+      // Append 'category' to the query params if a category is selected.
+      if (selectedCategory && selectedCategory._id) {
+        params.append("category", selectedCategory._id);
+        // console.log(`Category filter applied: ${selectedCategory._id}`);
+      }
+
+      // Append 'tag' to the query params if a tag is selected.
+      if (selectedTag) {
+        params.append("tag", selectedTag._id); // Assuming the tag object has an _id property
+        // console.log(`Tag filter applied: ${selectedTag._id}`);
+      }
+
+      // Construct the final URL with query parameters.
+      url += `?${params.toString()}`;
+
       try {
-        const response = await axios.get("http://localhost:5000/api/brands");
-        const brandsData = response.data;
-        if (brandsData.success && Array.isArray(brandsData.data)) {
-          // Sort brands by offer count in descending order
-          const sortedBrands = brandsData.data.sort(
-            (a, b) => b.offerCount - a.offerCount
-          );
-          setBrands(sortedBrands);
-        } else {
-          throw new Error("Failed to fetch brands");
-        }
-      } catch (error) {
-        console.error("Failed to fetch brands:", error);
-        setError(error.message);
+        // Make the API call with the constructed URL.
+        const response = await axios.get(url);
+
+        // Update the 'brands' state with the fetched data.
+        // Adjust based on the actual structure of the response.
+        setBrands(response.data.data || response.data);
+      } catch (err) {
+        console.error("Error fetching brands:", err);
+        setError(err.message || "Failed to fetch brands");
       } finally {
-        setLoading(false);
+        setLoading(false); // End loading state.
       }
     };
 
     fetchBrands();
-  }, []);
-
-  // Calculate the current brands to display
+  }, [selectedCategory, selectedTag, searchQuery]); // Depend on selectedCategory and selectedTag to refetch when they change.
+  // Filtering based on searchQuery
+  const filteredBrands = searchQuery
+    ? brands.filter((brand) =>
+        brand.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : brands;
+  // Now, calculate the pagination variables based on filteredBrands
   const indexOfLastBrand = currentPage * brandsPerPage;
   const indexOfFirstBrand = indexOfLastBrand - brandsPerPage;
-  const currentBrands = brands.slice(indexOfFirstBrand, indexOfLastBrand);
+  const currentBrands = filteredBrands.slice(
+    indexOfFirstBrand,
+    indexOfLastBrand
+  );
+
+  if (loading) {
+    return <div>Loading brands...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  // Calculate the current brands to display
+  // const indexOfLastBrand = currentPage * brandsPerPage;
+  // const indexOfFirstBrand = indexOfLastBrand - brandsPerPage;
+  // const currentBrands = brands.slice(indexOfFirstBrand, indexOfLastBrand);
 
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);

@@ -8,7 +8,7 @@ import { FaRegTrashCan } from "react-icons/fa6";
 const BrandCard = ({ id, name, imageUrl, offerCount, onDelete, onModify }) => {
   const navigate = useNavigate();
   const { userRole } = useAuth();
-  console.log("userRole", userRole);
+
   const [showActions, setShowActions] = useState(false);
 
   const handleDivClick = (e) => {

@@ -2,6 +2,13 @@ import React, { useState, useEffect } from "react";
 
 function Categories({ onSelectCategory }) {
   const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  const handleSelectCategory = (category) => {
+    setSelectedCategory(category.name);
+    setCurrentPage(1); // Reset pagination to the first page
+    // Optionally, you might want to clear out the current brands list here
+  };
 
   useEffect(() => {
     // Replace 'http://localhost:5000/api/categories' with the actual endpoint from which you are fetching the categories
@@ -28,7 +35,7 @@ function Categories({ onSelectCategory }) {
       className="categories-container"
       style={{ maxHeight: "400px", overflowY: "scroll" }}
     >
-      <h2>კატეგორიები</h2>
+      <h2 className=" flex items-center my-4 ml-4">კატეგორიები</h2>
       <ul style={{ listStyleType: "none", padding: 0 }}>
         {categories.map((category) => (
           <li

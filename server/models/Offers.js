@@ -9,7 +9,6 @@ const offerSchema = new mongoose.Schema({
   state: [String],
   url: String,
   tags: [String], // Optional: Similar to Brand, you might want to tag offers for categorization
-  state: [String], // Optional: If offers are state-specific
   imageUrls: [{ type: String }], // Optional: If you want to include an image with the offer
   views: { type: Number, default: 0 },
   visits: { type: Number, default: 0 }, // Track the number of clicks offers urls

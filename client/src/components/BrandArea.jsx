@@ -146,12 +146,6 @@ const BrandArea = () => {
   // Optionally, control the display of offers based on `showAllBrands`
   const displayedOffers = showAllBrands ? offers : offers.slice(0, 4);
 
-  console.log("userRole in OffersCard:", userRole);
-
-  // if (!brandDetails || offers.length === 0) {
-  //   return <div>Loading...</div>; // Or any other indicator you prefer
-  // }
-
   return (
     <div className="pt-8 bg-white flex  md:flex-row flex-col">
       <div className="flex flex-col items-center">

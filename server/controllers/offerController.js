@@ -140,13 +140,25 @@ exports.rejectOfferById = async (req, res) => {
 
 exports.getAllOffers = async (req, res) => {
   try {
-    const brandId = req.query.brandId;
-    let query = {};
+    const { brandId, category, tags, search } = req.query;
+    let query = { status: "approved" };
 
     if (brandId) {
-      query = { brand: brandId, status: "approved" }; // Assuming status field tracks approval
-    } else {
-      query = { status: "approved" };
+      query.brand = brandId;
+    }
+
+    if (category) {
+      query.category = category;
+    }
+
+    if (tags) {
+      const tagsArray = tags.split(",");
+      query.tags = { $in: tagsArray };
+    }
+
+    // Include search by name (title) if 'search' query parameter is provided
+    if (search) {
+      query.title = { $regex: search, $options: "i" }; // 'i' option makes it case insensitive
     }
 
     const offers = await Offer.find(query);
@@ -155,6 +167,31 @@ exports.getAllOffers = async (req, res) => {
     res.status(400).json({ success: false, error: error.message });
   }
 };
+// exports.getAllOffers = async (req, res) => {
+//   try {
+//     const { brandId, category, tags } = req.query;
+//     let query = { status: "approved" };
+
+//     if (brandId) {
+//       query.brand = brandId;
+//     }
+
+//     if (category) {
+//       query.category = category;
+//     }
+
+//     if (tags) {
+//       const tagsArray = tags.split(",");
+//       query.tags = { $in: tagsArray };
+//     }
+
+//     const offers = await Offer.find(query);
+//     res.status(200).json({ success: true, data: offers });
+//   } catch (error) {
+//     res.status(400).json({ success: false, error: error.message });
+//   }
+// };
+
 exports.getAllOffersWithoutFilter = async (req, res) => {
   try {
     const offers = await Offer.find({});

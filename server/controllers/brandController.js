@@ -62,7 +62,6 @@ exports.createBrand = async (req, res) => {
 };
 
 exports.getBrandByOfferId = async (req, res) => {
-  console.log(`Fetching brand for offer ID: ${req.params.offersId}`);
   try {
     const { offersId } = req.params;
     const offer = await Offer.findById(offersId).populate("brand");
@@ -81,7 +80,7 @@ exports.getBrandByOfferId = async (req, res) => {
     if (!brand) {
       return res.status(404).send("Brand not found");
     }
-    console.log("Brand data:", brand);
+
     res.json(brand);
   } catch (error) {
     console.error(error);
@@ -106,12 +105,90 @@ exports.getBrandById = async (req, res) => {
       .json({ message: "Error fetching brand details", error: error.message });
   }
 };
+// exports.getBrands = async (req, res) => {
+//   try {
+//     const matchStage = {};
+
+//     // Check if a category query parameter is provided and not empty
+//     if (req.query.category) {
+//       matchStage.category = req.query.category;
+//     }
+
+//     // Check if a tag query parameter is provided and not empty,
+//     // and modify the matchStage to filter by this tag
+//     if (req.query.tag) {
+//       matchStage.tags = req.query.tag;
+//     }
+
+//     const brandsWithOfferCount = await Brand.aggregate([
+//       {
+//         $match: matchStage,
+//       },
+//       {
+//         $lookup: {
+//           from: "offers",
+//           localField: "_id",
+//           foreignField: "brand",
+//           as: "offers",
+//         },
+//       },
+//       {
+//         $addFields: {
+//           offerCount: { $size: "$offers" },
+//         },
+//       },
+//       {
+//         $project: {
+//           name: 1,
+//           email: 1,
+//           description: 1,
+//           tags: {
+//             $slice: ["$tags", 1], // Modify here to show only the first tag or a specific tag
+//           },
+//           category: 1,
+//           url: 1,
+//           state: 1,
+//           imageUrl: 1,
+//           offerCount: 1,
+//         },
+//       },
+//     ]);
+
+//     res.json({ success: true, data: brandsWithOfferCount });
+//   } catch (error) {
+//     console.error("Failed to fetch brands with offer count:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Internal server error",
+//       error: error.message,
+//     });
+//   }
+// };
 exports.getBrands = async (req, res) => {
   try {
+    const matchStage = {};
+
+    // Search functionality - only by name
+    if (req.query.search) {
+      const searchQuery = req.query.search;
+      matchStage.name = { $regex: searchQuery, $options: "i" }; // Case-insensitive regex search
+    }
+
+    // Filtering by category
+    if (req.query.category) {
+      matchStage.category = req.query.category;
+    }
+
+    // Filtering by tag
+    if (req.query.tag) {
+      matchStage.tags = req.query.tag;
+    }
+
     const brandsWithOfferCount = await Brand.aggregate([
+      { $match: matchStage },
       {
         $lookup: {
-          from: "offers", // Ensure this matches your offers collection name
+          from: "offers",
           localField: "_id",
           foreignField: "brand",
           as: "offers",
@@ -127,7 +204,7 @@ exports.getBrands = async (req, res) => {
           name: 1,
           email: 1,
           description: 1,
-          tags: 1,
+          tags: 1, // Returning all tags
           category: 1,
           url: 1,
           state: 1,
@@ -138,7 +215,6 @@ exports.getBrands = async (req, res) => {
     ]);
 
     res.json({ success: true, data: brandsWithOfferCount });
-    console.log(brandsWithOfferCount);
   } catch (error) {
     console.error("Failed to fetch brands with offer count:", error);
     res.status(500).json({
@@ -467,8 +543,6 @@ exports.deleteBrandById = async (req, res) => {
   }
 };
 
-// count views, shares and visits fopr brand
-
 exports.getBrandMetrics = async (req, res) => {
   const { brandId } = req.params; // Get brandId from the URL parameters
 
@@ -519,12 +593,10 @@ exports.getOffersWithFavoritesCount = async (req, res) => {
 
     res.status(200).json({ success: true, data: offersWithCount });
   } catch (error) {
-    res
-      .status(400)
-      .json({
-        success: false,
-        message: "Failed to fetch offers and their favorites count",
-        error: error.message,
-      });
+    res.status(400).json({
+      success: false,
+      message: "Failed to fetch offers and their favorites count",
+      error: error.message,
+    });
   }
 };

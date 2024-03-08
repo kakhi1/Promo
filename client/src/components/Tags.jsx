@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from "react";
-const Tags = () => {
+function Tags({ onTagSelect }) {
+  // Receive onSelectTag as a prop and rename it to onTagSelect
   const [tags, setTags] = useState([]);
+  const [selectedTagId, setSelectedTagId] = useState(null);
+  const [selectedTag, setSelectedTag] = useState("");
+
+  const handleSelectTag = (tag) => {
+    setSelectedTag(tag.name); // Assuming each tag has a 'name' property
+    // Perform any additional actions needed upon selecting a tag
+    onTagSelect(tag); // Use the prop function onTagSelect to pass the selected tag up to the parent component
+  };
 
   useEffect(() => {
-    // Replace 'http://localhost:5000/api/categories' with the actual endpoint from which you are fetching the categories
+    // Replace 'http://localhost:5000/api/tags' with the actual endpoint from which you are fetching the tags
     fetch("http://localhost:5000/api/data/tags")
       .then((response) => {
         if (!response.ok) {
@@ -21,54 +30,28 @@ const Tags = () => {
         );
       });
   }, []);
-  const onSelectTag = (tag) => {
-    // Assuming each tag has a unique ID that can be used as a reference
-    document.getElementById(tag._id).scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "start",
-    });
-  };
 
   return (
-    <div
-      className="tags-container w-full ml-24 "
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "center",
-        alignContent: "center",
-        overflowX: "auto",
-        maxHeight: "100px",
-        maxWidth: "80%",
-        whiteSpace: "nowrap",
-      }}
-    >
-      <ul
-        style={{
-          listStyleType: "none",
-          padding: 0,
-          margin: 0,
-          display: "flex",
-        }}
-      >
-        {tags.map((tag) => (
-          <li
-            key={tag._id}
-            onClick={() => onSelectTag(tag)}
-            style={{
-              cursor: "pointer",
-              padding: "10px",
-
-              ":hover": { background: "#ffffffff" },
-            }}
-          >
-            {tag.name}
-          </li>
-        ))}
-      </ul>
+    <div className="md:w-4/5 w-full mx-auto bg-white text-black overflow-x-auto overflow-y-hidden">
+      <div className="flex space-x-2 my-4">
+        <ul className="flex flex-nowrap">
+          {tags.map((tag) => (
+            <li
+              key={tag._id}
+              onClick={() => handleSelectTag(tag)}
+              className={`cursor-pointer px-4 py-2 border border-gray-300 ${
+                selectedTagId === tag._id
+                  ? "bg-gray-200"
+                  : "bg-gray-100 hover:bg-gray-200"
+              } transition-colors duration-300 whitespace-nowrap`}
+            >
+              {tag.name}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
-};
+}
 
 export default Tags;

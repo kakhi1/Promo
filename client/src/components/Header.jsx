@@ -10,11 +10,12 @@ import { useNavigate } from "react-router-dom";
 import { BiChevronDown } from "react-icons/bi";
 import { useAuth } from "../context/AuthContext";
 
-function Header({ onLoginClick, onCategoriesClick }) {
+function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { user, logout } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -36,6 +37,7 @@ function Header({ onLoginClick, onCategoriesClick }) {
       <div className="flex justify-between p-5 items-center w-full">
         {/* Logo always visible */}
         <Link
+          onClick={onLogoClick}
           to="/"
           className="flex title-font font-medium items-center text-white mb-4 md:mb-0 w-1/4"
         >
@@ -71,9 +73,9 @@ function Header({ onLoginClick, onCategoriesClick }) {
                 ბრენდი
               </Link>
               <Link
-                to="/categories"
+                // to="/categories"
                 className="text-white p-2"
-                onClick={toggleMobileMenu}
+                onClick={onCategoriesClick}
               >
                 კატეგორიები
               </Link>
@@ -109,7 +111,8 @@ function Header({ onLoginClick, onCategoriesClick }) {
                 <Link
                   to="/login"
                   className="text-white p-2"
-                  onClick={() => onLoginClick && onLoginClick()} // Close the menu upon navigation
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 >
                   შესვლა
                 </Link>
@@ -124,6 +127,7 @@ function Header({ onLoginClick, onCategoriesClick }) {
           <div className="md:ml-auto md:mr-3 hidden md:block h-[40px]">
             <div className="relative h-full ">
               <input
+                onChange={(e) => onSearch(e.target.value)}
                 className="w-full rounded-2xl md:w-64 px-4 py-1 pl-10 border border-productBg bg-Bgcolor text-productBg placeholder-productBg text-sm font-normal h-full"
                 placeholder="ძებნა..."
               />

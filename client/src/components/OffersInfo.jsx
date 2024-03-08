@@ -45,9 +45,6 @@ const OffersInfo = () => {
     console.log("Token updated in Offersინფო:", token);
   }, [token]);
   const isMobile = window.innerWidth < 768;
-  console.log("isAuthenticated in offersinfo", isAuthenticated);
-  console.log("Token for request:", token);
-  console.log("user role in offersinfo:", userRole);
 
   // Function to navigate to the next image
   const nextImage = () => {
@@ -95,7 +92,6 @@ const OffersInfo = () => {
   };
   const recordShare = async () => {
     if (!isAuthenticated) {
-      console.log("User must be authenticated to share.");
       return;
     }
 
@@ -107,7 +103,7 @@ const OffersInfo = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log("Share recorded successfully in the backend.");
+
       // Optionally, update your UI or state to reflect the share
     } catch (error) {
       console.error("Failed to record share:", error);

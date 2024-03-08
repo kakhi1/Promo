@@ -149,39 +149,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// router.get("/api/userActivityStats", async (req, res) => {
-//   try {
-//     const userId = getUserIdFromRequest(req); // Assuming you have this function defined as before
-
-//     // Fetch individual user stats if userId is provided
-//     if (userId) {
-//       const userStats = await UserActivity.findOne({ userId: userId });
-//       return res.json({ success: true, data: userStats });
-//     }
-
-//     // Fetch aggregate stats for all users
-//     const allUsersStats = await UserActivity.aggregate([
-//       {
-//         $group: {
-//           _id: null,
-//           totalLoginCount: { $sum: "$userLoginCount" },
-//           totalUsers: { $sum: 1 },
-//           lastLogin: { $max: "$lastLoginTimestamp" },
-//         },
-//       },
-//     ]);
-
-//     if (allUsersStats.length > 0) {
-//       return res.json({ success: true, data: allUsersStats[0] });
-//     } else {
-//       return res.json({ success: true, data: {} });
-//     }
-//   } catch (err) {
-//     console.error("Error fetching user activity stats:", err);
-//     res.status(500).json({ success: false, message: "Internal Server Error" });
-//   }
-// });
-
 router.get("/api/userActivityStats", async (req, res) => {
   try {
     const estimatedSessionDuration = 30 * 60 * 1000; // 30 minutes in milliseconds
