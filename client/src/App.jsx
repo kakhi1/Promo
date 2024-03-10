@@ -314,6 +314,7 @@ function App() {
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>
+        <Footer />
         {isLoginOpen && (
           <Modal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)}>
             {/* Pass handleShowRegisterForm to LoginForm */}
