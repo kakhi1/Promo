@@ -313,46 +313,6 @@ const Home = ({
             ))}
           </div>
 
-          {/* Rendering Offers using OffersCard components */}
-
-          {/* Top Brands Section */}
-          {/* <div className="flex justify-between items-center py-4">
-            <h2 className="text-lg font-semibold">ტოპ ბრენდები</h2>
-            {!showAllBrands && (
-              <button
-                onClick={navigateToAllBrands}
-                className="text-indigo-600 hover:text-indigo-800"
-              >
-                ყველა
-              </button>
-            )}
-          </div> */}
-
-          {/* Brands Grid */}
-          {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {(showAllBrands
-              ? brands
-              : isMobile
-              ? brands.slice(0, 4)
-              : brands.slice(0, 8)
-            ).map((brand) => {
-              // Assuming your backend server is running on localhost:5000
-              // and the images are served from the 'uploads' directory
-              const baseUrl = "http://localhost:5000/";
-              const imagePath = brand.imageUrl.replace(/\\/g, "/"); // Replace backslashes with forward slashes if needed
-              const fullImageUrl = baseUrl + imagePath;
-
-              return (
-                <BrandCard
-                  key={brand._id}
-                  id={brand._id}
-                  name={brand.name}
-                  imageUrl={fullImageUrl} // Adjust as necessary for the path
-                  offerCount={brand.offerCount} // Make sure your API provides this
-                />
-              );
-            })}
-          </div> */}
           {/* Brands Section */}
           <div className="mb-8">
             <div className="flex justify-between items-center py-4">
@@ -367,7 +327,7 @@ const Home = ({
               )}
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 xl2:grid-cols-6 gap-4">
               {filteredBrands.map((brand) => {
                 const imagePath = brand.imageUrl.replace(/\\/g, "/");
                 const fullImageUrl = `http://localhost:5000/${imagePath}`;

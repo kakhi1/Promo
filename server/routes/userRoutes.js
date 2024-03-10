@@ -12,7 +12,6 @@ const State = require("../models/State");
 const User = require("../models/User");
 
 const sessionController = require("../controllers/sessionController");
-const locationController = require("../controllers/locationController");
 
 // Correctly wire up the route to the controller function
 router.post("/register", register);
@@ -137,5 +136,7 @@ router.get("/favorites/count", async (req, res) => {
   }
 });
 
-// Export the router
+router.post("/forgot-password", userController.forgotPassword);
+router.post("/reset-password/:token", userController.resetPassword);
+
 module.exports = router;

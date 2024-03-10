@@ -112,7 +112,7 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
                   to="/login"
                   className="text-white p-2"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onClick={() => onLoginClick && onLoginClick()}
                 >
                   შესვლა
                 </Link>

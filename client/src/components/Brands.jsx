@@ -94,11 +94,11 @@ const Brands = ({ selectedCategory, selectedTag, searchQuery }) => {
 
   return (
     <div className="pt-8 bg-white w-full flex md:flex-row flex-col-reverse">
-      <div className="flex flex-col justify-between h-full px-5">
+      <div className="flex flex-col justify-between h-full w-full px-5">
         <div className="mb-8">
           <h2 className="text-lg font-semibold py-4">ტოპ ბრენდები</h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 xl2:grid-cols-6 gap-4">
             {currentBrands.map((brand) => {
               const baseUrl = "http://localhost:5000/";
               const imagePath = brand.imageUrl.replace(/\\/g, "/");

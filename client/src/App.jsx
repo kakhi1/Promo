@@ -34,7 +34,9 @@ import "react-toastify/dist/ReactToastify.css";
 import Adadd from "./components/Adadd";
 import ModifyAd from "./components/ModifyAd";
 import Tags from "./components/Tags";
+import ForgotPasswordForm from "./components/ForgotPasswordForm";
 import ConditionalTags from "./components/ConditionalTags ";
+import ResetPasswordPage from "./components/ResetPasswordPage";
 
 function App() {
   const { user, isAuthenticated, userRole } = useAuth();
@@ -157,7 +159,16 @@ function App() {
 
   // Function to handle the "Forgot Password" click event
   const handleForgotPasswordClick = () => {
-    setShowForgotPasswordModal(true); // Set the state to show the modal
+    console.log("Forgot password in parent clicked");
+    setShowForgotPasswordModal(true); // This should open the modal
+    setIsLoginOpen(true);
+  };
+
+  const handleBackToLoginClick = () => {
+    setShowForgotPasswordModal(false); // Close the modal
+    // Optionally, navigate or open another modal here
+    navigate("/"); // For navigating to homepage
+    // setIsLoginOpen(true); // For opening login modal
   };
   return (
     <Router>
@@ -188,6 +199,10 @@ function App() {
         <main className="flex-grow py-5">
           <Routes>
             {/* Public Routes */}
+            <Route
+              path="/reset-password/:token"
+              element={<ResetPasswordPage />}
+            />
 
             <Route
               path="/"
@@ -325,13 +340,37 @@ function App() {
         )}
 
         {/* Forgot Password Modal */}
+        {/* {showForgotPasswordModal && (
+          <Modal
+            isOpen={showForgotPasswordModal}
+            onClose={() => setShowForgotPasswordModal(false)}
+          >
+            <ForgotPasswordForm
+              onBackToLoginClick={() => {
+                setShowForgotPasswordModal(false); // Close forgot password modal
+                setIsLoginOpen(true); // Optionally open login modal again if needed
+              }}
+            />
+          </Modal>
+        )} */}
         {showForgotPasswordModal && (
-          <Modal onClose={() => setShowForgotPasswordModal(false)}>
-            {/* Pass any necessary props to the ForgotPasswordForm component */}
-            <ForgotPasswordForm />
+          <Modal
+            isOpen={showForgotPasswordModal}
+            onClose={() => setShowForgotPasswordModal(false)}
+          >
+            <ForgotPasswordForm
+              onBackToLoginClick={() => {
+                setShowForgotPasswordModal(false); // Close forgot password modal
+                setIsLoginOpen(true); // Optionally open login modal again if needed
+              }}
+              onSuccess={() => {
+                setShowForgotPasswordModal(false); // Close forgot password modal
+                // navigate('/'); // Navigate to homepage, uncomment if navigation is desired
+                // setIsLoginOpen(true); // Optionally open login modal again if needed
+              }}
+            />
           </Modal>
         )}
-        <Footer />
       </div>
     </Router>
   );

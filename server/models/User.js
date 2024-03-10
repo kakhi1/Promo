@@ -29,6 +29,8 @@ const userSchema = new mongoose.Schema({
   sessions: [sessionSchema], // Tracks each session's start and end
   location: locationSchema, // Stores the user's last known location
   emailVerified: { type: Boolean, default: false },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
   state: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "State",

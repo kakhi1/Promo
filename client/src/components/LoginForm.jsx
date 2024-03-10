@@ -124,13 +124,13 @@ function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
           </label>
 
           {/* Forgot Password Link */}
-          {/* <button
+          <button
             type="button"
-            onClick={onForgotPasswordClick}
+            onClick={handleForgotPassword}
             className="text-[#E63946] hover:text-red-800 font-normal text-xs"
           >
             დაგავიწყდა პაროლი?
-          </button> */}
+          </button>
         </div>
 
         {/* Submit Button */}

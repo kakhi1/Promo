@@ -70,7 +70,10 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json()); // for parsing application/json
-
+app.use((error, req, res, next) => {
+  console.error(error.stack);
+  res.status(500).send("Something broke!");
+});
 // // Session middleware
 const sessionSecret = "mysecretkey";
 app.use(
