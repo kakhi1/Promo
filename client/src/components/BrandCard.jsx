@@ -51,9 +51,9 @@ const BrandCard = ({ id, name, imageUrl, offerCount, onDelete, onModify }) => {
             {" "}
             <button
               onClick={(e) => handleActionClick(e, "modify")}
-              className="bg-[#A8EB80] text-white lg:hover:bg-green-400  w-[50%] flex-col p-6   items-center justify-center "
+              className="bg-[#A8EB80] text-white lg:hover:bg-green-400 flex  w-[50%] flex-col p-6   items-center justify-center "
             >
-              <RxPencil1 size={20} className="ml-8" />
+              <RxPencil1 size={20} className="" />
               ჩასწორება
             </button>
             <button
