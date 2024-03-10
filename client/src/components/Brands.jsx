@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import BrandCard from "./BrandCard";
 import axios from "axios";
 import AdComponent from "./AdComponent";
+import Tags from "./Tags";
 
 const Brands = ({ selectedCategory, selectedTag, searchQuery }) => {
   const [brands, setBrands] = useState([]);
@@ -12,6 +13,11 @@ const Brands = ({ selectedCategory, selectedTag, searchQuery }) => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const handleTagSelect = (tag) => {
+    setSelectedTag(tag);
+    // Note: Due to React's asynchronous state updates,
+    // logging 'selectedTag' immediately after 'setSelectedTag' won't show the updated state.
+  };
 
   useEffect(() => {
     const fetchBrands = async () => {
@@ -91,6 +97,7 @@ const Brands = ({ selectedCategory, selectedTag, searchQuery }) => {
       <div className="flex flex-col justify-between h-full px-5">
         <div className="mb-8">
           <h2 className="text-lg font-semibold py-4">ტოპ ბრენდები</h2>
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {currentBrands.map((brand) => {
               const baseUrl = "http://localhost:5000/";

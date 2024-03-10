@@ -16,30 +16,25 @@ import Brands from "./components/Brands";
 import Categories from "./components/Categories";
 import About from "./components/About";
 import UserArea from "./components/UserArea";
-
 import "./index.css"; // Assuming Tailwind CSS is being used
 import Footer from "./components/Footer";
 import Admin from "./components/Admin";
 import Ads from "./components/Ads";
-
 import Adbrands from "./components/Adbrands";
 import BrandArea from "./components/BrandArea";
 import Adoffers from "./components/Adoffers";
-
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import OffersInfo from "./components/OffersInfo";
-
 import BrandInfo from "./components/BrandInfo";
 import { useAuth } from "./context/AuthContext";
-
 import ModifyOffers from "./components/ModifyOffers";
 import ModifyBrands from "./components/ModifyBrands";
 import "react-toastify/dist/ReactToastify.css";
 import Adadd from "./components/Adadd";
 import ModifyAd from "./components/ModifyAd";
-
 import Tags from "./components/Tags";
+import ConditionalTags from "./components/ConditionalTags ";
 
 function App() {
   const { user, isAuthenticated, userRole } = useAuth();
@@ -186,7 +181,9 @@ function App() {
           onSearch={(query) => setSearchQuery(query)}
           onForgotPasswordClick={handleForgotPasswordClick}
         />
-        <Tags onTagSelect={handleTagSelect} />
+        {/* <Tags onTagSelect={handleTagSelect} /> */}
+        {/* Conditionally render <Tags/> based on the current route */}
+        <ConditionalTags onTagSelect={handleTagSelect} />
 
         <main className="flex-grow py-5">
           <Routes>
@@ -262,19 +259,6 @@ function App() {
             />
 
             {/* Private Routes */}
-            {/* <Route
-              path="/user-area"
-              element={user ? <UserArea /> : <Navigate to="/" />}
-            /> */}
-            {/* <Route
-              path="/user-area"
-              element={
-                <PrivateRoute>
-                  <UserArea />
-                </PrivateRoute>
-              }
-
-            /> */}
 
             <Route
               path="/user-area"
@@ -331,14 +315,6 @@ function App() {
           </Modal>
         )}
 
-        {/* {isCategoriesOpen && (
-          <Modal
-            isOpen={isCategoriesOpen}
-            onClose={() => setIsCategoriesOpen(false)}
-          >
-            <Categories />
-          </Modal>
-        )} */}
         {isCategoriesOpen && (
           <Modal
             isOpen={isCategoriesOpen}
@@ -347,7 +323,7 @@ function App() {
             <Categories onSelectCategory={handleSelectCategory} />
           </Modal>
         )}
-        {/* Forgot Password Modal */}
+
         {/* Forgot Password Modal */}
         {showForgotPasswordModal && (
           <Modal onClose={() => setShowForgotPasswordModal(false)}>
