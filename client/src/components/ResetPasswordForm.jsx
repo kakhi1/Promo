@@ -24,7 +24,7 @@ function ResetPasswordForm({ token, onClose }) {
 
     try {
       // Append the resetPasswordToken to the URL
-      const url = `http://localhost:5000/api/users/reset-password/${token}`;
+      const url = `https://promo-iror.onrender.com/api/users/reset-password/${token}`;
       const response = await axios.post(url, { password }); // Assuming the backend expects { password } in the body
 
       setSuccess("Your password has been reset successfully.");

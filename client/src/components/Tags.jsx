@@ -12,8 +12,7 @@ function Tags({ onTagSelect }) {
   };
 
   useEffect(() => {
-    // Replace 'http://localhost:5000/api/tags' with the actual endpoint from which you are fetching the tags
-    fetch("http://localhost:5000/api/data/tags")
+    fetch("https://promo-iror.onrender.com/api/data/tags")
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");

@@ -43,9 +43,9 @@ const ModifyBrands = () => {
     );
     const imageUrl = brand.imageUrl.startsWith("http")
       ? brand.imageUrl
-      : `http://localhost:5000${brand.imageUrl.startsWith("/") ? "" : "/"}${
-          brand.imageUrl
-        }`;
+      : `https://promo-iror.onrender.com${
+          brand.imageUrl.startsWith("/") ? "" : "/"
+        }${brand.imageUrl}`;
     console.log("imageUrl", imageUrl);
     setBrandInfo({
       name: brand.name,
@@ -62,16 +62,18 @@ const ModifyBrands = () => {
   // Function to fetch brand by ID and map details
   const fetchBrandById = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/brands/${id}`);
+      const response = await fetch(
+        `https://promo-iror.onrender.com/api/brands/${id}`
+      );
       if (!response.ok) throw new Error("Failed to fetch brand data");
       const brand = await response.json();
       if (brand.imageUrl) {
         // Check if imageUrl starts with 'http', use as is, otherwise, prepend your server's base URL
         const imageUrl = brand.imageUrl.startsWith("http")
           ? brand.imageUrl
-          : `http://localhost:5000${brand.imageUrl.startsWith("/") ? "" : "/"}${
-              brand.imageUrl
-            }`;
+          : `https://promo-iror.onrender.com${
+              brand.imageUrl.startsWith("/") ? "" : "/"
+            }${brand.imageUrl}`;
         setImage(imageUrl); // For displaying the existing image in the preview
 
         // Update brandInfo state with the fetched brand details
@@ -97,7 +99,7 @@ const ModifyBrands = () => {
     const fetchCategories = async () => {
       try {
         const response = await fetch(
-          "http://localhost:5000/api/data/categories"
+          "https://promo-iror.onrender.com/api/data/categories"
         );
         const data = await response.json();
 
@@ -117,7 +119,9 @@ const ModifyBrands = () => {
     // Fetch States
     const fetchStates = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/data/states");
+        const response = await fetch(
+          "https://promo-iror.onrender.com/api/data/states"
+        );
         const data = await response.json();
         if (response.ok) {
           setStates(
@@ -134,7 +138,9 @@ const ModifyBrands = () => {
     // Fetch Tags
     const fetchTags = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/data/tags");
+        const response = await fetch(
+          "https://promo-iror.onrender.com/api/data/tags"
+        );
         const data = await response.json();
         if (response.ok) {
           setTags(data.map((tag) => ({ value: tag._id, label: tag.name })));
@@ -153,7 +159,9 @@ const ModifyBrands = () => {
     if (isUpdateMode) {
       // Fetch existing brand data for update
       const fetchBrandById = async () => {
-        const response = await fetch(`http://localhost:5000/api/brands/${id}`);
+        const response = await fetch(
+          `https://promo-iror.onrender.com/api/brands/${id}`
+        );
         const data = await response.json();
         if (response.ok) {
           setBrandInfo({
@@ -221,15 +229,7 @@ const ModifyBrands = () => {
     setNameError("");
 
     const formData = new FormData();
-    // Object.entries(brandInfo).forEach(([key, value]) => {
-    //   if (key === "tags" || key === "state") {
-    //     formData.append(key, JSON.stringify(value.map((v) => v.value)));
-    //   } else if (key === "category") {
-    //     formData.append(key, value.value);
-    //   } else {
-    //     formData.append(key, value);
-    //   }
-    // });
+
     Object.entries(brandInfo).forEach(([key, value]) => {
       if (key === "tags" || key === "state") {
         formData.append(key, JSON.stringify(value.map((v) => v.value)));
@@ -252,7 +252,7 @@ const ModifyBrands = () => {
       formData.append("image", brandImage);
     }
 
-    const endpoint = `http://localhost:5000/api/brands/update/${id}`;
+    const endpoint = `https://promo-iror.onrender.com/api/brands/update/${id}`;
     const method = "PUT";
 
     try {
@@ -289,12 +289,14 @@ const ModifyBrands = () => {
     const fetchData = async () => {
       try {
         const categoriesResponse = await fetch(
-          "http://localhost:5000/api/data/categories"
+          "https://promo-iror.onrender.com/api/data/categories"
         );
         const statesResponse = await fetch(
-          "http://localhost:5000/api/data/states"
+          "https://promo-iror.onrender.com/api/data/states"
         );
-        const tagsResponse = await fetch("http://localhost:5000/api/data/tags");
+        const tagsResponse = await fetch(
+          "https://promo-iror.onrender.com/api/data/tags"
+        );
 
         const categoriesData = await categoriesResponse.json();
         const statesData = await statesResponse.json();

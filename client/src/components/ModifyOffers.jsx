@@ -130,7 +130,7 @@ function ModifyOffers() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/offers/${offerId}`,
+        `https://promo-iror.onrender.com/api/offers/${offerId}`,
         {
           method: "PUT",
           headers: {
@@ -160,12 +160,14 @@ function ModifyOffers() {
     const fetchData = async () => {
       try {
         const categoriesResponse = await fetch(
-          "http://localhost:5000/api/data/categories"
+          "https://promo-iror.onrender.com/api/data/categories"
         );
         const statesResponse = await fetch(
-          "http://localhost:5000/api/data/states"
+          "https://promo-iror.onrender.com/api/data/states"
         );
-        const tagsResponse = await fetch("http://localhost:5000/api/data/tags");
+        const tagsResponse = await fetch(
+          "https://promo-iror.onrender.com/api/data/tags"
+        );
 
         const categoriesData = await categoriesResponse.json();
         const statesData = await statesResponse.json();
@@ -192,7 +194,7 @@ function ModifyOffers() {
       if (allCategories.length > 0 && states.length > 0 && tags.length > 0) {
         try {
           const response = await fetch(
-            `http://localhost:5000/api/offers/${offerId}`
+            `https://promo-iror.onrender.com/api/offers/${offerId}`
           );
           if (!response.ok) {
             throw new Error("Failed to fetch offer details");
@@ -228,7 +230,8 @@ function ModifyOffers() {
           // Assuming your images URLs are stored in a way that needs transformation
           setImagesPreview(
             offer.imageUrls.map(
-              (url) => `http://localhost:5000/${url.replace(/\\/g, "/")}`
+              (url) =>
+                `https://promo-iror.onrender.com/${url.replace(/\\/g, "/")}`
             )
           );
         } catch (error) {

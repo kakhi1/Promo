@@ -63,68 +63,10 @@ const Home = ({
     // Additionally fetch favorites if needed
   };
 
-  // useEffect(() => {
-  //   console.log("Updated selectedCategory in Home:", selectedCategory);
-  //   console.log("Updated selectedTag in Home:", selectedTag);
-  //   const fetchOffersAndBrands = async () => {
-  //     setLoading(true);
-  //     let brandsUrl = "http://localhost:5000/api/brands";
-
-  //     // Initialize URLSearchParams to handle query parameters for brands.
-  //     const params = new URLSearchParams();
-  //     if (selectedCategory && selectedCategory._id) {
-  //       console.log(`Selected Category: ${selectedCategory._id}`); // Log selected category
-  //       params.append("category", selectedCategory._id);
-  //     }
-  //     if (selectedTag) {
-  //       console.log(`Selected Tag: ${selectedTag._id}`); // Log selected tag
-  //       params.append("tag", selectedTag._id);
-  //     }
-  //     if (searchQuery && searchQuery.trim() !== "") {
-  //       offersParams.append("search", searchQuery.trim());
-  //     }
-  //     brandsUrl += `?${params.toString()}`;
-
-  //     console.log(`Fetching Brands URL: ${brandsUrl}`); // Log the final URL
-
-  //     try {
-  //       // Fetch offers as before
-  //       const offersResponse = await fetch("http://localhost:5000/api/offers");
-  //       const offersResult = await offersResponse.json();
-  //       console.log("Offers Response:", offersResult); // Log offers response
-  //       if (offersResult.success && Array.isArray(offersResult.data)) {
-  //         setOffers(offersResult.data);
-  //       } else {
-  //         throw new Error("Failed to fetch offers");
-  //       }
-
-  //       // Fetch brands with category and tag filtering
-  //       const brandsResult = await axios.get(brandsUrl);
-  //       console.log("Brands Response:", brandsResult.data); // Log brands response
-  //       if (
-  //         brandsResult.data.success &&
-  //         Array.isArray(brandsResult.data.data)
-  //       ) {
-  //         setBrands(brandsResult.data.data);
-  //       } else {
-  //         throw new Error("Failed to fetch brands");
-  //       }
-  //     } catch (error) {
-  //       console.error("Failed to fetch data:", error);
-  //       setError(error.message);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchOffersAndBrands();
-  //   window.addEventListener("resize", handleResize);
-  //   return () => window.removeEventListener("resize", handleResize);
-  // }, [selectedCategory, selectedTag, refreshData, searchQuery]);
   useEffect(() => {
     const fetchOffersAndBrands = async () => {
       setLoading(true);
-      let offersUrl = "http://localhost:5000/api/offers";
+      let offersUrl = "https://promo-iror.onrender.com/api/offers";
       const offersParams = new URLSearchParams();
 
       if (selectedCategory && selectedCategory._id) {
@@ -163,7 +105,7 @@ const Home = ({
   useEffect(() => {
     const fetchOffersAndBrands = async () => {
       setLoading(true);
-      let offersUrl = "http://localhost:5000/api/offers";
+      let offersUrl = "https://promo-iror.onrender.com/api/offers";
       const offersParams = new URLSearchParams();
 
       if (selectedCategory && selectedCategory._id) {
@@ -199,7 +141,7 @@ const Home = ({
     if (isAuthenticated && userId) {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/users/${userId}/favorites`,
+          `https://promo-iror.onrender.com/api/users/${userId}/favorites`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -217,8 +159,8 @@ const Home = ({
   useEffect(() => {
     const fetchOffersAndBrands = async () => {
       setLoading(true);
-      const offersUrl = "http://localhost:5000/api/offers";
-      const brandsUrl = "http://localhost:5000/api/brands";
+      const offersUrl = "https://promo-iror.onrender.com/api/offers";
+      const brandsUrl = "https://promo-iror.onrender.com/api/brands";
 
       try {
         const [offersResult, brandsResult] = await Promise.all([
@@ -251,7 +193,7 @@ const Home = ({
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  const baseUrl = "http://localhost:5000/";
+  const baseUrl = "https://promo-iror.onrender.com/";
   return (
     <div className="pt-8 bg-white w-full ">
       {/* Responsive Grid Layout */}
@@ -330,7 +272,7 @@ const Home = ({
             <div className="grid grid-cols-2 md:grid-cols-4 xl2:grid-cols-6 gap-4">
               {filteredBrands.map((brand) => {
                 const imagePath = brand.imageUrl.replace(/\\/g, "/");
-                const fullImageUrl = `http://localhost:5000/${imagePath}`;
+                const fullImageUrl = `https://promo-iror.onrender.com/${imagePath}`;
 
                 return (
                   <BrandCard

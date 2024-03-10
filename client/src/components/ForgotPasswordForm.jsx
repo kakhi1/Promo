@@ -17,7 +17,7 @@ function ForgotPasswordForm({ onBackToLoginClick }) {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/users/forgot-password",
+        "https://promo-iror.onrender.com/api/users/forgot-password",
         {
           method: "POST",
           headers: {

@@ -4,11 +4,6 @@ import { useNavigate } from "react-router-dom";
 function About(onRegisterClick) {
   const navigate = useNavigate();
 
-  // Function to handle registration button click
-  const handleRegisterClick = () => {
-    navigate("/register"); // Navigate to the registration route
-  };
-
   return (
     <div className="flex flex-col items-start p-8">
       <p className="mb-4">

@@ -142,10 +142,13 @@ function Adoffers() {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/offers", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        "https://promo-iror.onrender.com/api/offers",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         throw new Error(
@@ -166,12 +169,14 @@ function Adoffers() {
     const fetchData = async () => {
       try {
         const categoriesResponse = await fetch(
-          "http://localhost:5000/api/data/categories"
+          "https://promo-iror.onrender.com/api/data/categories"
         );
         const statesResponse = await fetch(
-          "http://localhost:5000/api/data/states"
+          "https://promo-iror.onrender.com/api/data/states"
         );
-        const tagsResponse = await fetch("http://localhost:5000/api/data/tags");
+        const tagsResponse = await fetch(
+          "https://promo-iror.onrender.com/api/data/tags"
+        );
 
         const categoriesData = await categoriesResponse.json();
         const statesData = await statesResponse.json();

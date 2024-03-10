@@ -9,17 +9,8 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASSWORD, // Email password or app password if 2FA is enabled
   },
 });
-console.log(
-  "Email credentials:",
-  process.env.EMAIL_USERNAME,
-  process.env.EMAIL_PASSWORD
-);
 
 exports.sendPasswordResetEmail = async (email, token) => {
-  console.log(
-    `sendPasswordResetEmail called with email: ${email} and token: ${token}`
-  );
-
   const resetUrl = `http://localhost:5173/reset-password/${token}`;
   const mailOptions = {
     from: process.env.EMAIL_USERNAME,
@@ -30,8 +21,6 @@ exports.sendPasswordResetEmail = async (email, token) => {
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log("Message sent: %s", info.messageId);
-    console.log("Nodemailer response: ", info);
   } catch (error) {
     console.error("Error sending email: ", error);
   }

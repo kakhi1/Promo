@@ -59,7 +59,7 @@ function App() {
   const logUserActivity = async () => {
     try {
       // Make an API call to log user activity
-      await axios.post("http://localhost:5000/api/user-activity", {
+      await axios.post("https://promo-iror.onrender.com/api/user-activity", {
         activity: "App Loaded",
       });
     } catch (error) {
@@ -131,9 +131,12 @@ function App() {
           data.results[0].components.city ||
           data.results[0].components._normalized_city;
         if (city) {
-          await axios.put(`http://localhost:5000/api/users/${userId}/state`, {
-            englishStateName: city,
-          });
+          await axios.put(
+            `https://promo-iror.onrender.com/users/${userId}/state`,
+            {
+              englishStateName: city,
+            }
+          );
           return city;
         } else {
           console.error(
