@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 });
 
 exports.sendPasswordResetEmail = async (email, token) => {
-  const resetUrl = `http://localhost:5173/reset-password/${token}`;
+  const resetUrl = `https://promo123.netlify.app/reset-password/${token}`;
   const mailOptions = {
     from: process.env.EMAIL_USERNAME,
     to: email,
