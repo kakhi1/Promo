@@ -6,6 +6,7 @@ const guestUserSchema = new mongoose.Schema({
   gender: String,
   tags: [String], // Assuming tags are an array of strings
   ipAddress: { type: String, unique: true },
+  state: String,
 });
 
 module.exports = mongoose.model("GuestUser", guestUserSchema);

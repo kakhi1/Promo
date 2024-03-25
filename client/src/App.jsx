@@ -187,66 +187,66 @@ function App() {
     setIsCategoriesOpen(false);
   };
 
-  useEffect(() => {
-    if (user && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          try {
-            const city = await convertLatLongToState(
-              latitude,
-              longitude,
-              userId
-            );
-            setUserLocation(city);
-            // toast.success(`Location detected: ${city}`);
-          } catch (error) {
-            console.error("Geolocation fetching failed:", error);
-            toast.error(
-              "Unable to fetch your location. Please try again later."
-            );
-          }
-        },
-        (error) => {
-          console.error("Geolocation permission denied:", error);
-          toast.error("Location permission denied.");
-        }
-      );
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   if (user && navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       async (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         try {
+  //           const city = await convertLatLongToState(
+  //             latitude,
+  //             longitude,
+  //             userId
+  //           );
+  //           setUserLocation(city);
+  //           // toast.success(`Location detected: ${city}`);
+  //         } catch (error) {
+  //           console.error("Geolocation fetching failed:", error);
+  //           toast.error(
+  //             "Unable to fetch your location. Please try again later."
+  //           );
+  //         }
+  //       },
+  //       (error) => {
+  //         console.error("Geolocation permission denied:", error);
+  //         toast.error("Location permission denied.");
+  //       }
+  //     );
+  //   }
+  // }, [user]);
 
-  async function convertLatLongToState(latitude, longitude, userId) {
-    const apiKey = process.env.REACT_APP_GEOLOCATION_API_KEY;
-    const url = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKey}&pretty=1&no_annotations=1`;
+  // async function convertLatLongToState(latitude, longitude, userId) {
+  //   const apiKey = process.env.REACT_APP_GEOLOCATION_API_KEY;
+  //   const url = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKey}&pretty=1&no_annotations=1`;
 
-    try {
-      const response = await axios.get(url);
-      const data = response.data;
-      if (data.results.length > 0 && data.results[0].components) {
-        const city =
-          data.results[0].components.city ||
-          data.results[0].components._normalized_city;
-        if (city) {
-          await axios.put(`http://localhost:5000/users/${userId}/state`, {
-            englishStateName: city,
-          });
-          return city;
-        } else {
-          console.error(
-            "City not found in response components:",
-            data.results[0].components
-          );
-          return "Location not found";
-        }
-      } else {
-        console.error("No results found in the API response:", data);
-        return "Location not found";
-      }
-    } catch (error) {
-      console.error("Error fetching geolocation city:", error);
-      throw error;
-    }
-  }
+  //   try {
+  //     const response = await axios.get(url);
+  //     const data = response.data;
+  //     if (data.results.length > 0 && data.results[0].components) {
+  //       const city =
+  //         data.results[0].components.city ||
+  //         data.results[0].components._normalized_city;
+  //       if (city) {
+  //         await axios.put(`http://localhost:5000/users/${userId}/state`, {
+  //           englishStateName: city,
+  //         });
+  //         return city;
+  //       } else {
+  //         console.error(
+  //           "City not found in response components:",
+  //           data.results[0].components
+  //         );
+  //         return "Location not found";
+  //       }
+  //     } else {
+  //       console.error("No results found in the API response:", data);
+  //       return "Location not found";
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching geolocation city:", error);
+  //     throw error;
+  //   }
+  // }
 
   const handleShowRegisterForm = () => {
     setIsLoginOpen(false); // Close the login modal if open

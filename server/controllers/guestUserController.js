@@ -16,46 +16,15 @@ exports.checkGuestUser = async (req, res) => {
   }
 };
 
-//   // Log incoming request data
-//   console.log("Received request data:", { age, gender, tags, ipAddress });
-
-//   try {
-//     // Attempt to find the existing user
-//     let guestUser = await GuestUser.findOne({ ipAddress });
-//     console.log("Found guest user:", guestUser);
-
-//     if (guestUser) {
-//       // If guestUser exists, update its properties
-//       guestUser.age = age;
-//       guestUser.gender = gender;
-//       guestUser.tags = tags;
-
-//       console.log("Updating guest user with new data:", { age, gender, tags });
-//       await guestUser.save();
-//       console.log("Updated guest user successfully:", guestUser);
-//     } else {
-//       // If no existing user is found, create a new one
-//       guestUser = new GuestUser({ age, gender, tags, ipAddress });
-//       console.log("Creating new guest user with data:", guestUser);
-
-//       await guestUser.save();
-//       console.log("Created new guest user successfully:", guestUser);
-//     }
-
-//     // Successful response
-//     console.log("Sending successful response with guest user data:", guestUser);
-//     res.status(201).json(guestUser);
-//   } catch (error) {
-//     // Log any errors that occur during the process
-//     console.error("Error in addOrUpdateGuestUser function:", error);
-//     res.status(500).send(error.message);
-//   }
-// };
 exports.addOrUpdateGuestUser = async (req, res) => {
-  const { age, gender, tags, ipAddress } = req.body;
+  const { age, gender, tags, ipAddress, state: stateInput } = req.body;
 
   try {
-    const update = { age, gender, tags };
+    // Directly assign stateInput to state if it's a single value or use parseInput if it might be an array
+    let state = stateInput;
+
+    const update = { age, gender, tags, state }; // Include state in the update directly
+
     const options = { new: true, upsert: true, runValidators: true };
 
     const guestUser = await GuestUser.findOneAndUpdate(
@@ -68,5 +37,20 @@ exports.addOrUpdateGuestUser = async (req, res) => {
   } catch (error) {
     console.error("Error in addOrUpdateGuestUser function:", error);
     res.status(500).send(error.message);
+  }
+};
+
+exports.fetchStateByIpAddress = async (req, res) => {
+  try {
+    const ipAddress = req.params.ipAddress;
+    const guestUser = await GuestUser.findOne({ ipAddress: ipAddress });
+
+    if (!guestUser) {
+      return res.status(404).send("GuestUser not found");
+    }
+
+    res.status(200).json({ state: guestUser.state });
+  } catch (error) {
+    res.status(500).send("Server error");
   }
 };

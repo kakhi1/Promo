@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const Brand = require("../models/Brand");
 const Offer = require("../models/Offers");
+const State = require("../models/State");
 const UserActivity = require("../models/UserActivity");
 const crypto = require("crypto");
 
@@ -107,8 +108,9 @@ async function emailExists(email) {
 
 exports.register = async (req, res) => {
   try {
-    const { name, username, email, password, mobile } = req.body;
+    const { name, username, email, password, mobile, state } = req.body;
 
+    const stateDocument = await State.findOne({ name: state });
     // Check if user already exists
     if (await emailExists(email)) {
       return res
@@ -127,16 +129,55 @@ exports.register = async (req, res) => {
       email,
       password: hashedPassword,
       mobile,
+      state,
+      state: stateDocument._id,
     });
 
     await user.save();
     res.status(201).json({ message: "User created successfully", user });
   } catch (error) {
+    console.error("Registration error:", error); // Log the complete error
     res
       .status(500)
       .json({ message: "Error registering user", error: error.message });
   }
 };
+
+// exports.register = async (req, res) => {
+//   try {
+//     const { name, username, email, password, mobile, state } = req.body;
+//     console.log("Received state name for registration:", state);
+
+//     // Additional logic like checking if the user exists, hashing the password, etc.
+
+//     const stateDocument = await State.findOne({ name: state });
+//     console.log("State found:", stateDocument);
+
+//     if (!stateDocument) {
+//       return res.status(400).json({ message: "Invalid state name provided" });
+//     }
+
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(password, salt);
+
+//     const user = new User({
+//       name,
+//       username,
+//       email,
+//       password: hashedPassword,
+//       mobile,
+//       state: stateDocument._id,
+//     });
+
+//     await user.save();
+//     res.status(201).json({ message: "User created successfully", user });
+//   } catch (error) {
+//     console.error("Registration error:", error);
+//     res
+//       .status(500)
+//       .json({ message: "Error registering user", error: error.message });
+//   }
+// };
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;

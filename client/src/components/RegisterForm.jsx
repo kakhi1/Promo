@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
 function RegisterForm() {
@@ -12,12 +13,61 @@ function RegisterForm() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  const [userIP, setUserIP] = useState("");
+  useEffect(() => {
+    // Fetch the user's IP address
+    axios
+      .get("https://api.ipify.org?format=json")
+      .then((response) => {
+        setUserIP(response.data.ip); // Store the IP address in state
+        // Check if this IP has an associated state from previous visits
+        checkGuestUser(response.data.ip);
+        console.log("User IP:", response.data.ip);
+      })
+      .catch((err) => console.error("Error fetching IP address:", err));
+
+    // Other initial data fetching
+  }, []);
+
+  const checkGuestUser = (ip) => {
+    axios
+      .get(`http://localhost:5000/api/check-modal/${ip}`)
+      .then((response) => {
+        setIsWelcomeModalOpen(response.data.showModal);
+        // Handle other actions based on the guest user check
+      })
+      .catch((err) => console.error("Error checking guest user:", err));
+  };
+
+  const fetchStateByIpAddress = async (ipAddress) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/state/${ipAddress}`
+      );
+      if (response.status === 200) {
+        console.log(
+          "State fetched for IP:",
+          ipAddress,
+          "State:",
+          response.data.state
+        );
+        return response.data.state; // Adjust according to your API response structure
+      } else {
+        throw new Error("Could not fetch state for IP address.");
+      }
+    } catch (error) {
+      console.error("Error fetching state by IP address:", error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!agreeToTerms) {
       alert("You must agree to the terms and conditions to register.");
       return;
     }
+    const state = await fetchStateByIpAddress(userIP);
     try {
       // Adjusted to match the expected API payload
       const payload = {
@@ -26,8 +76,9 @@ function RegisterForm() {
         email,
         mobile,
         password,
+        state,
       };
-
+      console.log(payload);
       const response = await fetch("http://localhost:5000/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -37,7 +88,7 @@ function RegisterForm() {
       if (response.ok) {
         const data = await response.json();
         login(data);
-        console.log("Registration successful");
+        console.log("Registration successful", data);
         // onRegisterSuccess();
 
         navigate("/user-area");

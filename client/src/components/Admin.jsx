@@ -390,13 +390,13 @@ const Admin = () => {
                   )}
                 </div>
               ))}
-              <div
+              {/* <div
                 onClick={navigateToAddOffers}
                 className="max-w-[280px] md:h-[285px] h-[200px] flex items-center justify-center cursor-pointer text-sm gap-4 shadow-lg flex-col bg-productBg text-[#5E5FB2]"
               >
                 <FaPlus size={24} color="#5E5FB2" />
                 <p>დამატება</p>
-              </div>
+              </div> */}
             </div>
           </section>
 
