@@ -400,7 +400,7 @@ const OffersInfo = () => {
               {offer.title}
             </h1>
             {/* Display prices */}
-            <div className="flex items-center justify-end order-last md:order-none gap-1 col-span-2 ">
+            {/* <div className="flex items-center justify-end order-last md:order-none gap-1 col-span-2 ">
               {showDiscountPrice ? (
                 <>
                   <div className="flex items-center ml-4  ">
@@ -424,7 +424,7 @@ const OffersInfo = () => {
                   <FaLariSign className="text-lg mb-1" />
                 </div>
               )}
-            </div>
+            </div> */}
             {/* brand logo */}
             <div className="h-[50px] w-[100px] col-span-2 rounded-lg md:order-first order-none">
               <img src={brandImageUrl} alt={offer.title} />

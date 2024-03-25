@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Select from "react-select";
+import CreatableSelect from "react-select/creatable";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -10,10 +11,11 @@ function Adoffers() {
   const navigate = useNavigate();
   const [brandId, setBrandId] = useState(null);
   const [offerImage, setOfferImage] = useState(null);
+
   const [offerInfo, setOfferInfo] = useState({
     title: "",
     description: "",
-    category: "", // Now a single string, not String constructor
+    category: [], // Now a single string, not String constructor
     url: "", // Changed from 'url' to 'link' to match schema
     tags: [], // An array of strings, initialized as empty
     state: [], // An array of strings, initialized as empty
@@ -27,6 +29,8 @@ function Adoffers() {
   const [states, setStates] = useState([]);
   const [tags, setTags] = useState([]);
   const [errors, setErrors] = useState({});
+  const [allStates, setAllStates] = useState([]);
+  const [visibleStates, setVisibleStates] = useState([]);
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -65,25 +69,71 @@ function Adoffers() {
     }
   };
 
-  const handleStateChange = (selectedOption) => {
-    setOfferInfo((prev) => ({ ...prev, state: selectedOption }));
-    if (errors.state) {
-      setErrors((prevErrors) => ({ ...prevErrors, state: undefined }));
+  const handleStateChange = (selectedOptions) => {
+    const isSelectAll = selectedOptions.some(
+      (option) => option.value === "all"
+    );
+
+    if (isSelectAll) {
+      // If 'Select All' is selected, set the visible states to all available states (excluding the 'all' option)
+      const allSelectedStates = allStates.filter(
+        (option) => option.value !== "all"
+      );
+      setOfferInfo((prev) => ({
+        ...prev,
+        state: allSelectedStates,
+      }));
+      setVisibleStates(allSelectedStates);
+    } else {
+      // Set the selected states and update visible states accordingly
+      setOfferInfo((prev) => ({
+        ...prev,
+        state: selectedOptions,
+      }));
+      setVisibleStates(selectedOptions);
     }
   };
 
-  const handleCategoryChange = (selectedOption) => {
+  const handleCategoryChange = (selectedOptions) => {
     setOfferInfo((prev) => ({
       ...prev,
-      category: selectedOption ? selectedOption.value : "",
+      category: selectedOptions || [], // Store the array of selected options
     }));
   };
 
-  const handleTagsChange = (selectedOptions) => {
-    setOfferInfo((prev) => ({ ...prev, tags: selectedOptions || [] }));
-    if (errors.tags) {
-      setErrors((prevErrors) => ({ ...prevErrors, tags: undefined }));
+  const handleTagsChange = async (selectedOptions, actionMeta) => {
+    if (actionMeta.action === "create-option") {
+      // Handle new tag creation
+      const newTagName = actionMeta.option.value;
+      try {
+        const response = await fetch("http://localhost:5000/api/data/tags", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name: newTagName }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to create tag");
+        }
+
+        const newTag = await response.json();
+        selectedOptions[selectedOptions.length - 1] = {
+          value: newTag._id,
+          label: newTag.name,
+        };
+        setTags((prevTags) => [
+          ...prevTags,
+          { value: newTag._id, label: newTag.name },
+        ]);
+      } catch (error) {
+        console.error("Error adding tag:", error);
+        // Optionally handle error, e.g., show an error message
+      }
     }
+
+    setOfferInfo((prev) => ({ ...prev, tags: selectedOptions || [] }));
   };
 
   const handleSubmit = async (e) => {
@@ -121,20 +171,27 @@ function Adoffers() {
       formData.append("images", file);
     });
     formData.append("brand", user.brand);
+
+    Object.entries(offerInfo).forEach(([key, value]) => {
+      // Skip appending originalPrice and discountPrice if they are not used
+      if (key === "originalPrice" || key === "discountPrice") {
+        if (value) {
+          formData.append(key, value);
+        }
+      } else {
+        // For array values, append each value under the same key
+        if (Array.isArray(value)) {
+          value.forEach((item) => formData.append(key, item.value || item));
+        } else {
+          formData.append(key, value);
+        }
+      }
+    });
+
     // formData.append("category", offerInfo.category);
     for (let [key, value] of formData.entries()) {
       console.log(key, value);
     }
-
-    // Append other form data
-    Object.entries(offerInfo).forEach(([key, value]) => {
-      // For array values, append each value under the same key
-      if (Array.isArray(value)) {
-        value.forEach((item) => formData.append(key, item.value || item));
-      } else {
-        formData.append(key, value);
-      }
-    });
 
     // Log formData for debugging (optional)
     for (let [key, value] of formData.entries()) {
@@ -175,6 +232,15 @@ function Adoffers() {
 
         const categoriesData = await categoriesResponse.json();
         const statesData = await statesResponse.json();
+        const allStatesData = [
+          { value: "all", label: "ყველას არჩევა" },
+          ...statesData.map((state) => ({
+            value: state._id,
+            label: state.name,
+          })),
+        ];
+        setAllStates(allStatesData);
+        setVisibleStates(allStatesData);
         const tagsData = await tagsResponse.json();
 
         setAllCategories(
@@ -240,7 +306,7 @@ function Adoffers() {
             )}
 
             {/* Original Price Input */}
-            <div className=" flex md:w-2/3 w-[93%] mt-4 justify-start items-center flex-col gap-4">
+            {/* <div className=" flex md:w-2/3 w-[93%] mt-4 justify-start items-center flex-col gap-4">
               <h1 className="text-start w-full  text-base font-semibold">
                 მიუთითე თავდაპირველი ფასი
               </h1>
@@ -252,9 +318,9 @@ function Adoffers() {
                 onChange={handleChange}
                 className="input input-bordered w-full mb-2 border-2 border-[#CED4DA] h-8 rounded-md pl-6"
               />
-            </div>
+            </div> */}
             {/* Discount Price Input */}
-            <div className=" flex md:w-2/3 w-[93%] mt-4 justify-start items-center flex-col gap-4">
+            {/* <div className=" flex md:w-2/3 w-[93%] mt-4 justify-start items-center flex-col gap-4">
               <h1 className="text-start w-full  text-base font-semibold">
                 მიუთითე ფასი ფასდაკლებით
               </h1>
@@ -266,7 +332,7 @@ function Adoffers() {
                 onChange={handleChange}
                 className="input input-bordered w-full mb-2 border-2 border-[#CED4DA] h-8 rounded-md pl-6"
               />
-            </div>
+            </div> */}
           </div>
 
           <div className="flex flex-col w-full md:w-2/3 md:flex-row h-full md:mt-6  gap-4 p-4">
@@ -297,14 +363,14 @@ function Adoffers() {
                   <h1 className="text-start w-full  text-base font-semibold">
                     მიუთითეთ თეგები
                   </h1>{" "}
-                  <Select
+                  <CreatableSelect
                     isMulti
                     name="tags"
                     options={tags}
                     className="basic-multi-select w-full"
                     classNamePrefix="select"
                     onChange={handleTagsChange}
-                    placeholder="აირჩიეთ თეგი (ებ)..."
+                    placeholder="აირჩიეთ თეგი (ები)..."
                   />
                   {errors.tags && (
                     <span className="text-red-500 text-sm">{errors.tags}</span>
@@ -314,15 +380,18 @@ function Adoffers() {
                   <h1 className="text-start w-full  text-base font-semibold">
                     აირჩიე ქალაქები
                   </h1>
+
                   <Select
                     isMulti
                     name="state"
-                    options={states}
+                    options={allStates}
+                    value={offerInfo.state}
+                    getOptionLabel={(option) => option.label}
                     className="basic-multi-select w-full"
                     classNamePrefix="select"
                     onChange={handleStateChange}
                     placeholder="აირჩიე ქალაქი (ები)..."
-                  />{" "}
+                  />
                   {errors.state && (
                     <span className="text-red-500 text-sm">{errors.state}</span>
                   )}
@@ -342,18 +411,20 @@ function Adoffers() {
                     <span className="text-red-500 text-sm">{errors.url}</span>
                   )}
                 </div>
-                <div className="flex flex-col justify-start items-start  md:w-[90%] w-full gap-4">
+
+                <div className="w-full flex justify-start items-center flex-col gap-4">
                   <h1 className="text-start w-full  text-base font-semibold">
                     მიუთითეთ კატეგორია
                   </h1>
                   <Select
+                    isMulti
                     name="category"
                     options={allCategories}
-                    className="input border-2 border-[#CED4DA] h-8 rounded-md w-full"
+                    className="basic-multi-select w-full"
                     classNamePrefix="select"
                     onChange={handleCategoryChange}
                     placeholder="კატეგორია"
-                  />{" "}
+                  />
                   {errors.category && (
                     <span className="text-red-500 text-sm">
                       {errors.category}

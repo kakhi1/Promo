@@ -33,12 +33,12 @@ const BrandCard = ({ id, name, imageUrl, offerCount, onDelete, onModify }) => {
   return (
     <div
       onClick={handleDivClick}
-      className="brand-card bg-[#F1F1F1] shadow-lg overflow-hidden max-w-[280px] max-h-[164px] relative cursor-pointer "
+      className="brand-card bg-[#F1F1F1] shadow-lg overflow-hidden max-w-[280px] h-[164px] relative cursor-pointer "
     >
       <img
         src={imageUrl}
         alt={name}
-        className="max-w-[280px] max-h-[164px] object-cover opacity-70"
+        className="max-w-[280px] h-[164px] object-cover opacity-70"
       />
       <div className="p-4 items-end justify-center w-full absolute bottom-0">
         <h3 className="text-lg font-semibold">{name}</h3>
@@ -46,7 +46,7 @@ const BrandCard = ({ id, name, imageUrl, offerCount, onDelete, onModify }) => {
       </div>
       {userRole === "admin" && showActions && (
         <div className="absolute -top-0 left-0 shadow-lg overflow-hidden w-full h-full cursor-pointer bg-[#1E1F53] opacity-95  flex flex-col justify-center items-center ">
-          <div className="w-full h-full flex ">
+          <div className="w-full h-[50%] flex ">
             {" "}
             <button
               onClick={(e) => handleActionClick(e, "modify")}

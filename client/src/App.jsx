@@ -420,7 +420,8 @@ function App() {
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>
-        <Footer />
+        {/* Conditionally render Footer based on userRole */}
+        {userRole !== "admin" && userRole !== "brand" && <Footer />}
         {isLoginOpen && (
           <Modal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)}>
             {/* Pass handleShowRegisterForm to LoginForm */}

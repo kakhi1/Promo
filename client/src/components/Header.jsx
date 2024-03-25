@@ -14,7 +14,7 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, userRole } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -32,6 +32,9 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
     navigate("/user-area"); // Update with your actual route
     setIsMobileMenuOpen(false); // Close mobile menu if open
   };
+
+  const showUserSpecificLinks = userRole !== "admin" && userRole !== "brand";
+
   return (
     <header className="bg-Bgcolor text-productBg w-full">
       <div className="flex justify-between p-5 items-center w-full">
@@ -155,39 +158,43 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
             </div>
           </div>
           <nav className="flex items-center md:ml-10 lg:text-sm text-xs w-full justify-around ">
-            <Link
-              to="/brands"
-              className=" hover:text-white flex-col items-center justify-center"
-            >
-              <RiShoppingCart2Line
-                size={25}
-                color="#DCEEF8"
-                className="w-full flex items-center"
-              />
-              <span>ბრენდი</span>
-            </Link>
-            <Link
-              to="/categories"
-              // onClick={onCategoriesClick}
-              className=" hover:text-white"
-            >
-              <HiOutlineBars3
-                size={25}
-                color="#DCEEF8"
-                className="w-full flex items-center"
-              />
-              <span>კატეგორიები</span>
-            </Link>
-            <Link to="/about" className=" hover:text-white">
-              <CiCircleInfo
-                size={25}
-                color="#DCEEF8"
-                className="w-full flex items-center"
-              />
-              <span>შესახებ</span>
-            </Link>
+            {showUserSpecificLinks && (
+              <>
+                <Link
+                  to="/brands"
+                  className=" hover:text-white flex-col items-center justify-center"
+                >
+                  <RiShoppingCart2Line
+                    size={25}
+                    color="#DCEEF8"
+                    className="w-full flex items-center"
+                  />
+                  <span>ბრენდი</span>
+                </Link>
+                <Link
+                  to="/categories"
+                  // onClick={onCategoriesClick}
+                  className=" hover:text-white"
+                >
+                  <HiOutlineBars3
+                    size={25}
+                    color="#DCEEF8"
+                    className="w-full flex items-center"
+                  />
+                  <span>კატეგორიები</span>
+                </Link>
+                <Link to="/about" className=" hover:text-white">
+                  <CiCircleInfo
+                    size={25}
+                    color="#DCEEF8"
+                    className="w-full flex items-center"
+                  />
+                  <span>შესახებ</span>
+                </Link>
+              </>
+            )}
             {/* Conditional rendering for User Area Link/Button */}
-            {user && (
+            {user && userRole === "user" && (
               <Link
                 to="/user-area" // Adjust the route as needed
                 className="hover:text-white flex-col items-center justify-center"

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Select from "react-select";
+import CreatableSelect from "react-select/creatable";
 import { FaPlus, FaTrash } from "react-icons/fa";
 
 import { useAuth } from "../context/AuthContext";
@@ -17,12 +18,10 @@ function ModifyOffers() {
   const [offerInfo, setOfferInfo] = useState({
     title: "",
     description: "",
-    category: null, // Now a single string, not String constructor
+    category: [], // Now a single string, not String constructor
     url: "", // Changed from 'url' to 'link' to match schema
     tags: [], // An array of strings, initialized as empty
     state: [], // An array of strings, initialized as empty
-    originalPrice: "", // New state for original price
-    discountPrice: "",
   });
   const [image, setImage] = useState(null);
   const [offerImages, setOfferImages] = useState([]); // Holds the File objects
@@ -31,6 +30,8 @@ function ModifyOffers() {
   const [states, setStates] = useState([]);
   const [tags, setTags] = useState([]);
   const [errors, setErrors] = useState({});
+  const [allStates, setAllStates] = useState([]);
+  const [visibleStates, setVisibleStates] = useState([]);
 
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -60,18 +61,65 @@ function ModifyOffers() {
     const newImagesPreview = imagesPreview.filter((_, i) => i !== index);
     setImagesPreview(newImagesPreview);
   };
+
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setOfferInfo((prev) => ({ ...prev, [name]: value }));
     setOfferInfo((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
       setErrors((prevErrors) => ({ ...prevErrors, [name]: undefined }));
     }
   };
 
+  const handleCreateTag = async (inputValue) => {
+    try {
+      const response = await fetch("http://localhost:5000/api/data/tags", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Add authorization if needed
+        },
+        body: JSON.stringify({ name: inputValue }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create tag");
+      }
+
+      const newTag = await response.json();
+      setTags((prevTags) => [
+        ...prevTags,
+        { value: newTag._id, label: newTag.name },
+      ]);
+      // Also update the selected tags in the offer to include the new tag
+      setOfferInfo((prev) => ({
+        ...prev,
+        tags: [...prev.tags, { value: newTag._id, label: newTag.name }],
+      }));
+    } catch (error) {
+      console.error("Error creating new tag:", error);
+    }
+  };
   const handleStateChange = (selectedOptions) => {
-    setOfferInfo((prev) => ({ ...prev, state: selectedOptions || [] }));
-    console.log("Updated states selected:", selectedOptions);
+    const isSelectAll = selectedOptions.some(
+      (option) => option.value === "all"
+    );
+
+    if (isSelectAll) {
+      // Select all states except the 'all' option
+      const allSelectedStates = allStates.filter(
+        (option) => option.value !== "all"
+      );
+      setOfferInfo((prev) => ({
+        ...prev,
+        state: allSelectedStates,
+      }));
+    } else {
+      // Select only the chosen states
+      setOfferInfo((prev) => ({
+        ...prev,
+        state: selectedOptions,
+      }));
+    }
   };
 
   const handleTagsChange = (selectedOptions) => {
@@ -79,11 +127,8 @@ function ModifyOffers() {
     console.log("Updated tags selected:", selectedOptions);
   };
 
-  const handleCategoryChange = (selectedOption) => {
-    setOfferInfo((prev) => ({
-      ...prev,
-      category: selectedOption ? selectedOption.value : "",
-    }));
+  const handleCategoryChange = (selectedOptions) => {
+    setOfferInfo((prev) => ({ ...prev, category: selectedOptions || [] }));
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -169,6 +214,16 @@ function ModifyOffers() {
 
         const categoriesData = await categoriesResponse.json();
         const statesData = await statesResponse.json();
+        const allStatesData = [
+          { value: "all", label: "ყველას არჩევა" },
+          ...statesData.map((state) => ({
+            value: state._id,
+            label: state.name,
+          })),
+        ];
+
+        setAllStates(allStatesData);
+        setVisibleStates(allStatesData);
         const tagsData = await tagsResponse.json();
 
         setAllCategories(
@@ -186,6 +241,7 @@ function ModifyOffers() {
     fetchData();
   }, []);
   console.log("userRole in Offersmodify:", userRole);
+  console.log(offerInfo);
 
   useEffect(() => {
     const fetchOfferDetails = async () => {
@@ -204,8 +260,13 @@ function ModifyOffers() {
             ...prev,
             title: offer.title,
             description: offer.description,
-            category:
-              allCategories.find((cat) => cat.value === offer.category) || null,
+            category: offer.category.map(
+              (catId) =>
+                allCategories.find((cat) => cat.value === catId) || {
+                  value: catId,
+                  label: "Unknown Category",
+                }
+            ),
             state: offer.state.map(
               (stateId) =>
                 states.find((st) => st.value === stateId) || {
@@ -221,8 +282,8 @@ function ModifyOffers() {
                 }
             ),
             url: offer.url,
-            originalPrice: offer.originalPrice.toString(),
-            discountPrice: offer.discountPrice.toString(),
+            // originalPrice: offer.originalPrice.toString(),
+            // discountPrice: offer.discountPrice.toString(),
           }));
 
           // Assuming your images URLs are stored in a way that needs transformation
@@ -293,7 +354,7 @@ function ModifyOffers() {
             )}
 
             {/* Original Price Input */}
-            <div className=" flex md:w-2/3 w-[93%] mt-4 justify-start items-center flex-col gap-4">
+            {/* <div className=" flex md:w-2/3 w-[93%] mt-4 justify-start items-center flex-col gap-4">
               <h1 className="text-start w-full  text-base font-semibold">
                 მიუთითე თავდაპირველი ფასი
               </h1>
@@ -305,9 +366,9 @@ function ModifyOffers() {
                 onChange={handleChange}
                 className="input input-bordered w-full mb-2 border-2 border-[#CED4DA] h-8 rounded-md pl-6"
               />
-            </div>
+            </div> */}
             {/* Discount Price Input */}
-            <div className=" flex md:w-2/3 w-[93%] mt-4 justify-start items-center flex-col gap-4">
+            {/* <div className=" flex md:w-2/3 w-[93%] mt-4 justify-start items-center flex-col gap-4">
               <h1 className="text-start w-full  text-base font-semibold">
                 მიუთითე ფასი ფასდაკლებით
               </h1>
@@ -319,7 +380,7 @@ function ModifyOffers() {
                 onChange={handleChange}
                 className="input input-bordered w-full mb-2 border-2 border-[#CED4DA] h-8 rounded-md pl-6"
               />
-            </div>
+            </div> */}
           </div>
 
           <div className="flex flex-col w-full md:w-2/3 md:flex-row h-full md:mt-6  gap-4 p-4">
@@ -352,15 +413,16 @@ function ModifyOffers() {
                   <h1 className="text-start w-full  text-base font-semibold">
                     მიუთითეთ თეგები
                   </h1>{" "}
-                  <Select
+                  <CreatableSelect
                     isMulti
                     name="tags"
                     options={tags}
                     value={offerInfo.tags}
+                    onChange={handleTagsChange}
+                    onCreateOption={handleCreateTag}
+                    placeholder="აირჩიეთ თეგი (ებ)..."
                     className="basic-multi-select w-full"
                     classNamePrefix="select"
-                    onChange={handleTagsChange}
-                    placeholder="აირჩიეთ თეგი (ებ)..."
                   />
                   {errors.tags && (
                     <span className="text-red-500 text-sm">{errors.tags}</span>
@@ -373,13 +435,14 @@ function ModifyOffers() {
                   <Select
                     isMulti
                     name="state"
+                    options={allStates}
                     value={offerInfo.state}
-                    options={states}
+                    getOptionLabel={(option) => option.label}
                     className="basic-multi-select w-full"
                     classNamePrefix="select"
                     onChange={handleStateChange}
                     placeholder="აირჩიე ქალაქი (ები)..."
-                  />{" "}
+                  />
                   {errors.state && (
                     <span className="text-red-500 text-sm">{errors.state}</span>
                   )}
@@ -405,14 +468,15 @@ function ModifyOffers() {
                     მიუთითეთ კატეგორია
                   </h1>
                   <Select
+                    isMulti
                     name="category"
                     options={allCategories}
                     value={offerInfo.category}
-                    className="input border-2 border-[#CED4DA] h-8 rounded-md w-full"
-                    classNamePrefix="select"
                     onChange={handleCategoryChange}
                     placeholder="კატეგორია"
-                  />{" "}
+                    className="basic-multi-select w-full"
+                    classNamePrefix="select"
+                  />
                   {errors.category && (
                     <span className="text-red-500 text-sm">
                       {errors.category}

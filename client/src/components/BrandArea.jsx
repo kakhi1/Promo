@@ -147,8 +147,8 @@ const BrandArea = () => {
   const displayedOffers = showAllBrands ? offers : offers.slice(0, 4);
 
   return (
-    <div className="pt-8 bg-white flex  md:flex-row flex-col">
-      <div className="flex flex-col items-center">
+    <div className="pt-8 w-full bg-white flex  md:flex-row flex-col items-center">
+      <div className="flex flex-col items-center md:w-3/4  w-full">
         <section className="w-full px-5">
           <div className="flex justify-between items-center py-4">
             <h2 className="text-lg font-semibold">არსებული შეთავაზებები</h2>
@@ -185,7 +185,7 @@ const BrandArea = () => {
             ))}
             <div
               onClick={navigateToAddOffers}
-              className="max-w-[280px] md:h-[285px] h-[200px] flex items-center justify-center cursor-pointer text-sm gap-4 shadow-lg flex-col bg-productBg text-[#5E5FB2]"
+              className="max-w-[280px] min-w-[200px] md:h-[285px] h-[200px] flex items-center justify-center cursor-pointer text-sm gap-4 shadow-lg flex-col bg-productBg text-[#5E5FB2]"
             >
               <FaPlus size={24} color="#5E5FB2" />
               <p>დამატება</p>
@@ -218,7 +218,7 @@ const BrandArea = () => {
           onDelete={handleDelete}
         />
       )}
-      <div className="space-y-4 md:w-[300px] w-full md:h-[200px]">
+      <div className=" md:w-1/4 w-full md:h-[200px] mt-4 md:mt-0">
         <div className="p-4 max-w-sm mx-auto bg-white rounded-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700">
           <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
             ანალიტიკა

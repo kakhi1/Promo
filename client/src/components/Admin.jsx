@@ -340,7 +340,7 @@ const Admin = () => {
               {/* Adjusted TailwindCSS classes for "Add Brand" div to match the new BrandCard size */}
               <div
                 onClick={() => navigateToAdd("adbrands")}
-                className="min-w-[140px] max-w-[280px] h-[144px] flex items-center justify-center cursor-pointer text-sm shadow-lg flex-col bg-productBg text-[#5E5FB2]"
+                className="min-w-[140px] max-w-[280px] h-[164px] flex items-center justify-center cursor-pointer text-sm shadow-lg flex-col bg-productBg text-[#5E5FB2]"
               >
                 <FaPlus size={24} color="#5E5FB2" />
                 <p>დამატება</p>

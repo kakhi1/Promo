@@ -143,7 +143,7 @@ const OffersCard = ({
       onClick={handleCardClick}
     >
       {userRole === "admin" && showActions && (
-        <div className="absolute -top-0 left-0 z-10 shadow-lg overflow-hidden w-full h-full cursor-pointer bg-[#1E1F53] opacity-95  flex flex-col justify-center items-center ">
+        <div className="absolute -top-0 left-1 z-10 shadow-lg overflow-hidden w-full h-full cursor-pointer bg-[#1E1F53] opacity-95  flex flex-col justify-center items-center ">
           <div className="w-full flex h-1/3 items-center">
             <button
               onClick={(e) => handleActionClick(e, "modify")}
@@ -204,14 +204,14 @@ const OffersCard = ({
         </div>
 
         <FaHeart
-          className={`absolute  top-0 right-0 cursor-pointer text-[25px] ${
+          className={`absolute  -top-4 -right-2 cursor-pointer text-[25px] ${
             isLiked ? "fill-red-500" : "stroke-current text-gray-500"
           }`}
           onClick={(event) => toggleFavorite(event)}
         />
       </div>
-      <div>
-        <h1 className=" text-xs font-semibold mt-2">{title}</h1>
+      <div className="flex justify-between">
+        <h1 className=" text-xs font-semibold mt-4">{title}</h1>
         {status === "pending" && (
           <div className="mt-2">
             <p className="text-red-500 font-bold">დასადასტურებელია</p>
@@ -219,18 +219,18 @@ const OffersCard = ({
         )}
         <div className="flex items-center justify-between  mt-2">
           <div className="flex items-start gap-2">
-            <div className="flex items-center gap-2">
-              {/* Conditional rendering based on discount availability */}
-              {showDiscountPrice && (
+            {/* <div className="flex items-center gap-2"> */}
+            {/* Conditional rendering based on discount availability */}
+            {/* {showDiscountPrice && (
                 <>
-                  {/* Discounted price */}
+              
                   <div className="flex items-center">
                     <span className="md:text-base text-xs font-semibold">
                       {discountPrice}
                     </span>
                     <FaLariSign className="md:text-sm text-[10px]" />
                   </div>
-                  {/* Original price, struck through */}
+                 
                   <div className="flex items-center">
                     <span className="text-xs md:text-sm font-semibold text-[12px]  text-[#FF6262] line-through ">
                       {originalPrice}
@@ -248,10 +248,10 @@ const OffersCard = ({
                   <FaLariSign className="md:text-sm text-[10px]" />
                 </div>
               )}
-            </div>
+            </div> */}
           </div>
 
-          <div className="flex items-center md:mt-1 mt-[2px]">
+          <div className="flex items-center md:mt-1 ">
             <IoEyeOutline className="text-base text-[#9D9D9D]" />
             <span className="ml-1 md:text-xs text-[8px] text-[#9D9D9D]">
               {views}

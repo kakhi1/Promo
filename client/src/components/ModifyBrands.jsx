@@ -152,22 +152,60 @@ const ModifyBrands = () => {
 
     if (isUpdateMode) {
       // Fetch existing brand data for update
+      // const fetchBrandById = async () => {
+      //   const response = await fetch(`http://localhost:5000/api/brands/${id}`);
+      //   const data = await response.json();
+      //   if (response.ok) {
+      //     setBrandInfo((prev) => ({
+      //       ...prev,
+      //       name: brand.name,
+      //       email: brand.email,
+      //       password: brand.password, // Assuming you have a way to securely fetch and handle the password
+      //       confirmPassword: brand.password, // You might not need this unless you're explicitly confirming changes
+      //       description: brand.description,
+      //       tags: brand.tags.map((t) => ({ value: t._id, label: t.name })),
+      //       category: { value: brand.category._id, label: brand.category.name },
+      //       url: brand.url,
+      //       state: brand.state.map((s) => ({ value: s._id, label: s.name })),
+      //     }));
+      //     if (data.image) {
+      //       setImage(`PathToYourImages/${data.image}`); // Adjust based on your setup
+      //     }
+      //   }
+      // };
       const fetchBrandById = async () => {
-        const response = await fetch(`http://localhost:5000/api/brands/${id}`);
-        const data = await response.json();
-        if (response.ok) {
-          setBrandInfo({
-            name: data.name,
-            email: data.email,
-            description: data.description,
-            tags: data.tags.map((t) => ({ value: t._id, label: t.name })),
-            category: { value: data.category._id, label: data.category.name },
-            url: data.url,
-            state: data.state.map((s) => ({ value: s._id, label: s.name })),
-          });
-          if (data.image) {
-            setImage(`PathToYourImages/${data.image}`); // Adjust based on your setup
+        try {
+          const response = await fetch(
+            `http://localhost:5000/api/brands/${id}`
+          );
+          if (!response.ok) throw new Error("Failed to fetch brand data");
+          const brand = await response.json();
+
+          // Assuming brand data includes an 'email' field
+          setBrandInfo((prev) => ({
+            ...prev,
+            name: brand.name,
+            email: brand.email,
+            // password: brand.password,
+            // confirmPassword: brand.password,
+            description: brand.description,
+            tags: brand.tags.map((t) => ({ value: t._id, label: t.name })),
+            category: { value: brand.category._id, label: brand.category.name },
+            url: brand.url,
+            state: brand.state.map((s) => ({ value: s._id, label: s.name })),
+            // Do not fetch or set passwords here for security reasons
+          }));
+
+          if (brand.imageUrl) {
+            const imageUrl = brand.imageUrl.startsWith("http")
+              ? brand.imageUrl
+              : `http://localhost:5000/${
+                  brand.imageUrl.startsWith("/") ? "" : "/"
+                }${brand.imageUrl}`;
+            setImage(imageUrl); // For displaying the existing image in the preview
           }
+        } catch (error) {
+          console.error("Error fetching brand details:", error);
         }
       };
       fetchBrandById();
@@ -244,7 +282,7 @@ const ModifyBrands = () => {
       formData.append("image", brandImage);
     }
 
-    const endpoint = `hhttp://localhost:5000/api/brands/update/${id}`;
+    const endpoint = `http://localhost:5000/api/brands/update/${id}`;
     const method = "PUT";
 
     try {
@@ -313,7 +351,7 @@ const ModifyBrands = () => {
       {" "}
       <div className="flex items-center flex-col justify-between h-full w-full ">
         <h1 className="text-start w-full md:ml-24 ml-8 text-base font-semibold md:mt-10">
-          ახალი ბრენდის დამატება
+          ბრენდის შესწორება
         </h1>
         <div className="flex md:flex-row flex-col justify-between md:h-full  w-full md:pt-10 pt-4">
           {/* first columm */}
@@ -353,6 +391,7 @@ const ModifyBrands = () => {
               <input
                 className="border-2 border-[#CED4DA] w-[220px] h-8 rounded-md pl-6"
                 type="email "
+                value={brandInfo.email}
                 name="email"
                 placeholder="მეილი"
                 onChange={handleChange}
@@ -363,8 +402,9 @@ const ModifyBrands = () => {
               <div>
                 <input
                   type={showPassword ? "text" : "password"}
+                  value={brandInfo.password}
                   name="password"
-                  placeholder="Password"
+                  placeholder="პაროლი"
                   onChange={handleChange}
                   className="border-2 border-[#CED4DA] w-[220px] h-8 rounded-md pl-6"
                 />
@@ -377,7 +417,7 @@ const ModifyBrands = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   name="confirmPassword"
-                  placeholder="Confirm Password"
+                  placeholder="გაიმეორეთ პაროლი"
                   onChange={handleChange}
                   className="border-2 border-[#CED4DA] w-[220px] h-8 rounded-md pl-6"
                 />
@@ -395,7 +435,6 @@ const ModifyBrands = () => {
                   type="text"
                   name="name"
                   placeholder="დასახელება"
-                  value={brandInfo.name}
                   onChange={handleChange}
                   className="input input-bordered md:w-1/3 w-[220px] mb-2 border-2 border-[#CED4DA]  h-8 rounded-md pl-6"
                 />
@@ -482,7 +521,7 @@ const ModifyBrands = () => {
                   onClick={handleSubmit}
                   className="btn btn-primary mt-4 bg-[#5E5FB2] lg:hover:bg-slate-400 text-xs font-normal text-white w-[156px] h-[46px]"
                 >
-                  გამოქვეყნება
+                  შესწორება
                 </button>
               </div>
             </div>

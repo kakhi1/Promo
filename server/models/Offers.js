@@ -5,7 +5,7 @@ const offerSchema = new mongoose.Schema({
   description: { type: String, required: true },
   // brand: { type: mongoose.Schema.Types.ObjectId, ref: "Brand", required: true }, // Reference to the Brand model
   createdAt: { type: Date, default: Date.now }, // Automatically sets the date when the offer is created
-  category: { type: String, required: true },
+  category: [String],
   state: [String],
   url: String,
   tags: [String], // Optional: Similar to Brand, you might want to tag offers for categorization
@@ -23,8 +23,8 @@ const offerSchema = new mongoose.Schema({
     default: "pending",
     enum: ["pending", "approved", "rejected"],
   },
-  originalPrice: { type: Number, required: true }, // Added field for original price
-  discountPrice: { type: Number },
+  // originalPrice: { type: Number, required: true }, // Added field for original price
+  // discountPrice: { type: Number },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Brand" }, // Optional: If you want to track the status of offers
   lastModified: { type: Date, default: Date.now }, // To track when an offer was last updated
 });

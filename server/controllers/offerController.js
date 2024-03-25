@@ -42,7 +42,8 @@ exports.createOffer = async (req, res) => {
     }
     let tags = req.body.tags ? parseInput(req.body.tags) : [];
     let state = req.body.state ? parseInput(req.body.state) : [];
-    const { originalPrice, discountPrice, brand } = req.body;
+    let category = req.body.category ? parseInput(req.body.category) : [];
+    const { brand } = req.body;
 
     // Adjusting for multiple files; map each file to its path
     const imageUrls = req.files ? req.files.map((file) => file.path) : [];
@@ -52,8 +53,7 @@ exports.createOffer = async (req, res) => {
       tags, // Use parsed tags
       state, // Use parsed state
       imageUrls,
-      originalPrice,
-      discountPrice,
+      category,
       isApproved: false,
       brand,
     };
@@ -216,20 +216,16 @@ exports.getOfferById = async (req, res) => {
 // Update an offer by ID
 exports.updateOfferById = async (req, res) => {
   try {
-    console.log("Updating offer with ID:", req.params.id);
-    console.log("Initial req.body:", req.body);
-    console.log("Initial req.files:", req.files);
-
     // Assuming req.body.tags and req.body.state are JSON strings of arrays
     let tags = JSON.parse(req.body.tags).map((tag) => tag.value);
     let state = JSON.parse(req.body.state).map((state) => state.value);
-
-    console.log("Parsed tags:", tags);
-    console.log("Parsed state:", state);
+    let category = req.body.category
+      ? JSON.parse(req.body.category).map((cat) => cat.value)
+      : [];
 
     // Prepare the update data with parsed tags and state,
     // spread the rest of req.body to retain other fields as they were
-    let updateData = { ...req.body, tags, state };
+    let updateData = { ...req.body, tags, state, category };
     // Remove the stringified fields that were parsed and replaced
     delete updateData["tags"];
     delete updateData["state"];
