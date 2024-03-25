@@ -21,7 +21,7 @@ const ModifyAd = ({ initialAdData }) => {
     const fetchAdData = async (adId) => {
       try {
         const response = await axios.get(
-          `https://promo-iror.onrender.com/api/ads/ads/${adId}`
+          `http://localhost:5000/api/ads/ads/${adId}`
         );
         const adData = response.data;
         setFormData({
@@ -33,7 +33,7 @@ const ModifyAd = ({ initialAdData }) => {
           imageUrlMobile: null, // Same as above
         });
 
-        const imageBaseUrl = "https://promo-iror.onrender.com/";
+        const imageBaseUrl = "http://localhost:5000/";
         // Set image previews if URLs are available, adjust these lines based on how you handle media URLs
         // Set full image URLs for previews if paths are available
         if (adData.imageUrlDesktop) {

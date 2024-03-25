@@ -25,6 +25,24 @@ router.get("/tags", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+// add new tags
+router.post("/tags", async (req, res) => {
+  const { name } = req.body;
+
+  const tag = new Tag({ name });
+
+  try {
+    const newTag = await tag.save();
+    res.status(201).json(newTag);
+  } catch (error) {
+    if (error.code === 11000) {
+      // MongoDB duplicate key error code
+      res.status(409).json({ message: "Tag name already exists." });
+    } else {
+      res.status(500).json({ message: error.message });
+    }
+  }
+});
 
 // Fetch all states
 router.get("/states", async (req, res) => {

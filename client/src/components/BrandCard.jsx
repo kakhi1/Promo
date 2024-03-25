@@ -32,7 +32,6 @@ const BrandCard = ({ id, name, imageUrl, offerCount, onDelete, onModify }) => {
 
   return (
     <div
-      div
       onClick={handleDivClick}
       className="brand-card bg-[#F1F1F1] shadow-lg overflow-hidden max-w-[280px] max-h-[164px] relative cursor-pointer "
     >

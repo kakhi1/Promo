@@ -1,7 +1,38 @@
-import React from "react";
+import React, { useState } from "react";
 import logo from "../assets/logo.png";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import Modal from "./Modal";
+import FooterLoginForm from "./FooterLoginForm";
 
 const Footer = () => {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const { login } = useAuth();
+  const [loginError, setLoginError] = useState("");
+  const handleLoginSuccess = () => {
+    setIsLoginModalOpen(false); // Close the modal on successful login
+  };
+  const handleLogin = async (email, password) => {
+    try {
+      const response = await fetch("http://localhost:5000/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Incorrect email or password"); // Triggers the catch block
+      }
+
+      const data = await response.json();
+      login({ ...data.entity, token: data.token });
+      navigate(data.entity.role === "admin" ? "/admin-area" : "/brand-area");
+      setIsLoginModalOpen(false);
+    } catch (error) {
+      console.error("Login error:", error);
+      setLoginError("გთხოვთ შეიყვანოთ სწორი მაილი ან პაროლი");
+    }
+  };
   return (
     <footer className="bg-Bgcolor text-productBg">
       <div className=" pt-4 px-4 text-base font-normal">
@@ -10,16 +41,34 @@ const Footer = () => {
             <div className=" hidden md:flex title-font font-medium items-center  mb-4 md:mb-0">
               <img src={logo} alt="Logo" className="h-10" />
             </div>
-            <h3 className="mt-2">პრომო - სლოგანის ადგილი</h3>
+            <h3 className="mt-2">იპოვე შეადარე დაზოგე </h3>
           </div>
           <div className="w-[60%] md:w-1/4 ">
-            <h3 className=""> შესახებ</h3>
+            <Link
+              to="/about"
+              className=""
+              // onClick={onCategoriesClick}
+            >
+              შესახებ
+            </Link>
             <h3 className=""> წესები და პირობები</h3>
             <h3 className="">კონფიდენციალობის პოლიტიკა</h3>
           </div>
           <div className="w-[60%] md:w-1/4 flex  flex-col items-start h-full">
             <h3 className=""> პარტნიორებისთვის</h3>
-            <h3 className="">შესვლა</h3>
+            <button onClick={() => setIsLoginModalOpen(true)} className="">
+              შესვლა
+            </button>
+
+            {isLoginModalOpen && (
+              <Modal
+                isOpen={isLoginModalOpen}
+                onClose={() => setIsLoginModalOpen(false)}
+              >
+                <FooterLoginForm onLoginSuccess={handleLoginSuccess} />
+                {loginError && <p className="text-red-500">{loginError}</p>}
+              </Modal>
+            )}
           </div>
           <div className="w-[60%] md:w-1/4">
             <h3 className="">

@@ -73,9 +73,9 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
                 ბრენდი
               </Link>
               <Link
-                // to="/categories"
+                to="/categories"
                 className="text-white p-2"
-                onClick={onCategoriesClick}
+                // onClick={onCategoriesClick}
               >
                 კატეგორიები
               </Link>
@@ -167,8 +167,8 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
               <span>ბრენდი</span>
             </Link>
             <Link
-              // to="/categories"
-              onClick={onCategoriesClick}
+              to="/categories"
+              // onClick={onCategoriesClick}
               className=" hover:text-white"
             >
               <HiOutlineBars3

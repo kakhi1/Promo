@@ -98,7 +98,7 @@ const dataRoutes = require("./routes/dataRoutes");
 const offerRoutes = require("./routes/offerRoutes");
 const brandRoutes = require("./routes/brandRoutes");
 const adRoutes = require("./routes/adRouter");
-
+const guestUserRoutes = require("./routes/guestUserRoutes");
 // Import the UserActivity model
 const UserActivity = require("./models/UserActivity");
 
@@ -110,7 +110,8 @@ app.use("/api/offers", offerRoutes);
 app.use("/api/data", dataRoutes);
 app.use("/api/brands", brandRoutes);
 app.use("/api/ads", adRoutes);
-
+// Use the guest user routes
+app.use("/api", guestUserRoutes);
 // Mock function to extract user ID from the request
 // Replace this logic with your actual user identification method
 function getUserIdFromRequest(req) {

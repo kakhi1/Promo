@@ -11,7 +11,7 @@ function Categories({ onSelectCategory }) {
   };
 
   useEffect(() => {
-    fetch("https://promo-iror.onrender.com/api/data/categories")
+    fetch("http://localhost:5000/api/data/categories")
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");

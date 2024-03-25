@@ -86,15 +86,12 @@ function Adbrands() {
     console.log([...formData.entries()]);
 
     try {
-      const response = await fetch(
-        "https://promo-iror.onrender.com/api/brands/create",
-        {
-          method: "POST",
-          body: formData,
-          // Include headers if your backend expects Content-Type for form data
-          // headers: { 'Content-Type': 'multipart/form-data' }, // Note: When using fetch with FormData, you don't need to set Content-Type header manually. It's set automatically.
-        }
-      );
+      const response = await fetch("http://localhost:5000/api/brands/create", {
+        method: "POST",
+        body: formData,
+        // Include headers if your backend expects Content-Type for form data
+        // headers: { 'Content-Type': 'multipart/form-data' }, // Note: When using fetch with FormData, you don't need to set Content-Type header manually. It's set automatically.
+      });
 
       const data = await response.json(); // Parse JSON response in any case to access the error message
 
@@ -122,14 +119,12 @@ function Adbrands() {
     const fetchData = async () => {
       try {
         const categoriesResponse = await fetch(
-          "https://promo-iror.onrender.com/api/data/categories"
+          "http://localhost:5000/api/data/categories"
         );
         const statesResponse = await fetch(
-          "https://promo-iror.onrender.com/api/data/states"
+          "http://localhost:5000/api/data/states"
         );
-        const tagsResponse = await fetch(
-          "https://promo-iror.onrender.com/api/data/tags"
-        );
+        const tagsResponse = await fetch("http://localhost:5000/api/data/tags");
 
         const categoriesData = await categoriesResponse.json();
         const statesData = await statesResponse.json();

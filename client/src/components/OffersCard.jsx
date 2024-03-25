@@ -47,7 +47,7 @@ const OffersCard = ({
 
     try {
       const response = await axios.get(
-        `https://promo-iror.onrender.com/api/users/${userId}/favorites/${id}`, // Adjusted URL to match the expected endpoint
+        `http://localhost:5000/api/users/${userId}/favorites/${id}`, // Adjusted URL to match the expected endpoint
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -73,7 +73,7 @@ const OffersCard = ({
       const method = isLiked ? "DELETE" : "POST";
       const response = await axios({
         method,
-        url: `https://promo-iror.onrender.com/api/users/${userId}/favorites/${id}`,
+        url: `http://localhost:5000/api/users/${userId}/favorites/${id}`,
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -108,12 +108,9 @@ const OffersCard = ({
       return;
     }
     try {
-      await fetch(
-        `https://promo-iror.onrender.com/api/offers/increment-views/${id}`,
-        {
-          method: "POST",
-        }
-      );
+      await fetch(`http://localhost:5000/api/offers/increment-views/${id}`, {
+        method: "POST",
+      });
       navigate(`/offer-card/${id}`);
     } catch (error) {
       console.error("Error incrementing views:", error);
