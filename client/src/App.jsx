@@ -39,6 +39,8 @@ import ConditionalTags from "./components/ConditionalTags ";
 import ResetPasswordPage from "./components/ResetPasswordPage";
 import WelcomeModal from "./components/WelcomeModal";
 import InterestsModal from "./components/InterestsModal";
+import OffersCategory from "./components/OffersCategory";
+
 function App() {
   const { user, isAuthenticated, userRole } = useAuth();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -339,6 +341,10 @@ function App() {
                   />
                 )
               }
+            />
+            <Route
+              path="/offers-category/:categoryId"
+              element={<OffersCategory />}
             />
             <Route
               path="/"

@@ -1,13 +1,33 @@
+// export default Categories;
 import React, { useState, useEffect } from "react";
+import { FaBeer, FaApple, FaCar, FaTree, FaCameraRetro } from "react-icons/fa"; // Import the icons you need
+import { MdElectricBolt, MdOutlineSportsSoccer } from "react-icons/md";
+import { RiShirtFill } from "react-icons/ri";
+import { GiSofa, GiMusicalKeyboard } from "react-icons/gi";
+import { SiBookstack } from "react-icons/si";
+import { FaComputer } from "react-icons/fa6";
+import { CiMobile3 } from "react-icons/ci";
+import { TbMoodKid } from "react-icons/tb";
+import {
+  MdHealthAndSafety,
+  MdToys,
+  MdElectricalServices,
+  MdOutlineSportsTennis,
+} from "react-icons/md";
+import { IoFastFoodOutline } from "react-icons/io5";
+import { SiArtifacthub } from "react-icons/si";
+import { FaBlenderPhone } from "react-icons/fa";
+import { PiPants } from "react-icons/pi";
+import { MdOutlineGirl } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
-function Categories({ onSelectCategory }) {
+function Categories() {
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
 
-  const handleSelectCategory = (category) => {
-    setSelectedCategory(category.name);
-    setCurrentPage(1); // Reset pagination to the first page
-    // Optionally, you might want to clear out the current brands list here
+  const navigate = useNavigate();
+
+  const handleCategorySelect = (category) => {
+    navigate(`/offers-category/${category._id}`); // Navigate to OffersCategory component with the category ID
   };
 
   useEffect(() => {
@@ -29,31 +49,49 @@ function Categories({ onSelectCategory }) {
       });
   }, []);
 
+  const getIcon = (categoryName) => {
+    const icons = {
+      ელექტრონიკა: MdElectricBolt,
+      მოდა: RiShirtFill,
+      სპორტი: MdOutlineSportsSoccer,
+      "სახლის დეკორი": GiSofa,
+      წიგნები: SiBookstack,
+      კომპიუტერები: FaComputer,
+      ტელეფონები: CiMobile3,
+      "საბავშვო საქონელი": TbMoodKid,
+      "ჯანმრთელობა და სილამაზე": MdHealthAndSafety,
+      ხელოვნება: SiArtifacthub,
+      "ელექტრო ტექნიკა": MdElectricalServices,
+      "სამზარეულოს ნივთები": FaBlenderPhone,
+      სათამაშოები: MdToys,
+      "სპორტული ინვენტარი": MdOutlineSportsTennis,
+      "მუსიკალური ინსტრუმენტები": GiMusicalKeyboard,
+      "გარემოს დაცვა": FaTree,
+      სამოსელი: PiPants,
+      ფოტოტექნიკა: FaCameraRetro,
+      კოსმეტიკა: MdOutlineGirl,
+    };
+    return icons[categoryName] || FaBeer || FaApple; // Default icon if no match found
+  };
+
   return (
-    <div
-      className="categories-container"
-      style={{ maxHeight: "400px", overflowY: "scroll" }}
-    >
-      <h2 className=" flex items-center my-4 ml-4">კატეგორიები</h2>
-      <ul style={{ listStyleType: "none", padding: 0 }}>
-        {categories.map((category) => (
-          <li
-            key={category._id}
-            onClick={() => onSelectCategory(category)}
-            style={{
-              cursor: "pointer",
-              padding: "10px",
-              borderBottom: "1px solid #ccc",
-              background: "#f9f9f9",
-              ":hover": {
-                background: "#e2e2e2",
-              },
-            }}
-          >
-            {category.name}
-          </li>
-        ))}
-      </ul>
+    <div className="overflow-y-scroll">
+      <h2 className="text-lg font-semibold p-4">კატეგორიები</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 p-4">
+        {categories.map((category) => {
+          const Icon = getIcon(category.name);
+          return (
+            <div
+              key={category._id}
+              onClick={() => handleCategorySelect(category)}
+              className="flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer bg-[#dfecff]"
+            >
+              <Icon className="text-2xl mb-2" />
+              <span>{category.name}</span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
