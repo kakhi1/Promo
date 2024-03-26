@@ -31,7 +31,7 @@ function RegisterForm() {
 
   const checkGuestUser = (ip) => {
     axios
-      .get(`http://localhost:5000/api/check-modal/${ip}`)
+      .get(`https://promo-iror.onrender.com/api/check-modal/${ip}`)
       .then((response) => {
         setIsWelcomeModalOpen(response.data.showModal);
         // Handle other actions based on the guest user check
@@ -42,7 +42,7 @@ function RegisterForm() {
   const fetchStateByIpAddress = async (ipAddress) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/state/${ipAddress}`
+        `https://promo-iror.onrender.com/api/state/${ipAddress}`
       );
       if (response.status === 200) {
         console.log(
@@ -79,11 +79,14 @@ function RegisterForm() {
         state,
       };
       console.log(payload);
-      const response = await fetch("http://localhost:5000/api/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        "https://promo-iror.onrender.com/api/users/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();

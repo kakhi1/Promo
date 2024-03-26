@@ -32,7 +32,7 @@ const UserArea = () => {
     const fetchBrands = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/users/${userId}/suggested-brands`
+          `https://promo-iror.onrender.com/api/users/${userId}/suggested-brands`
         );
         setBrands(response.data);
       } catch (error) {
@@ -52,7 +52,7 @@ const UserArea = () => {
       try {
         // Adjust the URL as needed to include the appropriate user ID
         const response = await fetch(
-          `http://localhost:5000/api/users/${userId}/suggestions`
+          `https://promo-iror.onrender.com/api/users/${userId}/suggestions`
         );
         if (!response.ok) throw new Error("Network response was not ok");
         const data = await response.json();
@@ -89,7 +89,7 @@ const UserArea = () => {
     if (isAuthenticated && userId) {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/users/${userId}/favorites`,
+          `https://promo-iror.onrender.com/api/users/${userId}/favorites`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -138,7 +138,10 @@ const UserArea = () => {
                     id={offer._id}
                     imageUrls={offer.imageUrls.map(
                       (url) =>
-                        `http://localhost:5000/${url.replace(/\\/g, "/")}`
+                        `https://promo-iror.onrender.com/${url.replace(
+                          /\\/g,
+                          "/"
+                        )}`
                     )} // Adjust URL path as needed
                     title={offer.title}
                     originalPrice={offer.originalPrice}
@@ -177,7 +180,10 @@ const UserArea = () => {
                     id={offer._id}
                     imageUrls={offer.imageUrls.map(
                       (url) =>
-                        `http://localhost:5000/${url.replace(/\\/g, "/")}`
+                        `https://promo-iror.onrender.com/${url.replace(
+                          /\\/g,
+                          "/"
+                        )}`
                     )}
                     title={offer.title}
                     originalPrice={offer.originalPrice}
@@ -212,7 +218,7 @@ const UserArea = () => {
                 ? brands.slice(0, 4)
                 : brands.slice(0, 8)
               ).map((brand) => {
-                const baseUrl = "http://localhost:5000/";
+                const baseUrl = "https://promo-iror.onrender.com/";
                 const imagePath = brand.imageUrl.replace(/\\/g, "/"); // Replace backslashes with forward slashes if needed
                 const fullImageUrl = baseUrl + imagePath;
 

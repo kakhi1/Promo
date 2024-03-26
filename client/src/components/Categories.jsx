@@ -31,7 +31,7 @@ function Categories() {
   };
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/data/categories")
+    fetch("https://promo-iror.onrender.com/api/data/categories")
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");

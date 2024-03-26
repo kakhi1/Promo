@@ -13,7 +13,7 @@ const OffersCategory = () => {
   const offersPerPage = 12;
   const { categoryId } = useParams();
 
-  const baseUrl = "http://localhost:5000/"; // Adjust this to your actual base URL
+  const baseUrl = "https://promo-iror.onrender.com/"; // Adjust this to your actual base URL
 
   useEffect(() => {
     window.addEventListener("resize", () =>
@@ -34,7 +34,7 @@ const OffersCategory = () => {
 
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/offers?category=${categoryId}`
+          `https://promo-iror.onrender.com/api/offers?category=${categoryId}`
         );
         if (response.data && response.data.data) {
           setOffers(response.data.data);

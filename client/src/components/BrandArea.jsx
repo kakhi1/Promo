@@ -31,7 +31,7 @@ const BrandArea = () => {
     const fetchMetrics = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/brands/${brandId}/metrics`
+          `https://promo-iror.onrender.com/api/brands/${brandId}/metrics`
         );
         if (!response.ok) throw new Error("Network response was not ok");
         const data = await response.json();
@@ -52,7 +52,7 @@ const BrandArea = () => {
       setLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:5000/api/brands/${brandId}/offers-favorites-count`
+          `https://promo-iror.onrender.com/api/brands/${brandId}/offers-favorites-count`
         ); // Adjust the URL as necessary
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -102,7 +102,7 @@ const BrandArea = () => {
 
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/brands/${brandId}`
+          `https://promo-iror.onrender.com/api/brands/${brandId}`
         );
         setBrandDetails(response.data);
       } catch (error) {
@@ -121,7 +121,7 @@ const BrandArea = () => {
   const handleDelete = async () => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/offers/${selectedOffer._id}`
+        `https://promo-iror.onrender.com/api/offers/${selectedOffer._id}`
       );
       setBrandDetails({
         ...brandDetails,
@@ -135,7 +135,7 @@ const BrandArea = () => {
     }
   };
 
-  const baseUrl = "http://localhost:5000/";
+  const baseUrl = "https://promo-iror.onrender.com/";
   const navigateToAddOffers = () => {
     navigate("/adoffers");
   };

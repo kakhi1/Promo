@@ -12,7 +12,7 @@ function Tags({ onTagSelect }) {
   };
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/data/tags")
+    fetch("https://promo-iror.onrender.com/api/data/tags")
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");

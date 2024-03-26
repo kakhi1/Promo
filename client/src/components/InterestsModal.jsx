@@ -34,7 +34,7 @@ function InterestsModal({ isOpen, onClose, onSubmit, tagsList }) {
     for (const tag of newTagsToCreate) {
       try {
         const response = await axios.post(
-          "http://localhost:5000/api/data/tags",
+          "https://promo-iror.onrender.com/api/data/tags",
           {
             name: tag.label,
           }

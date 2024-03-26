@@ -14,13 +14,16 @@ function FooterLoginForm({ onLoginSuccess, onLoginError }) {
     setLoginError(""); // Clear any previous login errors
 
     try {
-      const response = await fetch("http://localhost:5000/api/users/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        "https://promo-iror.onrender.com/api/users/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("შეამოწმეთ პაროლი ან მომხმარებელი ");

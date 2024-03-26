@@ -108,7 +108,7 @@ const AdAdd = () => {
     });
 
     try {
-      await axios.post("http://localhost:5000/api/ads", data, {
+      await axios.post("https://promo-iror.onrender.com/api/ads", data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

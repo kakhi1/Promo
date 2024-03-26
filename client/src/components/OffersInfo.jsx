@@ -71,7 +71,7 @@ const OffersInfo = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/offers/visit/${offerId}`
+        `https://promo-iror.onrender.com/api/offers/visit/${offerId}`
       );
     } catch (error) {
       console.error("Failed to increment visit:", error);
@@ -97,7 +97,7 @@ const OffersInfo = () => {
 
     try {
       await axios.post(
-        `http://localhost:5000/api/offers/${offerId}/share`,
+        `https://promo-iror.onrender.com/api/offers/${offerId}/share`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -150,7 +150,7 @@ const OffersInfo = () => {
       try {
         // Fetch offer details
         const offerResponse = await axios.get(
-          `http://localhost:5000/api/offers/${offerId}`
+          `https://promo-iror.onrender.com/api/offers/${offerId}`
         );
         setOffer(offerResponse.data);
         // Check if the offer is in the user's favorites if authenticated
@@ -172,7 +172,7 @@ const OffersInfo = () => {
       const checkFavoriteStatus = async () => {
         try {
           const response = await axios.get(
-            `http://localhost:5000/api/users/${userId}/favorites/${offerId}`,
+            `https://promo-iror.onrender.com/api/users/${userId}/favorites/${offerId}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -195,7 +195,7 @@ const OffersInfo = () => {
       return;
     }
 
-    const url = `http://localhost:5000/api/users/${userId}/favorites/${offerId}`; // Ensure the offerId is used here
+    const url = `https://promo-iror.onrender.com/api/users/${userId}/favorites/${offerId}`; // Ensure the offerId is used here
     const method = isLiked ? "delete" : "post";
 
     try {
@@ -229,8 +229,8 @@ const OffersInfo = () => {
       setLoading(true); // Assuming you have a loading state
       setError(null); // Assuming you have an error state
       try {
-        const offerUrl = `http://localhost:5000/api/offers/${offerId}`;
-        const brandUrl = `http://localhost:5000/api/brands/offers/${offerId}`;
+        const offerUrl = `https://promo-iror.onrender.com/api/offers/${offerId}`;
+        const brandUrl = `https://promo-iror.onrender.com/api/brands/offers/${offerId}`;
 
         const [offerResponse, brandResponse] = await Promise.all([
           fetch(offerUrl),
@@ -300,7 +300,7 @@ const OffersInfo = () => {
   const fetchBrands = async (brandId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/brands/${brandId}/suggestions`
+        `https://promo-iror.onrender.com/api/brands/${brandId}/suggestions`
       );
       const data = await response.json();
       setBrands(data.data);
@@ -336,7 +336,7 @@ const OffersInfo = () => {
     setFetchOffersError(null);
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/offers/suggestions/${offerId}`
+        `https://promo-iror.onrender.com/api/offers/suggestions/${offerId}`
       );
       setSuggestedOffers(response.data); // Assuming the API returns an array of offers directly
       setIsFetchingOffers(false);
@@ -365,7 +365,7 @@ const OffersInfo = () => {
   const showDiscountPrice =
     offer.discountPrice && offer.discountPrice < offer.originalPrice;
   // Construct the full URL for the image
-  const baseUrl = "http://localhost:5000/";
+  const baseUrl = "https://promo-iror.onrender.com/";
   // const imagePath = offer.imageUrl.replace(/\\/g, "/");
   // const fullImageUrl = baseUrl + imagePath;
   if (!offer || !offer.imageUrls || offer.imageUrls.length === 0) {
@@ -593,7 +593,7 @@ const OffersInfo = () => {
               ? brands.slice(0, 4)
               : brands.slice(0, 8)
             ).map((brand) => {
-              const baseUrl = "http://localhost:5000/";
+              const baseUrl = "https://promo-iror.onrender.com/";
               const imagePath = brand.imageUrl.replace(/\\/g, "/"); // Replace backslashes with forward slashes if needed
               const fullImageUrl = baseUrl + imagePath;
 

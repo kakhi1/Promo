@@ -21,7 +21,7 @@ const ModifyAd = ({ initialAdData }) => {
     const fetchAdData = async (adId) => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/ads/ads/${adId}`
+          `https://promo-iror.onrender.com/api/ads/ads/${adId}`
         );
         const adData = response.data;
         setFormData({
@@ -33,7 +33,7 @@ const ModifyAd = ({ initialAdData }) => {
           imageUrlMobile: null, // Same as above
         });
 
-        const imageBaseUrl = "http://localhost:5000/";
+        const imageBaseUrl = "https://promo-iror.onrender.com/";
         // Set image previews if URLs are available, adjust these lines based on how you handle media URLs
         // Set full image URLs for previews if paths are available
         if (adData.imageUrlDesktop) {
@@ -146,11 +146,15 @@ const ModifyAd = ({ initialAdData }) => {
     });
     try {
       // Use PUT or PATCH request to update the ad, depending on your API
-      await axios.patch(`http://localhost:5000/api/ads/ads/${adId}`, data, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      await axios.patch(
+        `https://promo-iror.onrender.com/api/ads/ads/${adId}`,
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       navigate(-1); // Navigate back or to a success page
     } catch (error) {
       // Handle error

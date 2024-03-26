@@ -66,7 +66,7 @@ const Home = ({
   useEffect(() => {
     const fetchOffersAndBrands = async () => {
       setLoading(true);
-      let offersUrl = "http://localhost:5000/api/offers";
+      let offersUrl = "https://promo-iror.onrender.com/api/offers";
       const offersParams = new URLSearchParams();
 
       if (selectedCategory && selectedCategory._id) {
@@ -105,7 +105,7 @@ const Home = ({
   useEffect(() => {
     const fetchOffersAndBrands = async () => {
       setLoading(true);
-      let offersUrl = "http://localhost:5000/api/offers";
+      let offersUrl = "https://promo-iror.onrender.com/api/offers";
       const offersParams = new URLSearchParams();
 
       if (selectedCategory && selectedCategory._id) {
@@ -141,7 +141,7 @@ const Home = ({
     if (isAuthenticated && userId) {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/users/${userId}/favorites`,
+          `https://promo-iror.onrender.com/api/users/${userId}/favorites`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -159,8 +159,8 @@ const Home = ({
   useEffect(() => {
     const fetchOffersAndBrands = async () => {
       setLoading(true);
-      const offersUrl = "http://localhost:5000/api/offers";
-      const brandsUrl = "http://localhost:5000/api/brands";
+      const offersUrl = "https://promo-iror.onrender.com/api/offers";
+      const brandsUrl = "https://promo-iror.onrender.com/api/brands";
 
       try {
         const [offersResult, brandsResult] = await Promise.all([
@@ -193,7 +193,7 @@ const Home = ({
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  const baseUrl = "http://localhost:5000/";
+  const baseUrl = "https://promo-iror.onrender.com/";
   return (
     <div className="pt-8 bg-white w-full ">
       {/* Responsive Grid Layout */}
@@ -272,7 +272,7 @@ const Home = ({
             <div className="grid grid-cols-2 md:grid-cols-4 xl2:grid-cols-6 gap-4">
               {filteredBrands.map((brand) => {
                 const imagePath = brand.imageUrl.replace(/\\/g, "/");
-                const fullImageUrl = `http://localhost:5000/${imagePath}`;
+                const fullImageUrl = `https://promo-iror.onrender.com/${imagePath}`;
 
                 return (
                   <BrandCard

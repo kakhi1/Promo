@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
       try {
         console.log("Sending token for verification");
         const response = await fetch(
-          "http://localhost:5000/api/users/verify-Token",
+          "https://promo-iror.onrender.com/api/users/verify-Token",
           {
             method: "POST",
             headers: {

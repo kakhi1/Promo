@@ -78,12 +78,12 @@ function App() {
       .catch((err) => console.error("Error fetching IP address:", err));
 
     axios
-      .get("http://localhost:5000/api/data/states")
+      .get("https://promo-iror.onrender.com/api/data/states")
       .then((res) => setStatesList(res.data))
       .catch((err) => console.error("Error fetching states:", err));
 
     axios
-      .get("http://localhost:5000/api/data/tags")
+      .get("https://promo-iror.onrender.com/api/data/tags")
       .then((res) => setTagsList(res.data))
       .catch((err) => console.error("Error fetching tags:", err));
   }, []);
@@ -116,7 +116,10 @@ function App() {
 
   const saveUserDetails = async () => {
     try {
-      await axios.post("http://localhost:5000/api/guest-user", userDetails);
+      await axios.post(
+        "https://promo-iror.onrender.com/api/guest-user",
+        userDetails
+      );
       console.log("User details saved successfully", userDetails);
     } catch (error) {
       throw error; // Propagate the error to be handled in the calling function
@@ -142,7 +145,7 @@ function App() {
 
   const checkGuestUser = (ip) => {
     axios
-      .get(`http://localhost:5000/api/check-modal/${ip}`)
+      .get(`https://promo-iror.onrender.com/api/check-modal/${ip}`)
       .then((response) => {
         // Only show the welcome modal if the IP does not exist in the database
         setIsWelcomeModalOpen(response.data.showModal);
@@ -157,7 +160,7 @@ function App() {
   const logUserActivity = async () => {
     try {
       // Make an API call to log user activity
-      await axios.post("http://localhost:5000/api/user-activity", {
+      await axios.post("https://promo-iror.onrender.com/api/user-activity", {
         activity: "App Loaded",
       });
     } catch (error) {

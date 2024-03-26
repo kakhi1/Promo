@@ -22,7 +22,7 @@ const Brands = ({ selectedCategory, selectedTag, searchQuery }) => {
   useEffect(() => {
     const fetchBrands = async () => {
       setLoading(true);
-      let url = "http://localhost:5000/api/brands";
+      let url = "https://promo-iror.onrender.com/api/brands";
 
       // Initialize URLSearchParams to handle query parameters.
       const params = new URLSearchParams();
@@ -100,7 +100,7 @@ const Brands = ({ selectedCategory, selectedTag, searchQuery }) => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 xl2:grid-cols-6 gap-4">
             {currentBrands.map((brand) => {
-              const baseUrl = "http://localhost:5000/";
+              const baseUrl = "https://promo-iror.onrender.com/";
               const imagePath = brand.imageUrl.replace(/\\/g, "/");
               const fullImageUrl = baseUrl + imagePath;
 
