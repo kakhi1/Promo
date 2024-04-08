@@ -171,15 +171,19 @@ exports.findOffersByViews = async (req, res) => {
   try {
     const brandId = req.params.brandId;
 
-    // Find the brand to get its offers array
-    const brand = await Brand.findById(brandId).populate("offers").exec();
+    // Find the brand and populate only approved offers
+    const brand = await Brand.findById(brandId)
+      .populate({
+        path: "offers",
+        match: { status: "approved" }, // Only get offers that are approved
+      })
+      .exec();
+
     if (!brand) {
       return res.status(404).send({ message: "Brand not found" });
     }
 
-    // Assuming the offers are populated correctly, they should be sorted by views
-    // However, MongoDB doesn't allow direct sorting of populated documents in this manner
-    // So, we sort them in JavaScript after populating
+    // Offers are now filtered by approved status, next, sort them by views
     const sortedOffers = brand.offers.sort((a, b) => b.views - a.views);
 
     res.json(sortedOffers);

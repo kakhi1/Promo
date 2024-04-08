@@ -143,42 +143,6 @@ exports.register = async (req, res) => {
   }
 };
 
-// exports.register = async (req, res) => {
-//   try {
-//     const { name, username, email, password, mobile, state } = req.body;
-//     console.log("Received state name for registration:", state);
-
-//     // Additional logic like checking if the user exists, hashing the password, etc.
-
-//     const stateDocument = await State.findOne({ name: state });
-//     console.log("State found:", stateDocument);
-
-//     if (!stateDocument) {
-//       return res.status(400).json({ message: "Invalid state name provided" });
-//     }
-
-//     const salt = await bcrypt.genSalt(10);
-//     const hashedPassword = await bcrypt.hash(password, salt);
-
-//     const user = new User({
-//       name,
-//       username,
-//       email,
-//       password: hashedPassword,
-//       mobile,
-//       state: stateDocument._id,
-//     });
-
-//     await user.save();
-//     res.status(201).json({ message: "User created successfully", user });
-//   } catch (error) {
-//     console.error("Registration error:", error);
-//     res
-//       .status(500)
-//       .json({ message: "Error registering user", error: error.message });
-//   }
-// };
-
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -353,8 +317,11 @@ async function suggestOffersForUser(userId) {
   // Extract favorite offer IDs to exclude them from the suggestions
   const favoriteOfferIds = user.favorites.map((favorite) => favorite._id);
 
-  // Initialize the query for finding offers
-  let query = { _id: { $nin: favoriteOfferIds } }; // Exclude favorites from the results
+  // Initialize the query for finding offers, excluding favorites and ensuring the offer is approved
+  let query = {
+    _id: { $nin: favoriteOfferIds },
+    status: "approved", // Ensure only approved offers are fetched
+  };
 
   // Attempt to find offers matching the user's state first, excluding favorites
   let offers = await Offer.find({
@@ -501,5 +468,36 @@ exports.resetPassword = async (req, res) => {
   } catch (error) {
     console.error("Error in resetPassword:", error);
     res.status(500).json({ message: "An internal error occurred." });
+  }
+};
+
+// get  all  favirets
+exports.getPopularFavorites = async (req, res) => {
+  try {
+    // Aggregate to find the most favorited offers across all users
+    const favorites = await User.aggregate([
+      { $unwind: "$favorites" },
+      { $group: { _id: "$favorites", count: { $sum: 1 } } },
+      { $sort: { count: -1 } }, // Sort by count in descending order
+      { $limit: 10 }, // Optional: limit to top 10, you can adjust as needed
+    ]);
+
+    // Extract offer IDs
+    const offerIds = favorites.map((fav) => fav._id);
+
+    // Find offers by their IDs
+    const offers = await Offer.find({ _id: { $in: offerIds } });
+
+    // Sort offers based on the count order
+    const sortedOffers = offerIds.map((id) =>
+      offers.find((offer) => offer._id.equals(id))
+    );
+
+    res.json(sortedOffers);
+  } catch (error) {
+    res.status(500).send({
+      message: "An error occurred while fetching favorite offers.",
+      error: error,
+    });
   }
 };

@@ -1,4 +1,3 @@
-// controllers/guestUserController.js
 const GuestUser = require("../models/GuestUser");
 
 exports.checkGuestUser = async (req, res) => {
@@ -17,13 +16,10 @@ exports.checkGuestUser = async (req, res) => {
 };
 
 exports.addOrUpdateGuestUser = async (req, res) => {
-  const { age, gender, tags, ipAddress, state: stateInput } = req.body;
+  const { ipAddress, state } = req.body;
 
   try {
-    // Directly assign stateInput to state if it's a single value or use parseInput if it might be an array
-    let state = stateInput;
-
-    const update = { age, gender, tags, state }; // Include state in the update directly
+    const update = { state };
 
     const options = { new: true, upsert: true, runValidators: true };
 
@@ -43,7 +39,7 @@ exports.addOrUpdateGuestUser = async (req, res) => {
 exports.fetchStateByIpAddress = async (req, res) => {
   try {
     const ipAddress = req.params.ipAddress;
-    const guestUser = await GuestUser.findOne({ ipAddress: ipAddress });
+    const guestUser = await GuestUser.findOne({ ipAddress });
 
     if (!guestUser) {
       return res.status(404).send("GuestUser not found");

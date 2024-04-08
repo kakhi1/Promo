@@ -136,6 +136,9 @@ router.get("/favorites/count", async (req, res) => {
   }
 });
 
+// Add a route for fetching popular favorites
+router.get("/popular-favorites", userController.getPopularFavorites);
+
 router.post("/forgot-password", userController.forgotPassword);
 router.post("/reset-password/:token", userController.resetPassword);
 
