@@ -8,6 +8,7 @@ import { LuUser } from "react-icons/lu";
 import { BsXSquare } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 import { BiChevronDown } from "react-icons/bi";
+import { FaRegHeart } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 
 function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
@@ -36,13 +37,13 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
   const showUserSpecificLinks = userRole !== "admin" && userRole !== "brand";
 
   return (
-    <header className="bg-Bgcolor text-productBg w-full">
+    <header className="bg-[#17b978] text-productBg w-full">
       <div className="flex justify-between p-5 items-center w-full">
         {/* Logo always visible */}
         <Link
           onClick={onLogoClick}
           to="/"
-          className="flex title-font font-medium items-center text-white mb-4 md:mb-0 w-1/4"
+          className="flex title-font font-medium items-center text-white mb-4 md:mb-0  w-[200px]"
         >
           <img src={logo} alt="Logo" className="h-10" />
         </Link>
@@ -57,7 +58,7 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
         />
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="absolute top-0 right-0 w-[60%] bg-Bgcolor p-5 md:hidden z-50">
+          <div className="absolute top-0 right-0 w-[60%] bg-[#17b978] p-5 md:hidden z-50">
             <div className="flex justify-end">
               {/* Close Icon */}
               <BsXSquare
@@ -89,6 +90,14 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
               >
                 შესახებ
               </Link>
+              <Link
+                to="favorites"
+                className="text-white p-2"
+                onClick={toggleMobileMenu}
+              >
+                ფავორიტები
+              </Link>
+
               {user && (
                 <Link
                   to="/user-area" // Adjust the route as needed
@@ -125,45 +134,11 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
         )}
 
         {/* Desktop Menu including search bar */}
-        <div className="hidden md:flex w-3/4 justify-end  items-center">
-          {/* Search Bar */}
-          <div className="md:ml-auto md:mr-3 hidden md:block h-[40px]">
-            <div className="relative h-full ">
-              <input
-                onChange={(e) => onSearch(e.target.value)}
-                className="w-full rounded-2xl md:w-64 px-4 py-1 pl-10 border border-productBg bg-Bgcolor text-productBg placeholder-productBg text-sm font-normal h-full"
-                placeholder="ძებნა..."
-              />
-              <svg
-                className="absolute right-4 bottom-[8px] text-productBg"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-                style={{ width: "20px", height: "20px" }}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15 15l5.79 5.79"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 17a7 7 0 100-14 7 7 0 000 14z"
-                />
-              </svg>
-            </div>
-          </div>
-          <nav className="flex items-center md:ml-10 lg:text-sm text-xs w-full justify-around ">
+        <div className="hidden md:flex  w-full justify-end  items-center">
+          <nav className="flex items-center md:ml-10 lg:text-sm text-xs w-full md:gap-10 ">
             {showUserSpecificLinks && (
               <>
-                <Link
-                  to="/brands"
-                  className=" hover:text-white flex-col items-center justify-center"
-                >
+                <Link to="/brands" className=" hover:text-white flex-col  ">
                   <RiShoppingCart2Line
                     size={25}
                     color="#DCEEF8"
@@ -183,16 +158,60 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
                   />
                   <span>კატეგორიები</span>
                 </Link>
-                <Link to="/about" className=" hover:text-white">
-                  <CiCircleInfo
+                <Link
+                  to="/favorites"
+                  // onClick={onCategoriesClick}
+                  className=" hover:text-white"
+                >
+                  <FaRegHeart
                     size={25}
                     color="#DCEEF8"
                     className="w-full flex items-center"
                   />
-                  <span>შესახებ</span>
+                  <span>ფავორიტები</span>
                 </Link>
               </>
             )}
+
+            {/* Search Bar */}
+            <div className="md:ml-auto md:mr-3 hidden md:block h-[40px] w-full lg:w-[500px] ">
+              <div className="relative h-full  ">
+                <input
+                  onChange={(e) => onSearch(e.target.value)}
+                  className="w-full rounded-2xl  px-4 py-1 pl-10 border border-productBg bg-[#17b978] text-productBg placeholder-productBg text-sm font-normal h-full"
+                  placeholder="ძებნა..."
+                />
+                <svg
+                  className="absolute right-4 bottom-[8px] text-productBg"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  style={{ width: "20px", height: "20px" }}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15 15l5.79 5.79"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 17a7 7 0 100-14 7 7 0 000 14z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <Link to="/about" className=" hover:text-white">
+              <CiCircleInfo
+                size={25}
+                color="#DCEEF8"
+                className="w-full flex items-center"
+              />
+              <span>შესახებ</span>
+            </Link>
             {/* Conditional rendering for User Area Link/Button */}
             {user && userRole === "user" && (
               <Link
@@ -244,7 +263,6 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
               </button>
             )}
           </nav>
-
           {/* Navigation Links */}
         </div>
       </div>

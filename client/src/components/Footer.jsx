@@ -37,7 +37,7 @@ const Footer = () => {
     }
   };
   return (
-    <footer className="bg-Bgcolor text-productBg">
+    <footer className="bg-[#17b978] text-productBg">
       <div className=" pt-4 px-4 text-base font-normal">
         <div className="flex md:flex-row flex-col md:w-full justify-around items-center md:items-start  mr-10 ">
           <div className=" w-[60%] md:w-1/4">

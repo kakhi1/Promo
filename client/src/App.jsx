@@ -38,8 +38,8 @@ import ForgotPasswordForm from "./components/ForgotPasswordForm";
 import ConditionalTags from "./components/ConditionalTags ";
 import ResetPasswordPage from "./components/ResetPasswordPage";
 import WelcomeModal from "./components/WelcomeModal";
-import InterestsModal from "./components/InterestsModal";
 import OffersCategory from "./components/OffersCategory";
+import Favorites from "./components/Favorites";
 
 function App() {
   const { user, isAuthenticated, userRole } = useAuth();
@@ -55,85 +55,15 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(true);
-  const [showInterestsModal, setShowInterestsModal] = useState(false);
-  const [allowModalCloseOnOutsideClick, setAllowModalCloseOnOutsideClick] =
-    useState(true);
-  const [userDetails, setUserDetails] = useState({
-    age: "",
-    gender: "",
-    state: "",
-    ipAddress: "",
-    tags: [],
-  });
 
   const [statesList, setStatesList] = useState([]);
-  const [tagsList, setTagsList] = useState([]);
 
   useEffect(() => {
-    axios
-      .get("https://api.ipify.org?format=json")
-      .then((res) => {
-        setUserDetails((prev) => ({ ...prev, ipAddress: res.data.ip }));
-      })
-      .catch((err) => console.error("Error fetching IP address:", err));
-
     axios
       .get("https://promo-iror.onrender.com/api/data/states")
       .then((res) => setStatesList(res.data))
       .catch((err) => console.error("Error fetching states:", err));
 
-    axios
-      .get("https://promo-iror.onrender.com/api/data/tags")
-      .then((res) => setTagsList(res.data))
-      .catch((err) => console.error("Error fetching tags:", err));
-  }, []);
-
-  const handleWelcomeSubmit = async (age, gender, state) => {
-    try {
-      setUserDetails((prev) => ({ ...prev, age, gender, state }));
-      // Do not save to backend yet if you need to collect more data (e.g., interests)
-      setIsWelcomeModalOpen(false);
-      setShowInterestsModal(true);
-    } catch (error) {
-      console.error("Error handling welcome submit:", error);
-    }
-  };
-
-  const handleModalClose = () => {
-    setShowInterestsModal(false); // Assuming this is how you control the modal visibility
-  };
-
-  const handleInterestsSubmit = async (selectedTags) => {
-    console.log("Received tags in parent:", selectedTags);
-    setUserDetails((prev) => ({
-      ...prev,
-      tags: selectedTags, // Ensure this is updating correctly
-    }));
-
-    // Optionally, if you're ready to save immediately after selecting tags
-    await saveUserDetails();
-  };
-
-  const saveUserDetails = async () => {
-    try {
-      await axios.post(
-        "https://promo-iror.onrender.com/api/guest-user",
-        userDetails
-      );
-      console.log("User details saved successfully", userDetails);
-    } catch (error) {
-      throw error; // Propagate the error to be handled in the calling function
-    }
-  };
-  useEffect(() => {
-    if (userDetails.tags.length > 0) {
-      console.log("Final user details before submission:", userDetails);
-      saveUserDetails();
-    }
-  }, [userDetails, saveUserDetails]);
-
-  useEffect(() => {
-    // Fetch the user's IP and check against the backend
     axios
       .get("https://api.ipify.org?format=json")
       .then((response) => {
@@ -147,11 +77,77 @@ function App() {
     axios
       .get(`https://promo-iror.onrender.com/api/check-modal/${ip}`)
       .then((response) => {
-        // Only show the welcome modal if the IP does not exist in the database
         setIsWelcomeModalOpen(response.data.showModal);
       })
       .catch((err) => console.error("Error checking guest user:", err));
   };
+
+  const handleWelcomeSubmit = async (state) => {
+    try {
+      const ipAddressResponse = await axios.get(
+        "https://api.ipify.org?format=json"
+      );
+      const ipAddress = ipAddressResponse.data.ip;
+
+      await axios.post("https://promo-iror.onrender.com/api/guest-user", {
+        state,
+        ipAddress,
+      });
+      setIsWelcomeModalOpen(false);
+    } catch (error) {
+      console.error("Error handling welcome submit:", error);
+    }
+  };
+  // const handleModalClose = () => {
+  //   setShowInterestsModal(false); // Assuming this is how you control the modal visibility
+  // };
+
+  // const handleInterestsSubmit = async (selectedTags) => {
+  //   console.log("Received tags in parent:", selectedTags);
+  //   setUserDetails((prev) => ({
+  //     ...prev,
+  //     tags: selectedTags, // Ensure this is updating correctly
+  //   }));
+
+  //   // Optionally, if you're ready to save immediately after selecting tags
+  //   await saveUserDetails();
+  // };
+
+  // const saveUserDetails = async () => {
+  //   try {
+  //     await axios.post("http://localhost:5000/api/guest-user", userDetails);
+  //     console.log("User details saved successfully", userDetails);
+  //   } catch (error) {
+  //     throw error; // Propagate the error to be handled in the calling function
+  //   }
+  // };
+  // useEffect(() => {
+  //   if (userDetails.tags.length > 0) {
+  //     console.log("Final user details before submission:", userDetails);
+  //     saveUserDetails();
+  //   }
+  // }, [userDetails, saveUserDetails]);
+
+  // useEffect(() => {
+  //   // Fetch the user's IP and check against the backend
+  //   axios
+  //     .get("https://api.ipify.org?format=json")
+  //     .then((response) => {
+  //       const ip = response.data.ip;
+  //       checkGuestUser(ip);
+  //     })
+  //     .catch((err) => console.error("Error fetching IP address:", err));
+  // }, []);
+
+  // const checkGuestUser = (ip) => {
+  //   axios
+  //     .get(`http://localhost:5000/api/check-modal/${ip}`)
+  //     .then((response) => {
+  //       // Only show the welcome modal if the IP does not exist in the database
+  //       setIsWelcomeModalOpen(response.data.showModal);
+  //     })
+  //     .catch((err) => console.error("Error checking guest user:", err));
+  // };
   const userId = user?.id || user?._id;
   useEffect(() => {
     logUserActivity(); // Log user activity when the app loads
@@ -281,14 +277,14 @@ function App() {
             statesList={statesList}
           />
         )}
-        {showInterestsModal && (
+        {/* {showInterestsModal && (
           <InterestsModal
             isOpen={showInterestsModal}
             onSubmit={handleInterestsSubmit}
             tagsList={tagsList}
             onClose={handleModalClose}
           />
-        )}
+        )} */}
         <ToastContainer
           position="top-right"
           autoClose={5000}
@@ -378,6 +374,8 @@ function App() {
                 />
               }
             />
+
+            <Route path="/favorites" element={<Favorites />} />
             <Route
               path="/categories"
               element={
@@ -448,7 +446,7 @@ function App() {
             <RegisterForm />
           </Modal>
         )}
-        /
+
         {/* {isCategoriesOpen && (
           <Modal
             isOpen={isCategoriesOpen}
