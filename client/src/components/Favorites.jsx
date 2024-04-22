@@ -82,7 +82,6 @@ const Favorites = () => {
           <h2 className="text-lg font-semibold py-4">ფავორიტები</h2>
 
           <div className="grid grid-cols-2 md:grid-cols-4 xl2:grid-cols-6 gap-4">
-            // Within your map function where you render OffersCard components
             {currentOffers.map((offer) => {
               const imageUrls = getImageUrls(offer); // Use the helper function to get image URLs
 
