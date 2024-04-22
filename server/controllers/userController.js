@@ -728,29 +728,53 @@ async function suggestOffersForUser(userId) {
   const favoriteOfferIds = user.favorites.map((favorite) => favorite._id);
   const baseQuery = {
     _id: { $nin: favoriteOfferIds },
-    status: "approved",
+    status: "approved", // Ensure only approved offers are considered
   };
 
   async function fetchOffersByCriteria(criteria) {
     return await Offer.find({ ...baseQuery, ...criteria }).limit(20);
   }
 
-  // Attempt to fetch by tags
-  let offers = await fetchOffersByCriteria({
-    tags: { $in: user.interests?.tags || [] },
-  });
+  const tags = user.interests?.tags || [];
+  const categories = user.interests?.categories || [];
+  const state = user.state ? [user.state] : [];
+
+  // Define a function to create queries for different combinations
+  const createCriteria = (includeTags, includeState, includeCategory) => {
+    let criteria = {};
+    if (includeTags && tags.length) criteria.tags = { $in: tags };
+    if (includeState && state.length) criteria.state = { $in: state };
+    if (includeCategory && categories.length)
+      criteria.category = { $in: categories };
+    return criteria;
+  };
+
+  // Attempt to fetch by all three criteria
+  let offers = await fetchOffersByCriteria(createCriteria(true, true, true));
   if (offers.length >= 2) return offers;
 
-  // Attempt to fetch by state
-  offers = await fetchOffersByCriteria({ state: { $in: user.state || [] } });
+  // If not enough, fetch by any two criteria
+  offers = await fetchOffersByCriteria(createCriteria(true, true, false));
   if (offers.length >= 2) return offers;
 
-  // Attempt to fetch by category
-  offers = await fetchOffersByCriteria({
-    category: { $in: user.interests?.categories || [] },
-  });
-  return offers; // Return whatever is found, even if it's fewer than 2 offers
+  offers = await fetchOffersByCriteria(createCriteria(true, false, true));
+  if (offers.length >= 2) return offers;
+
+  offers = await fetchOffersByCriteria(createCriteria(false, true, true));
+  if (offers.length >= 2) return offers;
+
+  // If still not enough, fetch by each single criteria
+  offers = await fetchOffersByCriteria(createCriteria(true, false, false));
+  if (offers.length >= 2) return offers;
+
+  offers = await fetchOffersByCriteria(createCriteria(false, true, false));
+  if (offers.length >= 2) return offers;
+
+  offers = await fetchOffersByCriteria(createCriteria(false, false, true));
+  return offers; // Return whatever is found, even if fewer than 2 offers
 }
+
+// Controller function remains unchanged.
 
 // Controller function to handle the route
 exports.getSuggestedOffers = async (req, res) => {
