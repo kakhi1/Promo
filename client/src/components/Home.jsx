@@ -180,7 +180,7 @@ const Home = ({
     fetchOffersAndBrands();
     fetchOffersAndBrands();
   }, [refreshTrigger]);
-
+  console.log("offers", offers);
   const filteredBrands = searchQuery
     ? brands.filter((brand) =>
         brand.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -226,15 +226,16 @@ const Home = ({
                     (path) => `${baseUrl}${path.replace(/\\/g, "/")}`
                   )
                 : [];
+              // console.log(`Brand ID: ${brandid}`);
               return (
                 <OffersCard
                   key={offer._id}
                   id={offer._id}
                   imageUrls={imageUrls}
                   title={offer.title}
+                  brandid={offer.brand}
                   originalPrice={offer.originalPrice}
                   discountPrice={offer.discountPrice}
-                  brandid={offer.brand}
                   views={offer.views}
                   userRole={user?.role}
                   onFavoriteToggle={onFavoriteToggle}
