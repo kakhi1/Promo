@@ -64,7 +64,7 @@ const Favorites = () => {
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
-
+  const baseUrl = "https://promo-iror.onrender.com/";
   return (
     <div className="pt-8 bg-white w-full flex md:flex-row flex-col-reverse">
       <div className="flex flex-col justify-between h-full w-full px-5">
@@ -73,12 +73,11 @@ const Favorites = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 xl2:grid-cols-6 gap-4">
             {currentOffers.map((offer) => {
-              const baseUrl = "https://promo-iror.onrender.com/";
               const imageUrls = offer.imageUrls
                 ? offer.imageUrls.map(
                     (path) => `${baseUrl}${path.replace(/\\/g, "/")}`
                   )
-                : []; // Ensures that imageUrls is an array, even if it's initially null
+                : [];
               return (
                 <OffersCard
                   key={offer._id}
