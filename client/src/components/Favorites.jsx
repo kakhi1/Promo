@@ -83,11 +83,17 @@ const Favorites = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 xl2:grid-cols-6 gap-4">
             {currentOffers.map((offer) => {
-              const imageUrls = getImageUrls(offer); // Use the helper function to get image URLs
+              // Check if offer is null before accessing its properties
+              if (!offer) {
+                console.error("Encountered a null offer object");
+                return null; // or continue, depending on desired handling
+              }
+
+              const imageUrls = getImageUrls(offer); // Assuming you have implemented this function
 
               return (
                 <OffersCard
-                  key={offer._id}
+                  key={offer._id} // Now safe to access _id
                   id={offer._id}
                   imageUrls={imageUrls}
                   title={offer.title}
