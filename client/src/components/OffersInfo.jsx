@@ -37,10 +37,13 @@ const OffersInfo = () => {
   const [brands, setBrands] = useState([]);
   const [showAllBrands, setShowAllBrands] = useState(false);
   const { isAuthenticated, userRole } = useAuth();
-  console.log(offerId);
-  const { user } = useAuth();
-  const token = user?.token;
+
+  const { user, token } = useAuth();
+
+  // const token = user?.token;
   const userId = user?.id || user?._id;
+  console.log("userId offersinfo", userId);
+
   useEffect(() => {
     console.log("Token updated in Offersინფო:", token);
   }, [token]);
@@ -303,6 +306,7 @@ const OffersInfo = () => {
         `https://promo-iror.onrender.com/api/brands/${brandId}/suggestions`
       );
       const data = await response.json();
+      console.log("data", data);
       setBrands(data.data);
 
       if (!response.ok)
@@ -399,32 +403,7 @@ const OffersInfo = () => {
             <h1 className="md:text-[24px] text-xl font-semibold flex justify-start items-center h-full col-span-3 order-first md:order-none">
               {offer.title}
             </h1>
-            {/* Display prices */}
-            {/* <div className="flex items-center justify-end order-last md:order-none gap-1 col-span-2 ">
-              {showDiscountPrice ? (
-                <>
-                  <div className="flex items-center ml-4  ">
-                    <span className="text-xl font-semibold">
-                      {offer.discountPrice}
-                    </span>
-                    <FaLariSign className="text-lg mb-1" />
-                  </div>
-                  <div className="flex items-center ">
-                    <span className="text-lg font-medium text-[#FF6262] line-through">
-                      {offer.originalPrice}
-                    </span>
-                    <FaLariSign className="text-[12px]" color="#FF6262" />
-                  </div>
-                </>
-              ) : (
-                <div className="flex items-center ">
-                  <span className="text-lg font-semibold">
-                    {offer.originalPrice}
-                  </span>
-                  <FaLariSign className="text-lg mb-1" />
-                </div>
-              )}
-            </div> */}
+
             {/* brand logo */}
             <div className="h-[50px] w-[100px] col-span-2 rounded-lg md:order-first order-none">
               <img src={brandImageUrl} alt={offer.title} />

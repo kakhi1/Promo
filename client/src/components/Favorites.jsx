@@ -15,7 +15,7 @@ const Favorites = () => {
   useEffect(() => {
     const fetchPopularFavorites = async () => {
       setLoading(true);
-      const url = "http://localhost:5000/api/users/popular-favorites";
+      const url = "https://promo-iror.onrender.com/api/users/popular-favorites";
 
       try {
         const response = await axios.get(url);
@@ -40,7 +40,7 @@ const Favorites = () => {
     if (isAuthenticated && userId) {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/users/${userId}/favorites`,
+          `https://promo-iror.onrender.com/api/users/${userId}/favorites`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -72,7 +72,7 @@ const Favorites = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 xl2:grid-cols-6 gap-4">
             {currentOffers.map((offer) => {
-              const baseUrl = "http://localhost:5000/";
+              const baseUrl = "https://promo-iror.onrender.com/";
               const imageUrls = offer.imageUrls
                 ? offer.imageUrls.map(
                     (path) => `${baseUrl}${path.replace(/\\/g, "/")}`

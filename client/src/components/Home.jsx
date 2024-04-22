@@ -234,6 +234,7 @@ const Home = ({
                   title={offer.title}
                   originalPrice={offer.originalPrice}
                   discountPrice={offer.discountPrice}
+                  brandid={offer.brand}
                   views={offer.views}
                   userRole={user?.role}
                   onFavoriteToggle={onFavoriteToggle}

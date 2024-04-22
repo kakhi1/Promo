@@ -11,7 +11,7 @@ function ModifyOffers() {
   const { offerId } = useParams();
   console.log(offerId);
   const fileInputRef = useRef(null);
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const navigate = useNavigate();
   const [brandId, setBrandId] = useState(null);
   const [offerImage, setOfferImage] = useState(null);
@@ -246,7 +246,6 @@ function ModifyOffers() {
     fetchData();
   }, []);
   console.log("userRole in Offersmodify:", userRole);
-  console.log(offerInfo);
 
   useEffect(() => {
     const fetchOfferDetails = async () => {

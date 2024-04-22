@@ -15,6 +15,7 @@ const OffersCard = ({
   title,
   originalPrice,
   discountPrice,
+  brandid,
   views,
   userRole,
   onFavoriteToggle,
@@ -28,13 +29,32 @@ const OffersCard = ({
   // const { isAuthenticated, userRole } = useAuth();
 
   const { isAuthenticated } = useAuth();
-  const { user } = useAuth();
-  const token = user?.token;
+  const { user, token } = useAuth();
+  // const token = user?.token;
   const userId = user?.id || user?._id;
   useEffect(() => {}, [token]);
-
   const navigate = useNavigate();
 
+  const [brandName, setBrandName] = useState("");
+  console.log("brandid in offercard ", brandid);
+  useEffect(() => {
+    const fetchBrandName = async () => {
+      try {
+        const response = await axios.get(
+          `https://promo-iror.onrender.com/api/brands/${brandid}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setBrandName(response.data.name); // Assuming the API returns an object with a name property
+      } catch (error) {
+        console.error("Failed to fetch brand details:", error);
+      }
+    };
+
+    fetchBrandName();
+  }, [brandid, token]);
+  // console.log("name", brandName);
   useEffect(() => {
     // Now also checking if the user's role is "user"
     if (isAuthenticated && userRole === "user") {
@@ -213,52 +233,27 @@ const OffersCard = ({
           onClick={(event) => toggleFavorite(event)}
         />
       </div>
-      <div className="flex justify-between">
-        <h1 className=" text-xs font-semibold mt-4">{title}</h1>
-        {status === "pending" && (
-          <div className="mt-2">
-            <p className="text-red-500 font-bold">დასადასტურებელია</p>
-          </div>
-        )}
-        <div className="flex items-center justify-between  mt-2">
-          <div className="flex items-start gap-2">
-            {/* <div className="flex items-center gap-2"> */}
-            {/* Conditional rendering based on discount availability */}
-            {/* {showDiscountPrice && (
-                <>
-              
-                  <div className="flex items-center">
-                    <span className="md:text-base text-xs font-semibold">
-                      {discountPrice}
-                    </span>
-                    <FaLariSign className="md:text-sm text-[10px]" />
-                  </div>
-                 
-                  <div className="flex items-center">
-                    <span className="text-xs md:text-sm font-semibold text-[12px]  text-[#FF6262] line-through ">
-                      {originalPrice}
-                    </span>
-                    <FaLariSign className="text-[10px]" color="#FF6262" />
-                  </div>
-                </>
-              )}
-              {!showDiscountPrice && (
-                // Only original price when no discount
-                <div className="flex items-center">
-                  <span className="md:text-base text-xs font-semibold">
-                    {originalPrice}
-                  </span>
-                  <FaLariSign className="md:text-sm text-[10px]" />
-                </div>
-              )}
-            </div> */}
-          </div>
+      <div className="flex flex-col">
+        <div>
+          <h1 className="text-xs font-bold mt-4">{brandName}</h1>
+        </div>
+        <div className="flex justify-between ">
+          {" "}
+          <h1 className=" text-xs font-semibold mt-4">{title}</h1>
+          {status === "pending" && (
+            <div className="mt-2">
+              <p className="text-red-500 font-bold">დასადასტურებელია</p>
+            </div>
+          )}
+          <div className="flex items-center justify-between  mt-2">
+            <div className="flex items-start gap-2"></div>
 
-          <div className="flex items-center md:mt-1 ">
-            <IoEyeOutline className="text-base text-[#9D9D9D]" />
-            <span className="ml-1 md:text-xs text-[8px] text-[#9D9D9D]">
-              {views}
-            </span>
+            <div className="flex items-center md:mt-1 ">
+              <IoEyeOutline className="text-base text-[#9D9D9D]" />
+              <span className="ml-1 md:text-xs text-[8px] text-[#9D9D9D]">
+                {views}
+              </span>
+            </div>
           </div>
         </div>
       </div>

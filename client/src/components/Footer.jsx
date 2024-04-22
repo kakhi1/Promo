@@ -75,7 +75,7 @@ const Footer = () => {
           </div>
           <div className="w-[60%] md:w-1/4">
             <h3 className="">
-              იმეილი: mail@mail.com <br />
+              იმეილი: promo246810@gmail.com <br />
               ტელეფონი: +995 500 000 000
             </h3>
           </div>

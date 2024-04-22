@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { HiOutlineBars3 } from "react-icons/hi2"; // Corrected import
@@ -10,6 +10,8 @@ import { useNavigate } from "react-router-dom";
 import { BiChevronDown } from "react-icons/bi";
 import { FaRegHeart } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -17,6 +19,8 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { user, logout, userRole } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const userId = user?.id || user?._id;
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -34,6 +38,56 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
     setIsMobileMenuOpen(false); // Close mobile menu if open
   };
 
+  const [states, setStates] = useState([]);
+  const [currentUserState, setCurrentUserState] = useState("");
+  // Fetch the current state of the user
+
+  // Fetch the list of states from the backend
+  // Fetch the list of states from the backend
+  useEffect(() => {
+    async function fetchStates() {
+      try {
+        const response = await axios.get(
+          "https://promo-iror.onrender.com/api/data/states"
+        );
+        setStates(response.data);
+      } catch (error) {
+        console.error("Failed to fetch states:", error);
+      }
+    }
+
+    fetchStates();
+  }, []);
+
+  // Function to fetch the current state of the user
+  async function fetchUserState() {
+    try {
+      const response = await axios.get(
+        `https://promo-iror.onrender.com/api/users/${userId}/state`
+      );
+      setCurrentUserState(response.data._id); // Adjust according to your data structure
+    } catch (error) {
+      console.error("Failed to fetch user state:", error);
+    }
+  }
+
+  // Handle state change
+  const handleStateChange = async (e) => {
+    const newStateId = e.target.value;
+    try {
+      const response = await axios.put(
+        `https://promo-iror.onrender.com/api/users/${userId}/state2`,
+        { stateId: newStateId }
+      );
+      setCurrentUserState(response.data.state); // Assuming response data returns the state object
+
+      toast.warn("ქალაქი  განახლდა");
+      fetchUserState();
+    } catch (error) {
+      console.error("Error updating state:", error);
+      toast.warn("შეცდომა ქალაქის განახლების დროს.");
+    }
+  };
   const showUserSpecificLinks = userRole !== "admin" && userRole !== "brand";
 
   return (
@@ -109,26 +163,39 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
               )}
 
               {/* Dynamic Authentication Button */}
-              {user ? (
-                <button
-                  className="text-white p-2"
-                  onClick={() => {
-                    handleLogout(); // Ensure this also closes the mobile menu as needed
-                    toggleMobileMenu(); // Optionally close the menu right after logging out
-                  }}
-                >
-                  გამოსვლა
-                </button>
-              ) : (
-                <Link
-                  to="/login"
-                  className="text-white p-2"
-                  value={searchQuery}
-                  onClick={() => onLoginClick && onLoginClick()}
-                >
-                  შესვლა
-                </Link>
+              {(userRole === "admin" || userRole === "brand") && (
+                <>
+                  {user ? (
+                    <button
+                      className="text-white p-2"
+                      onClick={() => {
+                        handleLogout(); // Ensure this also closes the mobile menu as needed
+                        toggleMobileMenu(); // Optionally close the menu right after logging out
+                      }}
+                    >
+                      გამოსვლა
+                    </button>
+                  ) : (
+                    <Link
+                      to="/login"
+                      className="text-white p-2"
+                      value={searchQuery}
+                      onClick={() => onLoginClick && onLoginClick()}
+                    >
+                      შესვლა
+                    </Link>
+                  )}
+                </>
               )}
+              <div className="h-full text-sm text-black  border-black  rounded-lg bg-[#17b978]">
+                <select value={currentUserState} onChange={handleStateChange}>
+                  {states.map((state) => (
+                    <option key={state._id} value={state._id}>
+                      {state.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </nav>
           </div>
         )}
@@ -174,7 +241,7 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
             )}
 
             {/* Search Bar */}
-            <div className="md:ml-auto md:mr-3 hidden md:block h-[40px] w-full lg:w-[500px] ">
+            <div className="md:ml-auto md:mr-3 hidden md:block h-[40px] w-full md:w-[500px] ">
               <div className="relative h-full  ">
                 <input
                   onChange={(e) => onSearch(e.target.value)}
@@ -228,7 +295,7 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
               </Link>
             )}
 
-            {user ? (
+            {/* {user ? (
               <div className="relative">
                 <div
                   className="flex items-center cursor-pointer "
@@ -261,7 +328,56 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
                 <LuUser size={20} color="#DCEEF8" />
                 <span>შესვლა</span>
               </button>
+            )} */}
+
+            {/* Show specific links for admin or brand roles */}
+            {(userRole === "admin" || userRole === "brand") && (
+              <>
+                {user ? (
+                  <div className="relative">
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={toggleDropdown}
+                    >
+                      <div className="w-32 border border-productBg inline-flex items-center justify-center gap-2 rounded-2xl">
+                        <LuUser size={20} color="#DCEEF8" />
+                        <span className="hover:text-white p-2 focus:outline-none flex items-center justify-center text-sm h-10">
+                          {user.name}
+                        </span>
+                        <BiChevronDown className="hover:text-white" size={20} />
+                      </div>
+                    </div>
+                    {isDropdownOpen && (
+                      <div className="absolute right-0 mt-2 py-2 bg-white rounded-md shadow-xl z-20">
+                        <button
+                          className="text-sm text-gray-700 hover:bg-gray-100 px-4 py-2 block"
+                          onClick={handleLogout}
+                        >
+                          გამოსვლა
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    className="hover:text-white p-2 inline-flex items-center justify-center gap-4 focus:outline-none rounded-2xl text-sm h-10 w-32 border border-productBg"
+                    onClick={() => onLoginClick && onLoginClick()}
+                  >
+                    <LuUser size={20} color="#DCEEF8" />
+                    <span>შესვლა</span>
+                  </button>
+                )}
+              </>
             )}
+            <div className="h-full text-sm text-black  border-black  rounded-lg bg-[#17b978]">
+              <select value={currentUserState} onChange={handleStateChange}>
+                {states.map((state) => (
+                  <option key={state._id} value={state._id}>
+                    {state.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </nav>
           {/* Navigation Links */}
         </div>

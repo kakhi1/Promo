@@ -98,7 +98,7 @@ function FooterLoginForm({ onLoginSuccess, onLoginError }) {
           type="submit"
           className="w-full bg-white hover:bg-gray-200 text-base py-2 rounded-lg border-[#457B9D] border-[1px]"
         >
-          დარეგისტრირდი
+          შესვლა
         </button>
       </form>
     </div>

@@ -5,81 +5,74 @@ export const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
-// Axios instance for making API calls with automatic headers
-const axiosInstance = axios.create();
-axiosInstance.interceptors.request.use((config) => {
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+const axiosInstance = axios.create({
+  baseURL: "https://promo-iror.onrender.com/api",
 });
 
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("userToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(
+    JSON.parse(localStorage.getItem("user")) || null
+  );
   const [userRole, setUserRole] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("userToken") || null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedTag, setSelectedTag] = useState(null);
+
   useEffect(() => {
-    const axiosInstance = axios.create();
-    axiosInstance.interceptors.request.use((config) => {
-      config.headers.Authorization = `Bearer ${token}`;
-      return config;
-    });
-    // Set axiosInstance to state or context if needed
+    const fetchIPAndLogin = async () => {
+      if (!token) {
+        try {
+          const ipResponse = await axios.get(
+            "https://api.ipify.org?format=json"
+          );
+          const ip = ipResponse.data.ip;
+          const { data } = await axiosInstance.post("/users/login-by-ip", {
+            ip,
+          });
+          console.log("data", data);
+
+          if (data.user && data.token) {
+            setUser(data.user);
+            setUserRole(data.user.role);
+
+            // Storing the token securely
+            setToken(data.token);
+            sessionStorage.setItem("userToken", data.token); // Consider sessionStorage for less persistence
+            sessionStorage.setItem("user", JSON.stringify(data.user));
+          }
+        } catch (error) {
+          console.error("Login by IP failed:", error);
+        }
+      }
+    };
+
+    fetchIPAndLogin();
   }, [token]);
+  console.log("token in auth", token);
   const clearCategoryAndTag = () => {
     setSelectedCategory(null);
     setSelectedTag(null);
   };
-  useEffect(() => {
-    const verifyTokenAndLogin = async () => {
-      if (!token) return;
-
-      try {
-        console.log("Sending token for verification");
-        const response = await fetch(
-          "https://promo-iror.onrender.com/api/users/verify-Token",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!response.ok) throw new Error("Token validation failed");
-
-        const data = await response.json();
-        console.log("Token verification success, user data:", data);
-        setUser(data); // Set user data
-        setUserRole(data.role); // Set user role
-      } catch (error) {
-        console.error("Token validation error:", error);
-        localStorage.removeItem("userToken"); // Clear the token if invalid
-      }
-    };
-
-    verifyTokenAndLogin();
-  }, []);
-
-  useEffect(() => {
-    // Effect to run when the user state changes, e.g., to save user data to localStorage
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user)); // Save user data for session persistence
-    } else {
-      localStorage.removeItem("user"); // Clear user data if logged out
-    }
-  }, [user]);
 
   const login = (userData, rememberMe = false) => {
-    setUser(userData); // Set user data
-    setUserRole(userData.role); // Set user role
+    setUser(userData);
+    setUserRole(userData.role);
     if (rememberMe && userData.token) {
-      localStorage.setItem("userToken", userData.token);
       setToken(userData.token);
-      // localStorage.setItem("user", JSON.stringify(entity));
+      localStorage.setItem("userToken", userData.token);
       localStorage.setItem("user", JSON.stringify(userData));
     }
   };
@@ -89,7 +82,7 @@ export const AuthProvider = ({ children }) => {
     setUserRole(null);
     setToken(null);
     localStorage.removeItem("user");
-    localStorage.removeItem("userToken"); // Ensure token is cleared on logout
+    localStorage.removeItem("userToken");
     clearCategoryAndTag();
   };
 
@@ -105,7 +98,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         clearCategoryAndTag,
-      }} // Include userRole in the context value
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -34,6 +34,7 @@ const UserArea = () => {
         const response = await axios.get(
           `https://promo-iror.onrender.com/api/users/${userId}/suggested-brands`
         );
+        console.log("brand in userarea", response.data);
         setBrands(response.data);
       } catch (error) {
         console.error("Error fetching brands:", error);
@@ -146,6 +147,7 @@ const UserArea = () => {
                     title={offer.title}
                     originalPrice={offer.originalPrice}
                     discountPrice={offer.discountPrice}
+                    brandid={offer.brand}
                     views={offer.views}
                     userRole={user.role}
                     onFavoriteToggle={refreshFavorites}

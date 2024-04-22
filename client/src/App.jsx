@@ -267,6 +267,27 @@ function App() {
     navigate("/"); // For navigating to homepage
     // setIsLoginOpen(true); // For opening login modal
   };
+
+  useEffect(() => {
+    const registerOrFetchUser = async () => {
+      try {
+        const { data: ipData } = await axios.get(
+          "https://api.ipify.org?format=json"
+        );
+        const ip = ipData.ip;
+
+        const response = await axios.post(
+          "https://promo-iror.onrender.com/api/users/auto-register",
+          { ip }
+        );
+        console.log("User check/create response:", response.data);
+      } catch (error) {
+        console.error("Error registering or fetching user:", error);
+      }
+    };
+
+    registerOrFetchUser();
+  }, []);
   return (
     <Router>
       <div className="min-h-screen flex flex-col justify-between">
