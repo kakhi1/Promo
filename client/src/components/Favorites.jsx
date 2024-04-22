@@ -78,7 +78,7 @@ const Favorites = () => {
                 ? offer.imageUrls.map(
                     (path) => `${baseUrl}${path.replace(/\\/g, "/")}`
                   )
-                : [];
+                : []; // Ensures that imageUrls is an array, even if it's initially null
               return (
                 <OffersCard
                   key={offer._id}
