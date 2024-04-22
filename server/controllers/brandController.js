@@ -88,15 +88,37 @@ exports.getBrandByOfferId = async (req, res) => {
   }
 };
 
+// exports.getBrandById = async (req, res) => {
+//   try {
+//     const { brandId } = req.params; // Extract brandId from request parameters
+//     const brand = await Brand.findById(brandId).populate("offers"); // Populate the offers if they are referenced in the Brand model
+
+//     if (!brand) {
+//       return res.status(404).json({ message: "Brand not found" });
+//     }
+
+//     res.json(brand); // Send back the found brand with its details and offers
+//   } catch (error) {
+//     console.error("Error fetching brand details:", error);
+//     res
+//       .status(500)
+//       .json({ message: "Error fetching brand details", error: error.message });
+//   }
+// };
+
 exports.getBrandById = async (req, res) => {
   try {
     const { brandId } = req.params; // Extract brandId from request parameters
-    const brand = await Brand.findById(brandId).populate("offers"); // Populate the offers if they are referenced in the Brand model
 
+    // Validate brandId: check if it is not undefined and is a valid ObjectId
+    if (!brandId || !mongoose.Types.ObjectId.isValid(brandId)) {
+      return res.status(400).json({ message: "Invalid or missing brand ID" });
+    }
+
+    const brand = await Brand.findById(brandId).populate("offers"); // Populate the offers if they are referenced in the Brand model
     if (!brand) {
       return res.status(404).json({ message: "Brand not found" });
     }
-
     res.json(brand); // Send back the found brand with its details and offers
   } catch (error) {
     console.error("Error fetching brand details:", error);
@@ -221,33 +243,121 @@ exports.findAllOffersByViews = async (req, res) => {
   }
 };
 
+// exports.getSuggestedBrands = async (req, res) => {
+//   const { brandId } = req.params;
+//   try {
+//     const referenceBrand = await Brand.findById(brandId).select(
+//       "state tags category"
+//     );
+
+//     if (!referenceBrand) {
+//       return res.status(404).json({ message: "Brand not found" });
+//     }
+
+//     // Ensure values passed to $in are arrays, defaulting to an empty array if undefined
+//     const stateArray = Array.isArray(referenceBrand.state)
+//       ? referenceBrand.state
+//       : [];
+//     const tagArray = Array.isArray(referenceBrand.tags)
+//       ? referenceBrand.tags
+//       : [];
+
+//     let suggestedBrands = await Brand.find({
+//       _id: { $ne: brandId },
+//       ...(stateArray.length && { state: { $in: stateArray } }),
+//       ...(tagArray.length && { tags: { $in: tagArray } }),
+//       category: referenceBrand.category,
+//     }).limit(12);
+
+//     // You might consider additional logic or fallbacks similar to what was noted for offers
+
+//     return res.status(200).json(suggestedBrands);
+//   } catch (error) {
+//     console.error(
+//       `Error fetching suggested brands for brandId: ${brandId}`,
+//       error
+//     );
+//     return res.status(500).json({
+//       message: "Error fetching suggested brands",
+//       error: error.message,
+//     });
+//   }
+// };
+
 exports.getSuggestedBrands = async (req, res) => {
   const { brandId } = req.params;
   try {
     const referenceBrand = await Brand.findById(brandId).select(
       "state tags category"
     );
-
     if (!referenceBrand) {
       return res.status(404).json({ message: "Brand not found" });
     }
 
-    // Ensure values passed to $in are arrays, defaulting to an empty array if undefined
-    const stateArray = Array.isArray(referenceBrand.state)
-      ? referenceBrand.state
-      : [];
-    const tagArray = Array.isArray(referenceBrand.tags)
-      ? referenceBrand.tags
-      : [];
+    let aggregation = Brand.aggregate([
+      {
+        $match: {
+          _id: { $ne: new mongoose.Types.ObjectId(brandId) }, // Correct usage of ObjectId
+        },
+      },
+      {
+        $addFields: {
+          stateMatch: {
+            $cond: {
+              if: {
+                $in: [
+                  "$state",
+                  Array.isArray(referenceBrand.state)
+                    ? referenceBrand.state
+                    : [referenceBrand.state],
+                ],
+              },
+              then: 1,
+              else: 0,
+            },
+          },
+          tagsMatch: {
+            $cond: {
+              if: {
+                $setIsSubset: [
+                  Array.isArray(referenceBrand.tags)
+                    ? referenceBrand.tags
+                    : [referenceBrand.tags],
+                  "$tags",
+                ],
+              },
+              then: 1,
+              else: 0,
+            },
+          },
+          categoryMatch: {
+            $cond: {
+              if: { $eq: ["$category", referenceBrand.category] },
+              then: 1,
+              else: 0,
+            },
+          },
+        },
+      },
+      {
+        $addFields: {
+          totalMatch: { $sum: ["$stateMatch", "$tagsMatch", "$categoryMatch"] },
+        },
+      },
+      {
+        $sort: {
+          totalMatch: -1,
+          stateMatch: -1,
+          tagsMatch: -1,
+          categoryMatch: -1,
+        },
+      },
+      {
+        $limit: 12,
+      },
+    ]);
 
-    let suggestedBrands = await Brand.find({
-      _id: { $ne: brandId },
-      ...(stateArray.length && { state: { $in: stateArray } }),
-      ...(tagArray.length && { tags: { $in: tagArray } }),
-      category: referenceBrand.category,
-    }).limit(12);
-
-    // You might consider additional logic or fallbacks similar to what was noted for offers
+    let suggestedBrands = await aggregation.exec();
 
     return res.status(200).json(suggestedBrands);
   } catch (error) {

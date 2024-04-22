@@ -17,12 +17,12 @@ const locationSchema = new mongoose.Schema(
 );
 
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  name: { type: String, required: false },
   username: { type: String },
-  password: { type: String, required: true }, // Consider using bcrypt for hashing
+  password: { type: String, required: false }, // Consider using bcrypt for hashing
   isBrand: { type: Boolean, default: false },
   brand: { type: mongoose.Schema.Types.ObjectId, ref: "Brand", default: null },
-  email: { type: String, required: true, unique: true },
+  email: { type: String, required: false, unique: true },
   mobile: { type: String },
   favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Offer" }],
   isAdmin: { type: Boolean, default: false },
@@ -35,6 +35,7 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "State",
   },
+  lastIPAddress: { type: String },
 });
 
 async function getSuggestedBrandsForUser(userId) {

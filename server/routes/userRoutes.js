@@ -135,11 +135,21 @@ router.get("/favorites/count", async (req, res) => {
       .json({ message: "Internal server error", error: error.message });
   }
 });
-
+router.post("/auto-register", userController.checkAndCreateUser);
 // Add a route for fetching popular favorites
 router.get("/popular-favorites", userController.getPopularFavorites);
+// New route for getting login summary
+router.get("/login-summary", userController.getLoginSummary);
 
 router.post("/forgot-password", userController.forgotPassword);
 router.post("/reset-password/:token", userController.resetPassword);
+
+// Add the IP-based login route
+router.post("/login-by-ip", userController.loginByIp);
+// Route to get the state of a user
+router.get("/:userId/state", userController.getState);
+
+// Route to update the state of a user
+router.put("/:userId/state2", userController.updateState);
 
 module.exports = router;
