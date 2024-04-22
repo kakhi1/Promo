@@ -64,7 +64,17 @@ const Favorites = () => {
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
-  const baseUrl = "https://promo-iror.onrender.com/";
+  const getImageUrls = (offer) => {
+    // Ensure that the offer object and the imageUrls property exist
+    if (!offer || !offer.imageUrls || !Array.isArray(offer.imageUrls)) {
+      return []; // Return an empty array if no valid image URLs exist
+    }
+
+    const baseUrl = "https://promo-iror.onrender.com/";
+    return offer.imageUrls.map(
+      (path) => `${baseUrl}${path.replace(/\\/g, "/")}`
+    );
+  };
   return (
     <div className="pt-8 bg-white w-full flex md:flex-row flex-col-reverse">
       <div className="flex flex-col justify-between h-full w-full px-5">
@@ -72,12 +82,10 @@ const Favorites = () => {
           <h2 className="text-lg font-semibold py-4">ფავორიტები</h2>
 
           <div className="grid grid-cols-2 md:grid-cols-4 xl2:grid-cols-6 gap-4">
+            // Within your map function where you render OffersCard components
             {currentOffers.map((offer) => {
-              const imageUrls = offer.imageUrls
-                ? offer.imageUrls.map(
-                    (path) => `${baseUrl}${path.replace(/\\/g, "/")}`
-                  )
-                : [];
+              const imageUrls = getImageUrls(offer); // Use the helper function to get image URLs
+
               return (
                 <OffersCard
                   key={offer._id}
