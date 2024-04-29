@@ -24,18 +24,33 @@ function WelcomeModal({ isOpen, onClose, onSubmit, statesList }) {
     }
   }, [isOpen, statesList]);
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (state) {
+  //     setIsSubmitting(true);
+  //     await onSubmit(state);
+  //     setIsSubmitting(false);
+  //     onClose();
+  //   } else {
+  //     alert("Please select your state.");
+  //   }
+  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (state) {
       setIsSubmitting(true);
       await onSubmit(state);
       setIsSubmitting(false);
-      onClose();
+      // onClose();
+      // Set flag in sessionStorage
+      sessionStorage.setItem("loginOnReload", "true");
+
+      // Trigger a reload
+      window.location.reload();
     } else {
       alert("Please select your state.");
     }
   };
-
   return (
     <Modal isOpen={isOpen} onClose={() => !isSubmitting && onClose()}>
       <div className="bg-white p-4 rounded-lg shadow-lg max-w-md w-full">

@@ -113,7 +113,7 @@ function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
         </div>
 
         {/* Remember Me Checkbox */}
-        <div className="flex justify-between items-center mb-4">
+        {/* <div className="flex justify-between items-center mb-4">
           <label className="flex items-center">
             <input
               type="checkbox"
@@ -124,17 +124,17 @@ function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
             <span className="text-[#1D3557] font-medium text-xs">
               პაროლის დამახსოვრება
             </span>
-          </label>
+          </label> */}
 
-          {/* Forgot Password Link */}
-          <button
+        {/* Forgot Password Link */}
+        {/* <button
             type="button"
             onClick={handleForgotPassword}
             className="text-[#E63946] hover:text-red-800 font-normal text-xs"
           >
             დაგავიწყდა პაროლი?
           </button>
-        </div>
+        </div> */}
 
         {/* Submit Button */}
         <button
@@ -144,14 +144,14 @@ function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
           <span className="font-medium text-base text-white">შესვლა</span>
         </button>
         {/* Divider with Text */}
-        <div className="flex items-center justify-between mt-4">
+        {/* <div className="flex items-center justify-between mt-4">
           <hr className="w-full" />
           <span className="px-2 text-[#D9D9D9] text-xs font-medium">ან</span>
           <hr className="w-full" />
-        </div>
+        </div> */}
 
         {/* Registration Redirect */}
-        <div className="mt-4">
+        {/* <div className="mt-4">
           <button
             type="button"
             onClick={handleRegistrationRedirect}
@@ -159,7 +159,7 @@ function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
           >
             დარეგისტრირდი
           </button>
-        </div>
+        </div> */}
       </form>
     </div>
   );

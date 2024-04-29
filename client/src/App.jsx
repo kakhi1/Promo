@@ -334,7 +334,7 @@ function App() {
               path="/reset-password/:token"
               element={<ResetPasswordPage />}
             />
-
+            <Route path="/login" element={<LoginForm />} />
             <Route
               path="/"
               element={

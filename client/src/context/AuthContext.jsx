@@ -59,6 +59,10 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
+    // Check if a reload login should be performed
+    if (sessionStorage.getItem("loginOnReload")) {
+      sessionStorage.removeItem("loginOnReload");
+    }
     fetchIPAndLogin();
   }, [token]);
   console.log("token in auth", token);
@@ -66,7 +70,6 @@ export const AuthProvider = ({ children }) => {
     setSelectedCategory(null);
     setSelectedTag(null);
   };
-
   const login = (userData, rememberMe = false) => {
     setUser(userData);
     setUserRole(userData.role);

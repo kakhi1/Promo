@@ -59,11 +59,10 @@ const Footer = () => {
           </div>
           <div className="w-[60%] md:w-1/4 flex  flex-col items-start h-full">
             <h3 className=""> პარტნიორებისთვის</h3>
-            <button onClick={() => setIsLoginModalOpen(true)} className="">
+            <button onClick={() => navigate("/login")} className="">
               შესვლა
-            </button>
-
-            {isLoginModalOpen && (
+            </button>{" "}
+            {/* {isLoginModalOpen && (
               <Modal
                 isOpen={isLoginModalOpen}
                 onClose={() => setIsLoginModalOpen(false)}
@@ -71,12 +70,12 @@ const Footer = () => {
                 <FooterLoginForm onLoginSuccess={handleLoginSuccess} />
                 {loginError && <p className="text-red-500">{loginError}</p>}
               </Modal>
-            )}
+            )} */}
           </div>
           <div className="w-[60%] md:w-1/4">
             <h3 className="">
               იმეილი: promo246810@gmail.com <br />
-              ტელეფონი: +995 500 000 000
+              ტელეფონი: +995
             </h3>
           </div>
         </div>
