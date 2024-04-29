@@ -70,6 +70,7 @@ export const AuthProvider = ({ children }) => {
     setSelectedCategory(null);
     setSelectedTag(null);
   };
+
   const login = (userData, rememberMe = false) => {
     setUser(userData);
     setUserRole(userData.role);

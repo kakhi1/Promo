@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import Modal from "./Modal"; // Assuming Modal is a pre-existing component for displaying modals
+import { useAuth } from "../context/AuthContext";
 
 function WelcomeModal({ isOpen, onClose, onSubmit, statesList }) {
   const [state, setState] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const { user, isAuthenticated, token } = useAuth();
+  const userId = user?.id || user?._id;
+  console.log("userId", userId);
+  console.log("token", token);
   useEffect(() => {
     if (isOpen) {
       const fetchStateByIP = async () => {
@@ -24,17 +28,6 @@ function WelcomeModal({ isOpen, onClose, onSubmit, statesList }) {
     }
   }, [isOpen, statesList]);
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   if (state) {
-  //     setIsSubmitting(true);
-  //     await onSubmit(state);
-  //     setIsSubmitting(false);
-  //     onClose();
-  //   } else {
-  //     alert("Please select your state.");
-  //   }
-  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (state) {
@@ -51,6 +44,7 @@ function WelcomeModal({ isOpen, onClose, onSubmit, statesList }) {
       alert("Please select your state.");
     }
   };
+
   return (
     <Modal isOpen={isOpen} onClose={() => !isSubmitting && onClose()}>
       <div className="bg-white p-4 rounded-lg shadow-lg max-w-md w-full">
