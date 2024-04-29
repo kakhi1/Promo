@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import logo from "../assets/logo.png";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Modal from "./Modal";
 import FooterLoginForm from "./FooterLoginForm";
@@ -12,6 +12,7 @@ const Footer = () => {
   const handleLoginSuccess = () => {
     setIsLoginModalOpen(false); // Close the modal on successful login
   };
+  const navigate = useNavigate();
   const handleLogin = async (email, password) => {
     try {
       const response = await fetch(
