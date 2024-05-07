@@ -59,7 +59,9 @@ const Footer = () => {
             <h3 className="">კონფიდენციალობის პოლიტიკა</h3>
           </div>
           <div className="w-[60%] md:w-1/4 flex  flex-col items-start h-full">
-            <h3 className=""> პარტნიორებისთვის</h3>
+            <button onClick={() => navigate("/aboutpat")} className="">
+              პარტნიორებისთვის
+            </button>{" "}
             <button onClick={() => navigate("/login")} className="">
               შესვლა
             </button>{" "}

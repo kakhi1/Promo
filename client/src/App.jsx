@@ -409,6 +409,7 @@ function App() {
               path="/about"
               element={<About onRegisterClick={handleShowRegisterForm} />}
             />
+            <Route path="/aboutpat" element={<AboutPar />} />
 
             {/* Private Routes */}
 
