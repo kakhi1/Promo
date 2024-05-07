@@ -40,6 +40,7 @@ import ResetPasswordPage from "./components/ResetPasswordPage";
 import WelcomeModal from "./components/WelcomeModal";
 import OffersCategory from "./components/OffersCategory";
 import Favorites from "./components/Favorites";
+import AboutPar from "./components/AboutPar";
 
 function App() {
   const { user, isAuthenticated, userRole } = useAuth();
