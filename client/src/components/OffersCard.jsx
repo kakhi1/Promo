@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaHeart } from "react-icons/fa";
@@ -19,24 +19,18 @@ const OffersCard = ({
   views,
   userRole,
   onFavoriteToggle,
-  offer,
+  offer = {}, // Ensure offer is an object by default
   onModify,
   onDelete,
 }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showActions, setShowActions] = useState(false);
-  // const { isAuthenticated, userRole } = useAuth();
-
-  const { isAuthenticated } = useAuth();
-  const { user, token } = useAuth();
-  // const token = user?.token;
+  const { isAuthenticated, user, token } = useAuth();
   const userId = user?.id || user?._id;
-  useEffect(() => {}, [token]);
   const navigate = useNavigate();
-
   const [brandName, setBrandName] = useState("");
-  console.log("brandid in offercard ", brandid);
+
   useEffect(() => {
     const fetchBrandName = async () => {
       try {
@@ -46,28 +40,26 @@ const OffersCard = ({
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        setBrandName(response.data.name); // Assuming the API returns an object with a name property
+        setBrandName(response.data.name);
       } catch (error) {
         console.error("Failed to fetch brand details:", error);
       }
     };
-
     fetchBrandName();
   }, [brandid, token]);
-  // console.log("name", brandName);
+
   useEffect(() => {
-    // Now also checking if the user's role is "user"
     if (isAuthenticated && userRole === "user") {
       checkFavoriteStatus();
     }
-  }, [id, isAuthenticated, userId, userRole]); // Dependencies for triggering this effect
+  }, [id, isAuthenticated, userId, userRole]);
 
   const checkFavoriteStatus = async () => {
-    if (userRole !== "user") return; // Exit if not a "user" role
+    if (userRole !== "user") return;
 
     try {
       const response = await axios.get(
-        `https://promo-iror.onrender.com/api/users/${userId}/favorites/${id}`, // Adjusted URL to match the expected endpoint
+        `https://promo-iror.onrender.com/api/users/${userId}/favorites/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -91,7 +83,7 @@ const OffersCard = ({
 
     try {
       const method = isLiked ? "DELETE" : "POST";
-      const response = await axios({
+      await axios({
         method,
         url: `https://promo-iror.onrender.com/api/users/${userId}/favorites/${id}`,
         headers: {
@@ -99,34 +91,37 @@ const OffersCard = ({
         },
       });
 
-      setIsLiked(!isLiked); // Optimistically toggle the like state
+      setIsLiked(!isLiked);
       toast.success(`პროდუქცია ${isLiked ? "წაიშალა" : "დაემატა"} ფავორიტებში`);
-      if (onFavoriteToggle) onFavoriteToggle(); // Call the prop function to refresh favorites in UserArea
+      if (onFavoriteToggle) onFavoriteToggle();
     } catch (error) {
       console.error("Failed to update favorites:", error);
-      toast.error("პროდუქციის დასამატებლად გთხოვთ გაიაროთ რეგისტრაცია");
-      // More detailed error handling
+      toast.error("პროდუქციის დასამატებლად გთხოვთ გაიაროთ რეგისტრაცია1111");
       if (error.response) {
       } else {
-        // Handling errors not related to the network request itself
         console.log("Error message:", error.message);
       }
     }
   };
 
-  // Modify the handleCardClick function to support toggling admin actions for the 'admin' role
   const handleCardClick = async () => {
-    // Toggle admin actions for admin users without navigating
     if (userRole === "admin" || userRole === "brand") {
       setShowActions(!showActions);
-      return; // Prevent further execution for admin
+      return;
     }
 
-    // Existing logic for navigating or other roles remains the same
     if (!id) {
       console.error("Offer ID is undefined.");
       return;
     }
+
+    const url = offer.url;
+
+    if (!url) {
+      console.error("Offer URL is undefined.");
+      return;
+    }
+
     try {
       await fetch(
         `https://promo-iror.onrender.com/api/offers/increment-views/${id}`,
@@ -134,28 +129,32 @@ const OffersCard = ({
           method: "POST",
         }
       );
-      navigate(`/offer-card/${id}`);
+
+      // Navigate only if offer.description is not present
+      if (!offer.description) {
+        // Check if the URL is an external link and open in a new tab
+        if (url.startsWith("http://") || url.startsWith("https://")) {
+          window.open(url, "_blank");
+        } else {
+          navigate(url); // Navigate within the app
+        }
+      } else {
+        navigate(`/offer-card/${id}`); // Navigate to the offer card page
+      }
     } catch (error) {
       console.error("Error incrementing views:", error);
     }
   };
-  // Function to handle action button clicks
   const handleActionClick = (e, action) => {
-    e.stopPropagation(); // Stop the click from bubbling up to the div
+    e.stopPropagation();
     if (action === "modify") onModify(id);
     if (action === "delete") onDelete(id);
-    // Optionally close the action buttons after an action is taken
     setShowActions(false);
   };
 
-  // Before accessing imageUrls.length, ensure imageUrls is defined and is an array
   const hasImages = Array.isArray(imageUrls) && imageUrls.length > 0;
-
-  // // Logic to handle the display of prices
-  // Determine if there's a valid discount price to show
   const showDiscountPrice = discountPrice && discountPrice < originalPrice;
 
-  // Function to cycle images
   const nextImage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imageUrls.length);
   };
@@ -166,7 +165,7 @@ const OffersCard = ({
       onClick={handleCardClick}
     >
       {userRole === "admin" && showActions && (
-        <div className="absolute -top-0 left-1 z-10 shadow-lg overflow-hidden w-full h-full cursor-pointer bg-[#1E1F53] opacity-95  flex flex-col justify-center items-center ">
+        <div className="absolute -top-0 left-0 z-10 shadow-lg overflow-hidden w-full h-full cursor-pointer bg-[#1E1F53] opacity-95  flex flex-col justify-center items-center ">
           <div className="w-full flex h-1/3 items-center">
             <button
               onClick={(e) => handleActionClick(e, "modify")}
@@ -202,7 +201,7 @@ const OffersCard = ({
         )}
 
         <div className="absolute inset-0 flex justify-between items-center">
-          {imageUrls.length > 1 && ( // Only show navigation buttons if there are multiple images
+          {imageUrls.length > 1 && (
             <>
               <button
                 className="text-[30px] hover:text-white"
@@ -238,7 +237,6 @@ const OffersCard = ({
           <h1 className="text-xs font-bold mt-4">{brandName}</h1>
         </div>
         <div className="flex justify-between ">
-          {" "}
           <h1 className=" text-xs font-semibold mt-4">{title}</h1>
           {status === "pending" && (
             <div className="mt-2">
