@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const offerSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  description: { type: String, required: true },
+  description: { type: String, required: false },
   // brand: { type: mongoose.Schema.Types.ObjectId, ref: "Brand", required: true }, // Reference to the Brand model
   createdAt: { type: Date, default: Date.now }, // Automatically sets the date when the offer is created
   category: [String],

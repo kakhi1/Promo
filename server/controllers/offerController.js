@@ -31,6 +31,55 @@ exports.incrementOfferViews = async (req, res) => {
   }
 };
 
+// exports.createOffer = async (req, res) => {
+//   console.log("Request Body:", req.body);
+//   console.log("Request Files:", req.files);
+//   try {
+//     if (req.fileValidationError) {
+//       return res
+//         .status(400)
+//         .json({ success: false, error: req.fileValidationError });
+//     }
+//     let tags = req.body.tags ? parseInput(req.body.tags) : [];
+//     let state = req.body.state ? parseInput(req.body.state) : [];
+//     let category = req.body.category ? parseInput(req.body.category) : [];
+//     const { brand } = req.body;
+
+//     // Adjusting for multiple files; map each file to its path
+//     const imageUrls = req.files ? req.files.map((file) => file.path) : [];
+
+//     const offerData = {
+//       ...req.body,
+//       tags, // Use parsed tags
+//       state, // Use parsed state
+//       imageUrls,
+//       category,
+//       isApproved: false,
+//       brand,
+//     };
+
+//     // Optionally remove properties if not part of your model
+
+//     // Create the offer with the brand linked
+//     const newOffer = await Offer.create(offerData);
+//     // If `brand` is provided, update the Brand document to include this new offer
+//     if (brand) {
+//       // Make sure `brand` is the correct ObjectId format
+//       await Brand.findByIdAndUpdate(
+//         brand, // Use `brand` as the ID directly
+//         { $push: { offers: newOffer._id } }, // Pushing the offer ID to the brand's offers array
+//         { new: true, safe: true, upsert: false } // Options for findByIdAndUpdate
+//       );
+//     }
+//     res.status(201).json({ success: true, data: newOffer });
+//   } catch (error) {
+//     console.error("Error creating offer:", error);
+//     res.status(400).json({ success: false, error: error.message });
+//   }
+// };
+
+// Helper function to parse input to array format
+
 exports.createOffer = async (req, res) => {
   console.log("Request Body:", req.body);
   console.log("Request Files:", req.files);
@@ -40,12 +89,12 @@ exports.createOffer = async (req, res) => {
         .status(400)
         .json({ success: false, error: req.fileValidationError });
     }
+
     let tags = req.body.tags ? parseInput(req.body.tags) : [];
     let state = req.body.state ? parseInput(req.body.state) : [];
     let category = req.body.category ? parseInput(req.body.category) : [];
-    const { brand } = req.body;
+    const { brand, description, url } = req.body;
 
-    // Adjusting for multiple files; map each file to its path
     const imageUrls = req.files ? req.files.map((file) => file.path) : [];
 
     const offerData = {
@@ -58,19 +107,23 @@ exports.createOffer = async (req, res) => {
       brand,
     };
 
-    // Optionally remove properties if not part of your model
+    if (!description) {
+      delete offerData.description;
+    }
+    if (!url) {
+      delete offerData.url;
+    }
 
-    // Create the offer with the brand linked
     const newOffer = await Offer.create(offerData);
-    // If `brand` is provided, update the Brand document to include this new offer
+
     if (brand) {
-      // Make sure `brand` is the correct ObjectId format
       await Brand.findByIdAndUpdate(
-        brand, // Use `brand` as the ID directly
-        { $push: { offers: newOffer._id } }, // Pushing the offer ID to the brand's offers array
-        { new: true, safe: true, upsert: false } // Options for findByIdAndUpdate
+        brand,
+        { $push: { offers: newOffer._id } },
+        { new: true, safe: true, upsert: false }
       );
     }
+
     res.status(201).json({ success: true, data: newOffer });
   } catch (error) {
     console.error("Error creating offer:", error);
@@ -78,7 +131,27 @@ exports.createOffer = async (req, res) => {
   }
 };
 
-// Helper function to parse input to array format
+function parseInput(input) {
+  if (Array.isArray(input)) {
+    return input; // Already an array, return as is
+  } else if (typeof input === "string") {
+    try {
+      // Attempt to parse as JSON array
+      const parsed = JSON.parse(input);
+      if (Array.isArray(parsed)) {
+        return parsed; // Successfully parsed JSON array
+      } else {
+        return [parsed]; // Parsed single value, return as array
+      }
+    } catch (error) {
+      // Not a JSON string, treat as single string value
+      return [input]; // Return as array with single item
+    }
+  } else {
+    return []; // Unsupported type, return empty array
+  }
+}
+
 function parseInput(input) {
   if (Array.isArray(input)) {
     return input; // Already an array, return as is
