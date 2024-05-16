@@ -19,7 +19,7 @@ const OfferModal = ({ offer, onClose, onModify, onDelete, position }) => {
 
       if (window.innerWidth >= 1024) {
         // Assuming 'lg' breakpoint is 1024px
-        newStyle.transform = "translate(-50%, -50%)";
+        newStyle.transform = "translate(-63%, -50%)";
       } else {
         newStyle.transform = "translate(-50%, -50%)";
       }
@@ -35,7 +35,7 @@ const OfferModal = ({ offer, onClose, onModify, onDelete, position }) => {
 
   return (
     <div
-      className="absolute inset-0 z-50 overflow-auto bg-[#1E1F53] opacity-95 modalClass w-[241px] items-center justify-center lg:max-w-[280px] md:h-[285px] h-[200px]"
+      className="absolute inset-0 z-50 overflow-auto bg-[#1E1F53] opacity-95 modalClass md:w-[290px] w-[240px] items-center justify-center lg:max-w-[280px] md:h-[285px] h-[200px]"
       style={modalStyle}
     >
       <div className="relative flex-col flex items-center justify-end md:h-[285px] h-[200px] rounded-lg">

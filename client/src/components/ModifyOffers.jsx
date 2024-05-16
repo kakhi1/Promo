@@ -1,30 +1,25 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { FaPlus, FaTrash } from "react-icons/fa";
-
 import { useAuth } from "../context/AuthContext";
 
 function ModifyOffers() {
   const { userRole } = useAuth();
   const { offerId } = useParams();
-  console.log(offerId);
   const fileInputRef = useRef(null);
   const { user, token } = useAuth();
   const navigate = useNavigate();
-  const [brandId, setBrandId] = useState(null);
-  const [offerImage, setOfferImage] = useState(null);
   const [offerInfo, setOfferInfo] = useState({
     title: "",
     description: "",
-    category: [], // Now a single string, not String constructor
-    url: "", // Changed from 'url' to 'link' to match schema
-    tags: [], // An array of strings, initialized as empty
-    state: [], // An array of strings, initialized as empty
+    category: [],
+    url: "",
+    tags: [],
+    state: [],
   });
-  const [image, setImage] = useState(null);
-  const [offerImages, setOfferImages] = useState([]); // Holds the File objects
+  const [offerImages, setOfferImages] = useState([]);
   const [imagesPreview, setImagesPreview] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
   const [states, setStates] = useState([]);
@@ -33,10 +28,12 @@ function ModifyOffers() {
   const [allStates, setAllStates] = useState([]);
   const [visibleStates, setVisibleStates] = useState([]);
 
+  const [allowWithoutDescription, setAllowWithoutDescription] = useState(false);
+  const [allowWithoutUrl, setAllowWithoutUrl] = useState(false);
+
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
 
-    // Assuming setOfferImages and setImagesPreview are meant to manage an array of file objects and their preview URLs respectively
     const newFiles = files.filter(
       (file) =>
         !offerImages.some((existingFile) => existingFile.name === file.name)
@@ -46,18 +43,15 @@ function ModifyOffers() {
     setOfferImages((prevImages) => [...prevImages, ...newFiles]);
     setImagesPreview((prevUrls) => [...prevUrls, ...newImageUrls]);
 
-    // Reset errors if necessary
     if (errors.offerImage) {
       setErrors((prevErrors) => ({ ...prevErrors, offerImage: undefined }));
     }
   };
 
   const handleImageDelete = (index) => {
-    // Remove the image from the offerImages array
     const newOfferImages = offerImages.filter((_, i) => i !== index);
     setOfferImages(newOfferImages);
 
-    // Remove the image preview URL from the imagesPreview array
     const newImagesPreview = imagesPreview.filter((_, i) => i !== index);
     setImagesPreview(newImagesPreview);
   };
@@ -78,7 +72,6 @@ function ModifyOffers() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            // Add authorization if needed
           },
           body: JSON.stringify({ name: inputValue }),
         }
@@ -93,7 +86,6 @@ function ModifyOffers() {
         ...prevTags,
         { value: newTag._id, label: newTag.name },
       ]);
-      // Also update the selected tags in the offer to include the new tag
       setOfferInfo((prev) => ({
         ...prev,
         tags: [...prev.tags, { value: newTag._id, label: newTag.name }],
@@ -102,13 +94,13 @@ function ModifyOffers() {
       console.error("Error creating new tag:", error);
     }
   };
+
   const handleStateChange = (selectedOptions) => {
     const isSelectAll = selectedOptions.some(
       (option) => option.value === "all"
     );
 
     if (isSelectAll) {
-      // Select all states except the 'all' option
       const allSelectedStates = allStates.filter(
         (option) => option.value !== "all"
       );
@@ -117,7 +109,6 @@ function ModifyOffers() {
         state: allSelectedStates,
       }));
     } else {
-      // Select only the chosen states
       setOfferInfo((prev) => ({
         ...prev,
         state: selectedOptions,
@@ -127,33 +118,50 @@ function ModifyOffers() {
 
   const handleTagsChange = (selectedOptions) => {
     setOfferInfo((prev) => ({ ...prev, tags: selectedOptions || [] }));
-    console.log("Updated tags selected:", selectedOptions);
   };
 
   const handleCategoryChange = (selectedOptions) => {
     setOfferInfo((prev) => ({ ...prev, category: selectedOptions || [] }));
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Submitting form...");
-    console.log("User role:", userRole);
+    let newErrors = {};
 
-    let updatedOfferInfo = { ...offerInfo };
-    console.log("offerInfo", offerInfo);
-
-    // If userRole is 'brand', then the offer's status should be set to 'pending'
-    if (userRole === "brand") {
-      console.log("User is a brand, setting status to pending...");
-      updatedOfferInfo.status = "pending";
-    } else {
-      console.log("User is not a brand, applying non-brand specific logic...");
+    if (!offerInfo.title) newErrors.title = "გთხოვ შეავსოთ დასახელება";
+    if (!allowWithoutDescription && !offerInfo.description) {
+      newErrors.description = "გთხოვ შეავსოთ პროდუქციის აღწერა";
+    }
+    if (!offerInfo.category.length) newErrors.category = "მიუთითეთ კატეგორია";
+    if (!allowWithoutUrl && !offerInfo.url) {
+      newErrors.url = "გთხოვ მიუთით მისამართი (url)";
+    }
+    if (
+      allowWithoutDescription &&
+      allowWithoutUrl &&
+      (!offerInfo.description || !offerInfo.url)
+    ) {
+      newErrors.descriptionUrl =
+        "შეთავაზება უნდა შეიცავდეს ან აღწერას ან URL-ს";
+    }
+    if (!offerInfo.tags.length) newErrors.tags = "გთხოვ მონიშნოთ თაგი(ები)";
+    if (!offerInfo.state.length) newErrors.state = "გთხოვ მიუთითოთ ქალაქი";
+    if (offerImages.length === 0 && imagesPreview.length === 0) {
+      newErrors.offerImage = "გთხოვ ატვირთოთ სურათი";
     }
 
-    // Debugging: Log the updated offer info before sending
-    console.log("Updated offer info before sending:", updatedOfferInfo);
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
-    // Prepare FormData for submission
+    let updatedOfferInfo = { ...offerInfo };
+
+    if (userRole === "brand") {
+      updatedOfferInfo.status = "pending";
+    }
+
     const formData = new FormData();
 
     formData.append("role", user.role);
@@ -161,7 +169,6 @@ function ModifyOffers() {
 
     Object.entries(updatedOfferInfo).forEach(([key, value]) => {
       if (key === "tags" || key === "state" || key === "category") {
-        // Convert object or array of objects to a JSON string
         formData.append(key, JSON.stringify(value));
       } else if (Array.isArray(value)) {
         value.forEach((item) => formData.append(key, item));
@@ -169,11 +176,7 @@ function ModifyOffers() {
         formData.append(key, value);
       }
     });
-    // Debugging: Log FormData contents
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}: ${value}`);
-    }
-    // Retrieve the token
+
     const token = localStorage.getItem("userToken");
 
     try {
@@ -185,7 +188,6 @@ function ModifyOffers() {
             Authorization: `Bearer ${token}`,
           },
           body: formData,
-          // Include headers for authentication as required by your API
         }
       );
 
@@ -194,8 +196,7 @@ function ModifyOffers() {
       }
 
       const updatedOffer = await response.json();
-      console.log("Offer updated successfully:", updatedOffer);
-      navigate(`/offer-details/${offerId}`); // Adjust this to match your routing setup
+      navigate(`/offer-details/${offerId}`);
     } catch (error) {
       console.error("Error updating offer:", error);
       setErrors({
@@ -245,7 +246,6 @@ function ModifyOffers() {
 
     fetchData();
   }, []);
-  console.log("userRole in Offersmodify:", userRole);
 
   useEffect(() => {
     const fetchOfferDetails = async () => {
@@ -286,11 +286,8 @@ function ModifyOffers() {
                 }
             ),
             url: offer.url,
-            // originalPrice: offer.originalPrice.toString(),
-            // discountPrice: offer.discountPrice.toString(),
           }));
 
-          // Assuming your images URLs are stored in a way that needs transformation
           setImagesPreview(
             offer.imageUrls.map(
               (url) =>
@@ -304,12 +301,12 @@ function ModifyOffers() {
     };
 
     fetchOfferDetails();
-    // This useEffect depends on allCategories, states, and tags being loaded, hence they are in the dependency array
   }, [offerId, allCategories, states, tags]);
 
   if (allCategories.length === 0 || states.length === 0 || tags.length === 0) {
     return <div>Loading...</div>;
   }
+
   return (
     <div className="flex">
       <div className="flex items-center flex-col justify-between h-full w-full">
@@ -327,7 +324,6 @@ function ModifyOffers() {
               <p>სურათის ატვირთვა</p>
             </div>
 
-            {/* Hidden input for handling the actual file upload */}
             <input
               type="file"
               id="imageUpload"
@@ -357,38 +353,9 @@ function ModifyOffers() {
             {errors.offerImage && (
               <span className="text-red-500 text-sm">{errors.offerImage}</span>
             )}
-
-            {/* Original Price Input */}
-            {/* <div className=" flex md:w-2/3 w-[93%] mt-4 justify-start items-center flex-col gap-4">
-              <h1 className="text-start w-full  text-base font-semibold">
-                მიუთითე თავდაპირველი ფასი
-              </h1>
-              <input
-                type="text"
-                name="originalPrice"
-                placeholder="თავდაპირველი ფასი"
-                value={offerInfo.originalPrice}
-                onChange={handleChange}
-                className="input input-bordered w-full mb-2 border-2 border-[#CED4DA] h-8 rounded-md pl-6"
-              />
-            </div> */}
-            {/* Discount Price Input */}
-            {/* <div className=" flex md:w-2/3 w-[93%] mt-4 justify-start items-center flex-col gap-4">
-              <h1 className="text-start w-full  text-base font-semibold">
-                მიუთითე ფასი ფასდაკლებით
-              </h1>
-              <input
-                type="text"
-                name="discountPrice"
-                placeholder="ფასი ფასდაკლების შემდეგ"
-                value={offerInfo.discountPrice}
-                onChange={handleChange}
-                className="input input-bordered w-full mb-2 border-2 border-[#CED4DA] h-8 rounded-md pl-6"
-              />
-            </div> */}
           </div>
 
-          <div className="flex flex-col w-full md:w-2/3 md:flex-row h-full md:mt-6  gap-4 p-4">
+          <div className="flex flex-col w-full md:w-2/3 md:flex-row h-full md:mt-6 gap-4 p-4">
             <div className="flex flex-col gap-4 w-full">
               <input
                 type="text"
@@ -407,17 +374,46 @@ function ModifyOffers() {
                 value={offerInfo.description}
                 onChange={handleChange}
                 className="textarea textarea-bordered w-full h-32 mb-2 border-2 border-[#CED4DA] rounded-md p-6"
-              ></textarea>{" "}
+              ></textarea>
               {errors.description && (
                 <span className="text-red-500 text-sm">
                   {errors.description}
+                </span>
+              )}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="allowWithoutDescription"
+                  checked={allowWithoutDescription}
+                  onChange={() =>
+                    setAllowWithoutDescription(!allowWithoutDescription)
+                  }
+                />
+                <label htmlFor="allowWithoutDescription" className="ml-2">
+                  დამატება აღწერის გარეშე
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="allowWithoutUrl"
+                  checked={allowWithoutUrl}
+                  onChange={() => setAllowWithoutUrl(!allowWithoutUrl)}
+                />
+                <label htmlFor="allowWithoutUrl" className="ml-2">
+                  დამატება URL-ის გარეშე
+                </label>
+              </div>
+              {errors.descriptionUrl && (
+                <span className="text-red-500 text-sm">
+                  {errors.descriptionUrl}
                 </span>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="w-full flex justify-start items-center flex-col gap-4">
                   <h1 className="text-start w-full  text-base font-semibold">
                     მიუთითეთ თეგები
-                  </h1>{" "}
+                  </h1>
                   <CreatableSelect
                     isMulti
                     name="tags"

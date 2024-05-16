@@ -151,6 +151,7 @@ const UserArea = () => {
                     views={offer.views}
                     userRole={user.role}
                     onFavoriteToggle={refreshFavorites}
+                    offer={offer}
                   />
                 );
               })}
@@ -193,6 +194,7 @@ const UserArea = () => {
                     views={offer.views}
                     userRole={user.role}
                     onFavoriteToggle={refreshFavorites}
+                    offer={offer}
                   />
                 )
               )}

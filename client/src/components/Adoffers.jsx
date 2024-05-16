@@ -15,15 +15,15 @@ function Adoffers() {
   const [offerInfo, setOfferInfo] = useState({
     title: "",
     description: "",
-    category: [], // Now a single string, not String constructor
-    url: "", // Changed from 'url' to 'link' to match schema
-    tags: [], // An array of strings, initialized as empty
-    state: [], // An array of strings, initialized as empty
-    originalPrice: "", // New state for original price
+    category: [],
+    url: "",
+    tags: [],
+    state: [],
+    originalPrice: "",
     discountPrice: "",
   });
   const [image, setImage] = useState(null);
-  const [offerImages, setOfferImages] = useState([]); // Holds the File objects
+  const [offerImages, setOfferImages] = useState([]);
   const [imagesPreview, setImagesPreview] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
   const [states, setStates] = useState([]);
@@ -32,10 +32,12 @@ function Adoffers() {
   const [allStates, setAllStates] = useState([]);
   const [visibleStates, setVisibleStates] = useState([]);
 
+  const [allowWithoutDescription, setAllowWithoutDescription] = useState(false);
+  const [allowWithoutUrl, setAllowWithoutUrl] = useState(false);
+
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
 
-    // Assuming setOfferImages and setImagesPreview are meant to manage an array of file objects and their preview URLs respectively
     const newFiles = files.filter(
       (file) =>
         !offerImages.some((existingFile) => existingFile.name === file.name)
@@ -45,24 +47,21 @@ function Adoffers() {
     setOfferImages((prevImages) => [...prevImages, ...newFiles]);
     setImagesPreview((prevUrls) => [...prevUrls, ...newImageUrls]);
 
-    // Reset errors if necessary
     if (errors.offerImage) {
       setErrors((prevErrors) => ({ ...prevErrors, offerImage: undefined }));
     }
   };
 
   const handleImageDelete = (index) => {
-    // Remove the image from the offerImages array
     const newOfferImages = offerImages.filter((_, i) => i !== index);
     setOfferImages(newOfferImages);
 
-    // Remove the image preview URL from the imagesPreview array
     const newImagesPreview = imagesPreview.filter((_, i) => i !== index);
     setImagesPreview(newImagesPreview);
   };
+
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setOfferInfo((prev) => ({ ...prev, [name]: value }));
     setOfferInfo((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
       setErrors((prevErrors) => ({ ...prevErrors, [name]: undefined }));
@@ -75,7 +74,6 @@ function Adoffers() {
     );
 
     if (isSelectAll) {
-      // If 'Select All' is selected, set the visible states to all available states (excluding the 'all' option)
       const allSelectedStates = allStates.filter(
         (option) => option.value !== "all"
       );
@@ -85,7 +83,6 @@ function Adoffers() {
       }));
       setVisibleStates(allSelectedStates);
     } else {
-      // Set the selected states and update visible states accordingly
       setOfferInfo((prev) => ({
         ...prev,
         state: selectedOptions,
@@ -97,13 +94,12 @@ function Adoffers() {
   const handleCategoryChange = (selectedOptions) => {
     setOfferInfo((prev) => ({
       ...prev,
-      category: selectedOptions || [], // Store the array of selected options
+      category: selectedOptions || [],
     }));
   };
 
   const handleTagsChange = async (selectedOptions, actionMeta) => {
     if (actionMeta.action === "create-option") {
-      // Handle new tag creation
       const newTagName = actionMeta.option.value;
       try {
         const response = await fetch(
@@ -132,7 +128,6 @@ function Adoffers() {
         ]);
       } catch (error) {
         console.error("Error adding tag:", error);
-        // Optionally handle error, e.g., show an error message
       }
     }
 
@@ -144,12 +139,24 @@ function Adoffers() {
 
     let newErrors = {};
 
-    // Validation checks (assuming offerInfo and offerImages are correctly defined in your component's state)
     if (!offerInfo.title) newErrors.title = "გთხოვ შეავსოთ დასახელება";
-    if (!offerInfo.description)
+    if (!allowWithoutDescription && !offerInfo.description) {
       newErrors.description = "გთხოვ შეავსოთ პროდუქციის აღწერა";
-    if (!offerInfo.category) newErrors.category = "მიუთითეთ კატეგორია";
-    if (!offerInfo.url) newErrors.url = "გთხოვ მიუთით მისამართი (url)";
+    }
+    if (!offerInfo.category.length) newErrors.category = "მიუთითეთ კატეგორია";
+    if (!allowWithoutUrl && !offerInfo.url) {
+      newErrors.url = "გთხოვ მიუთით მისამართი (url)";
+    }
+
+    if (
+      allowWithoutDescription &&
+      allowWithoutUrl &&
+      (!offerInfo.description || !offerInfo.url)
+    ) {
+      newErrors.descriptionUrl =
+        "შეთავაზება უნდა შეიცავდეს ან აღწერას ან URL-ს";
+    }
+
     if (!offerInfo.tags.length) newErrors.tags = "გთხოვ მონიშნოთ თაგი(ები)";
     if (!offerInfo.state.length) newErrors.state = "გთხოვ მიუთითოთ ქალაქი";
     if (offerImages.length === 0)
@@ -157,32 +164,24 @@ function Adoffers() {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      return; // Stop form submission if there are errors
+      return;
     }
 
-    setErrors({}); // Reset errors before proceeding
-    console.log(
-      "Submitting category:",
-      offerInfo.category,
-      typeof offerInfo.category
-    );
+    setErrors({});
 
     const formData = new FormData();
 
-    // Append files to formData
     offerImages.forEach((file) => {
       formData.append("images", file);
     });
     formData.append("brand", user.brand);
 
     Object.entries(offerInfo).forEach(([key, value]) => {
-      // Skip appending originalPrice and discountPrice if they are not used
       if (key === "originalPrice" || key === "discountPrice") {
         if (value) {
           formData.append(key, value);
         }
       } else {
-        // For array values, append each value under the same key
         if (Array.isArray(value)) {
           value.forEach((item) => formData.append(key, item.value || item));
         } else {
@@ -190,16 +189,6 @@ function Adoffers() {
         }
       }
     });
-
-    // formData.append("category", offerInfo.category);
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
-
-    // Log formData for debugging (optional)
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-    }
 
     try {
       const response = await fetch(
@@ -218,7 +207,7 @@ function Adoffers() {
 
       const data = await response.json();
 
-      navigate("/"); // Adjust as needed for your routing setup
+      navigate("/");
     } catch (error) {
       console.error("Submission error:", error);
       setErrors({ general: "A network error occurred. Please try again." });
@@ -235,7 +224,7 @@ function Adoffers() {
           "https://promo-iror.onrender.com/api/data/states"
         );
         const tagsResponse = await fetch(
-          "https://promo-iror.onrender.com/api/data/tags"
+          "https://promo-iror.onrender.com//api/data/tags"
         );
 
         const categoriesData = await categoriesResponse.json();
@@ -269,7 +258,7 @@ function Adoffers() {
   return (
     <div className="flex">
       <div className="flex items-center flex-col justify-between h-full w-full">
-        <h1 className="text-start w-full md:ml-24 ml-8 text-base font-semibold pt-4 ">
+        <h1 className="text-start w-full md:ml-24 ml-8 text-base font-semibold pt-4">
           ახალი შეთავაზების დამატება
         </h1>
         <div className="flex md:flex-row flex-col justify-between md:h-full w-full pt-4">
@@ -282,8 +271,6 @@ function Adoffers() {
               <FaPlus size={24} color="#5E5FB2" />
               <p>სურათის ატვირთვა</p>
             </div>
-
-            {/* Hidden input for handling the actual file upload */}
             <input
               type="file"
               id="imageUpload"
@@ -312,38 +299,9 @@ function Adoffers() {
             {errors.offerImage && (
               <span className="text-red-500 text-sm">{errors.offerImage}</span>
             )}
-
-            {/* Original Price Input */}
-            {/* <div className=" flex md:w-2/3 w-[93%] mt-4 justify-start items-center flex-col gap-4">
-              <h1 className="text-start w-full  text-base font-semibold">
-                მიუთითე თავდაპირველი ფასი
-              </h1>
-              <input
-                type="text"
-                name="originalPrice"
-                placeholder="თავდაპირველი ფასი"
-                value={offerInfo.originalPrice}
-                onChange={handleChange}
-                className="input input-bordered w-full mb-2 border-2 border-[#CED4DA] h-8 rounded-md pl-6"
-              />
-            </div> */}
-            {/* Discount Price Input */}
-            {/* <div className=" flex md:w-2/3 w-[93%] mt-4 justify-start items-center flex-col gap-4">
-              <h1 className="text-start w-full  text-base font-semibold">
-                მიუთითე ფასი ფასდაკლებით
-              </h1>
-              <input
-                type="text"
-                name="discountPrice"
-                placeholder="ფასი ფასდაკლების შემდეგ"
-                value={offerInfo.discountPrice}
-                onChange={handleChange}
-                className="input input-bordered w-full mb-2 border-2 border-[#CED4DA] h-8 rounded-md pl-6"
-              />
-            </div> */}
           </div>
 
-          <div className="flex flex-col w-full md:w-2/3 md:flex-row h-full md:mt-6  gap-4 p-4">
+          <div className="flex flex-col w-full md:w-2/3 md:flex-row h-full md:mt-6 gap-4 p-4">
             <div className="flex flex-col gap-4 w-full">
               <input
                 type="text"
@@ -360,17 +318,46 @@ function Adoffers() {
                 placeholder="შეიყვანე პროდუქტის აღწერა"
                 onChange={handleChange}
                 className="textarea textarea-bordered w-full h-32 mb-2 border-2 border-[#CED4DA] rounded-md p-6"
-              ></textarea>{" "}
+              ></textarea>
               {errors.description && (
                 <span className="text-red-500 text-sm">
                   {errors.description}
                 </span>
               )}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="allowWithoutDescription"
+                  checked={allowWithoutDescription}
+                  onChange={() =>
+                    setAllowWithoutDescription(!allowWithoutDescription)
+                  }
+                />
+                <label htmlFor="allowWithoutDescription" className="ml-2">
+                  დამატება აღწერის გარეშე
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="allowWithoutUrl"
+                  checked={allowWithoutUrl}
+                  onChange={() => setAllowWithoutUrl(!allowWithoutUrl)}
+                />
+                <label htmlFor="allowWithoutUrl" className="ml-2">
+                  დამატება URL-ის გარეშე
+                </label>
+              </div>
+              {errors.descriptionUrl && (
+                <span className="text-red-500 text-sm">
+                  {errors.descriptionUrl}
+                </span>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="w-full flex justify-start items-center flex-col gap-4">
-                  <h1 className="text-start w-full  text-base font-semibold">
+                  <h1 className="text-start w-full text-base font-semibold">
                     მიუთითეთ თეგები
-                  </h1>{" "}
+                  </h1>
                   <CreatableSelect
                     isMulti
                     name="tags"
@@ -385,10 +372,9 @@ function Adoffers() {
                   )}
                 </div>
                 <div className="w-full flex justify-start items-center flex-col gap-4">
-                  <h1 className="text-start w-full  text-base font-semibold">
+                  <h1 className="text-start w-full text-base font-semibold">
                     აირჩიე ქალაქები
                   </h1>
-
                   <Select
                     isMulti
                     name="state"
@@ -405,7 +391,7 @@ function Adoffers() {
                   )}
                 </div>
                 <div className="w-full flex justify-start items-center flex-col gap-4">
-                  <h1 className="text-start w-full  text-base font-semibold">
+                  <h1 className="text-start w-full text-base font-semibold">
                     ბმული
                   </h1>
                   <input
@@ -419,9 +405,8 @@ function Adoffers() {
                     <span className="text-red-500 text-sm">{errors.url}</span>
                   )}
                 </div>
-
                 <div className="w-full flex justify-start items-center flex-col gap-4">
-                  <h1 className="text-start w-full  text-base font-semibold">
+                  <h1 className="text-start w-full text-base font-semibold">
                     მიუთითეთ კატეგორია
                   </h1>
                   <Select

@@ -26,7 +26,9 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("user")) || null
   );
-  const [userRole, setUserRole] = useState(null);
+  const [userRole, setUserRole] = useState(
+    localStorage.getItem("userRole") || null
+  );
   const [token, setToken] = useState(localStorage.getItem("userToken") || null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedTag, setSelectedTag] = useState(null);
@@ -42,7 +44,6 @@ export const AuthProvider = ({ children }) => {
           const { data } = await axiosInstance.post("/users/login-by-ip", {
             ip,
           });
-          console.log("data", data);
 
           if (data.user && data.token) {
             setUser(data.user);
@@ -52,6 +53,7 @@ export const AuthProvider = ({ children }) => {
             setToken(data.token);
             sessionStorage.setItem("userToken", data.token); // Consider sessionStorage for less persistence
             sessionStorage.setItem("user", JSON.stringify(data.user));
+            sessionStorage.setItem("userRole", data.user.role);
           }
         } catch (error) {
           console.error("Login by IP failed:", error);
@@ -65,19 +67,20 @@ export const AuthProvider = ({ children }) => {
     }
     fetchIPAndLogin();
   }, [token]);
-  console.log("token in auth", token);
+
   const clearCategoryAndTag = () => {
     setSelectedCategory(null);
     setSelectedTag(null);
   };
 
-  const login = (userData, rememberMe = false) => {
+  const login = (userData) => {
     setUser(userData);
     setUserRole(userData.role);
-    if (rememberMe && userData.token) {
+    if (userData.token) {
       setToken(userData.token);
       localStorage.setItem("userToken", userData.token);
       localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("userRole", userData.role);
     }
   };
 
@@ -87,6 +90,7 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     localStorage.removeItem("user");
     localStorage.removeItem("userToken");
+    localStorage.removeItem("userRole");
     clearCategoryAndTag();
   };
 
