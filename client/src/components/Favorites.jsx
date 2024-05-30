@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import config from "../config";
 import OffersCard from "./OffersCard";
 import AdComponent from "./AdComponent";
 import { useAuth } from "../context/AuthContext";
+import { IoMdPhonePortrait } from "react-icons/io";
 
 const Favorites = () => {
   const [offers, setOffers] = useState([]);
@@ -16,7 +18,7 @@ const Favorites = () => {
   useEffect(() => {
     const fetchPopularFavorites = async () => {
       setLoading(true);
-      const url = "https://promo-iror.onrender.com/api/users/popular-favorites";
+      const url = `${config.apiBaseUrl}/api/users/popular-favorites`;
 
       try {
         const response = await axios.get(url);
@@ -41,7 +43,7 @@ const Favorites = () => {
     if (isAuthenticated && userId) {
       try {
         const response = await axios.get(
-          `https://promo-iror.onrender.com/api/users/${userId}/favorites`,
+          `${config.apiBaseUrl}/api/users/${userId}/favorites`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -70,7 +72,7 @@ const Favorites = () => {
       return []; // Return an empty array if no valid image URLs exist
     }
 
-    const baseUrl = "https://promo-iror.onrender.com/";
+    const baseUrl = `${config.apiBaseUrl}/`;
     return offer.imageUrls.map(
       (path) => `${baseUrl}${path.replace(/\\/g, "/")}`
     );

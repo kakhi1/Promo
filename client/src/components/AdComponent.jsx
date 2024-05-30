@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
+import config from "../config";
 
 const AdComponent = ({ pageType }) => {
   const [ads, setAds] = useState([]);
-  const imageBaseUrl = "https://promo-iror.onrender.com/"; // Define your image base URL
+  const imageBaseUrl = `${config.apiBaseUrl}/`; // Define your image base URL
 
   useEffect(() => {
-    fetch("https://promo-iror.onrender.com/api/ads/ads")
+    fetch(`${config.apiBaseUrl}api/ads/ads`)
       .then((res) => res.json())
       .then((data) => {
         const filteredAds = data.filter((ad) => {

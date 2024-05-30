@@ -4,6 +4,7 @@ import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
+import config from "../config";
 
 function ModifyOffers() {
   const { userRole } = useAuth();
@@ -66,16 +67,13 @@ function ModifyOffers() {
 
   const handleCreateTag = async (inputValue) => {
     try {
-      const response = await fetch(
-        "https://promo-iror.onrender.com/api/data/tags",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name: inputValue }),
-        }
-      );
+      const response = await fetch(`${config.apiBaseUrl}/api/data/tags`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: inputValue }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to create tag");
@@ -181,7 +179,7 @@ function ModifyOffers() {
 
     try {
       const response = await fetch(
-        `https://promo-iror.onrender.com/api/offers/${offerId}`,
+        `${config.apiBaseUrl}/api/offers/${offerId}`,
         {
           method: "PUT",
           headers: {
@@ -209,14 +207,12 @@ function ModifyOffers() {
     const fetchData = async () => {
       try {
         const categoriesResponse = await fetch(
-          "https://promo-iror.onrender.com/api/data/categories"
+          `${config.apiBaseUrl}/api/data/categories`
         );
         const statesResponse = await fetch(
-          "https://promo-iror.onrender.com/api/data/states"
+          `${config.apiBaseUrl}/api/data/states`
         );
-        const tagsResponse = await fetch(
-          "https://promo-iror.onrender.com/api/data/tags"
-        );
+        const tagsResponse = await fetch(`${config.apiBaseUrl}/api/data/tags`);
 
         const categoriesData = await categoriesResponse.json();
         const statesData = await statesResponse.json();
@@ -252,7 +248,7 @@ function ModifyOffers() {
       if (allCategories.length > 0 && states.length > 0 && tags.length > 0) {
         try {
           const response = await fetch(
-            `https://promo-iror.onrender.com/api/offers/${offerId}`
+            `${config.apiBaseUrl}/api/offers/${offerId}`
           );
           if (!response.ok) {
             throw new Error("Failed to fetch offer details");
@@ -290,8 +286,7 @@ function ModifyOffers() {
 
           setImagesPreview(
             offer.imageUrls.map(
-              (url) =>
-                `https://promo-iror.onrender.com/${url.replace(/\\/g, "/")}`
+              (url) => `${config.apiBaseUrl}/${url.replace(/\\/g, "/")}`
             )
           );
         } catch (error) {

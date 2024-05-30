@@ -1,5 +1,6 @@
 // export default Categories;
 import React, { useState, useEffect } from "react";
+import config from "../config";
 import { FaBeer, FaApple, FaCar, FaTree, FaCameraRetro } from "react-icons/fa"; // Import the icons you need
 import { MdElectricBolt, MdOutlineSportsSoccer } from "react-icons/md";
 import { RiShirtFill } from "react-icons/ri";
@@ -31,7 +32,7 @@ function Categories() {
   };
 
   useEffect(() => {
-    fetch("https://promo-iror.onrender.com/api/data/categories")
+    fetch(`${config.apiBaseUrl}/api/data/categories`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");

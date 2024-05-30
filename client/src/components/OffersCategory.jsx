@@ -3,6 +3,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import OffersCard from "./OffersCard";
 import AdComponent from "./AdComponent";
+import config from "../config";
 
 const OffersCategory = () => {
   const [offers, setOffers] = useState([]);
@@ -13,7 +14,7 @@ const OffersCategory = () => {
   const offersPerPage = 12;
   const { categoryId } = useParams();
 
-  const baseUrl = "https://promo-iror.onrender.com/"; // Adjust this to your actual base URL
+  const baseUrl = `${config.apiBaseUrl}/`; // Adjust this to your actual base URL
 
   useEffect(() => {
     window.addEventListener("resize", () =>
@@ -34,7 +35,7 @@ const OffersCategory = () => {
 
       try {
         const response = await axios.get(
-          `https://promo-iror.onrender.com/api/offers?category=${categoryId}`
+          `${config.apiBaseUrl}/api/offers?category=${categoryId}`
         );
         if (response.data && response.data.data) {
           setOffers(response.data.data);

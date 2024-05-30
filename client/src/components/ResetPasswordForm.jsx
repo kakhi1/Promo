@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios"; // Ensure axios is installed
 import { useNavigate } from "react-router-dom";
-
+import config from "../config";
 function ResetPasswordForm({ token, onClose }) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -24,7 +24,7 @@ function ResetPasswordForm({ token, onClose }) {
 
     try {
       // Append the resetPasswordToken to the URL
-      const url = `https://promo-iror.onrender.com/api/users/reset-password/${token}`;
+      const url = `${config.apiBaseUrl}/api/users/reset-password/${token}`;
       const response = await axios.post(url, { password }); // Assuming the backend expects { password } in the body
 
       setSuccess("Your password has been reset successfully.");

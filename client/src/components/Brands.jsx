@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import BrandCard from "./BrandCard";
 import axios from "axios";
+import config from "../config";
 import AdComponent from "./AdComponent";
 import Tags from "./Tags";
 
@@ -22,7 +23,7 @@ const Brands = ({ selectedCategory, selectedTag, searchQuery }) => {
   useEffect(() => {
     const fetchBrands = async () => {
       setLoading(true);
-      let url = "https://promo-iror.onrender.com/api/brands";
+      let url = `${config.apiBaseUrl}/api/brands`;
 
       // Initialize URLSearchParams to handle query parameters.
       const params = new URLSearchParams();
@@ -100,7 +101,7 @@ const Brands = ({ selectedCategory, selectedTag, searchQuery }) => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 xl2:grid-cols-6 gap-4">
             {currentBrands.map((brand) => {
-              const baseUrl = "https://promo-iror.onrender.com/";
+              const baseUrl = `${config.apiBaseUrl}/`;
               const imagePath = brand.imageUrl.replace(/\\/g, "/");
               const fullImageUrl = baseUrl + imagePath;
 

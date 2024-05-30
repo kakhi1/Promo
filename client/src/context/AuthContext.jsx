@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import config from "../config";
 import axios from "axios";
 
 export const AuthContext = createContext();
@@ -6,7 +7,7 @@ export const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 const axiosInstance = axios.create({
-  baseURL: "https://promo-iror.onrender.com/api",
+  baseURL: `${config.apiBaseUrl}/api`,
 });
 
 axiosInstance.interceptors.request.use(

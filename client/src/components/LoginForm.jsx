@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import config from "../config";
 
 function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
   const [email, setEmail] = useState("");
@@ -13,16 +14,13 @@ function LoginForm({ onForgotPasswordClick, onRegisterClick }) {
     e.preventDefault();
     console.log("Submitting Login Form", { email, password, rememberMe });
     try {
-      const response = await fetch(
-        "https://promo-iror.onrender.com/api/users/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      const response = await fetch(`${config.apiBaseUrl}/api/users/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
       if (!response.ok) {
         throw new Error("Login failed");

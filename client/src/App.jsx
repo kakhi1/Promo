@@ -6,6 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import axios from "axios";
+import config from "./config";
 import PrivateRoute from "./components/PrivateRoute";
 import Header from "./components/Header";
 import Home from "./components/Home";
@@ -61,7 +62,7 @@ function App() {
 
   useEffect(() => {
     axios
-      .get("https://promo-iror.onrender.com/api/data/states")
+      .get(`${config.apiBaseUrl}/api/data/states`)
       .then((res) => setStatesList(res.data))
       .catch((err) => console.error("Error fetching states:", err));
 
@@ -76,7 +77,7 @@ function App() {
 
   const checkGuestUser = (ip) => {
     axios
-      .get(`https://promo-iror.onrender.com/api/check-modal/${ip}`)
+      .get(`${config.apiBaseUrl}/api/check-modal/${ip}`)
       .then((response) => {
         setIsWelcomeModalOpen(response.data.showModal);
       })
@@ -90,7 +91,7 @@ function App() {
       );
       const ipAddress = ipAddressResponse.data.ip;
 
-      await axios.post("https://promo-iror.onrender.com/api/guest-user", {
+      await axios.post(`${config.apiBaseUrl}/api/guest-user`, {
         state,
         ipAddress,
       });
@@ -99,56 +100,7 @@ function App() {
       console.error("Error handling welcome submit:", error);
     }
   };
-  // const handleModalClose = () => {
-  //   setShowInterestsModal(false); // Assuming this is how you control the modal visibility
-  // };
 
-  // const handleInterestsSubmit = async (selectedTags) => {
-  //   console.log("Received tags in parent:", selectedTags);
-  //   setUserDetails((prev) => ({
-  //     ...prev,
-  //     tags: selectedTags, // Ensure this is updating correctly
-  //   }));
-
-  //   // Optionally, if you're ready to save immediately after selecting tags
-  //   await saveUserDetails();
-  // };
-
-  // const saveUserDetails = async () => {
-  //   try {
-  //     await axios.post("http://localhost:5000/api/guest-user", userDetails);
-  //     console.log("User details saved successfully", userDetails);
-  //   } catch (error) {
-  //     throw error; // Propagate the error to be handled in the calling function
-  //   }
-  // };
-  // useEffect(() => {
-  //   if (userDetails.tags.length > 0) {
-  //     console.log("Final user details before submission:", userDetails);
-  //     saveUserDetails();
-  //   }
-  // }, [userDetails, saveUserDetails]);
-
-  // useEffect(() => {
-  //   // Fetch the user's IP and check against the backend
-  //   axios
-  //     .get("https://api.ipify.org?format=json")
-  //     .then((response) => {
-  //       const ip = response.data.ip;
-  //       checkGuestUser(ip);
-  //     })
-  //     .catch((err) => console.error("Error fetching IP address:", err));
-  // }, []);
-
-  // const checkGuestUser = (ip) => {
-  //   axios
-  //     .get(`http://localhost:5000/api/check-modal/${ip}`)
-  //     .then((response) => {
-  //       // Only show the welcome modal if the IP does not exist in the database
-  //       setIsWelcomeModalOpen(response.data.showModal);
-  //     })
-  //     .catch((err) => console.error("Error checking guest user:", err));
-  // };
   const userId = user?.id || user?._id;
   useEffect(() => {
     logUserActivity(); // Log user activity when the app loads
@@ -157,7 +109,7 @@ function App() {
   const logUserActivity = async () => {
     try {
       // Make an API call to log user activity
-      await axios.post("https://promo-iror.onrender.com/api/user-activity", {
+      await axios.post(`${config.apiBaseUrl}/api/user-activity`, {
         activity: "App Loaded",
       });
     } catch (error) {
@@ -189,67 +141,6 @@ function App() {
     setIsCategoriesOpen(false);
   };
 
-  // useEffect(() => {
-  //   if (user && navigator.geolocation) {
-  //     navigator.geolocation.getCurrentPosition(
-  //       async (position) => {
-  //         const { latitude, longitude } = position.coords;
-  //         try {
-  //           const city = await convertLatLongToState(
-  //             latitude,
-  //             longitude,
-  //             userId
-  //           );
-  //           setUserLocation(city);
-  //           // toast.success(`Location detected: ${city}`);
-  //         } catch (error) {
-  //           console.error("Geolocation fetching failed:", error);
-  //           toast.error(
-  //             "Unable to fetch your location. Please try again later."
-  //           );
-  //         }
-  //       },
-  //       (error) => {
-  //         console.error("Geolocation permission denied:", error);
-  //         toast.error("Location permission denied.");
-  //       }
-  //     );
-  //   }
-  // }, [user]);
-
-  // async function convertLatLongToState(latitude, longitude, userId) {
-  //   const apiKey = process.env.REACT_APP_GEOLOCATION_API_KEY;
-  //   const url = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKey}&pretty=1&no_annotations=1`;
-
-  //   try {
-  //     const response = await axios.get(url);
-  //     const data = response.data;
-  //     if (data.results.length > 0 && data.results[0].components) {
-  //       const city =
-  //         data.results[0].components.city ||
-  //         data.results[0].components._normalized_city;
-  //       if (city) {
-  //         await axios.put(`http://localhost:5000/users/${userId}/state`, {
-  //           englishStateName: city,
-  //         });
-  //         return city;
-  //       } else {
-  //         console.error(
-  //           "City not found in response components:",
-  //           data.results[0].components
-  //         );
-  //         return "Location not found";
-  //       }
-  //     } else {
-  //       console.error("No results found in the API response:", data);
-  //       return "Location not found";
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching geolocation city:", error);
-  //     throw error;
-  //   }
-  // }
-
   const handleShowRegisterForm = () => {
     setIsLoginOpen(false); // Close the login modal if open
     setIsRegisterOpen(true); // Open the registration modal
@@ -278,7 +169,7 @@ function App() {
         const ip = ipData.ip;
 
         const response = await axios.post(
-          "https://promo-iror.onrender.com/api/users/auto-register",
+          `${config.apiBaseUrl}/api/users/auto-register`,
           { ip }
         );
         console.log("User check/create response:", response.data);

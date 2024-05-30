@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import config from "../config";
 import OffersCard from "./OffersCard";
 import BrandCard from "./BrandCard";
 import { useAuth } from "../context/AuthContext";
@@ -41,13 +42,13 @@ const BrandInfo = () => {
   const isMobile = window.innerWidth < 768;
 
   // Your API base URL
-  const baseUrl = "https://promo-iror.onrender.com/";
+  const baseUrl = `${config.apiBaseUrl}/`;
 
   useEffect(() => {
     const fetchBrands = async () => {
       try {
         const response = await fetch(
-          `https://promo-iror.onrender.com/api/brands/${brandId}/suggestions`
+          `${config.apiBaseUrl}/api/brands/${brandId}/suggestions`
         );
         const data = await response.json();
         setBrands(data.data);
@@ -64,7 +65,7 @@ const BrandInfo = () => {
     const fetchBrandAndOffers = async () => {
       try {
         const brandResponse = await fetch(
-          `https://promo-iror.onrender.com/api/brands/${brandId}`
+          `${config.apiBaseUrl}/api/brands/${brandId}`
         );
         const brandData = await brandResponse.json();
         if (!brandResponse.ok)
@@ -72,7 +73,7 @@ const BrandInfo = () => {
 
         // Assuming there's an API to fetch all offers for a brand sorted by views
         const offersResponse = await fetch(
-          `https://promo-iror.onrender.com/api/brands/${brandId}/offers`
+          `${config.apiBaseUrl}/api/brands/${brandId}/offers`
         );
         const offersData = await offersResponse.json();
         if (!offersResponse.ok)
@@ -95,10 +96,7 @@ const BrandInfo = () => {
   if (!brand) return <div>No brand found.</div>;
 
   // Adjust the image path as needed
-  const imageUrl = `https://promo-iror.onrender.com/${brand.imageUrl.replace(
-    /\\/g,
-    "/"
-  )}`;
+  const imageUrl = `${config.apiBaseUrl}/${brand.imageUrl.replace(/\\/g, "/")}`;
 
   return (
     <div className="flex md:flex-row flex-col-reverse  px-10">
@@ -189,7 +187,7 @@ const BrandInfo = () => {
             : brands.slice(0, 8)
           ).map((brand) => {
             // and the images are served from the 'uploads' directory
-            const baseUrl = "https://promo-iror.onrender.com/";
+            const baseUrl = `${config.apiBaseUrl}/`;
             const imagePath = brand.imageUrl.replace(/\\/g, "/"); // Replace backslashes with forward slashes if needed
             const fullImageUrl = baseUrl + imagePath;
 

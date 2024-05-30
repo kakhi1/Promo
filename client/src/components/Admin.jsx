@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import config from "../config";
 import { useNavigate } from "react-router-dom";
 import BrandCard from "./BrandCard";
 import { FaPlus } from "react-icons/fa";
@@ -47,9 +48,7 @@ const Admin = () => {
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        const response = await fetch(
-          "https://promo-iror.onrender.com/api/offers/metrics"
-        ); // Replace '/your-endpoint-here' with your actual endpoint
+        const response = await fetch(`${config.apiBaseUrl}/api/offers/metrics`); // Replace '/your-endpoint-here' with your actual endpoint
         if (!response.ok) throw new Error("Network response was not ok");
         const data = await response.json();
         setMetrics(data.data);
@@ -64,7 +63,7 @@ const Admin = () => {
   }, []);
 
   useEffect(() => {
-    fetch("https://promo-iror.onrender.com/api/userActivityStats")
+    fetch(`${config.apiBaseUrl}/api/userActivityStats`)
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
@@ -88,7 +87,7 @@ const Admin = () => {
       setLoading(true);
       try {
         const response = await fetch(
-          "https://promo-iror.onrender.com/api/users/favorites/count"
+          `${config.apiBaseUrl}/api/users/favorites/count`
         ); // Adjust the URL as necessary
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -123,9 +122,7 @@ const Admin = () => {
     const fetchAds = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          "https://promo-iror.onrender.com/api/ads/ads"
-        );
+        const response = await axios.get(`${config.apiBaseUrl}/api/ads/ads`);
         setAds(response.data);
       } catch (error) {
         console.error("Failed to fetch ads:", error);
@@ -143,7 +140,7 @@ const Admin = () => {
   };
   const handleDeleteAd = async (id) => {
     try {
-      await axios.delete(`https://promo-iror.onrender.com/api/ads/ads/${id}`);
+      await axios.delete(`${config.apiBaseUrl}/api/ads/ads/${id}`);
       // Optionally, refresh the list of ads or manage state to remove the deleted ad
       setAds(ads.filter((ad) => ad._id !== id));
       setShowActionButtons(false); // Hide buttons after deletion
@@ -161,7 +158,7 @@ const Admin = () => {
     try {
       // Send a DELETE request to your backend
       const response = await axios.delete(
-        `https://promo-iror.onrender.com/api/brands/${brandId}`
+        `${config.apiBaseUrl}/api/brands/${brandId}`
       );
       if (response.status === 200 || response.status === 204) {
         // If deletion is successful, update the 'brands' state to remove the brand
@@ -200,15 +197,13 @@ const Admin = () => {
   };
 
   const navigate = useNavigate();
-  const imageBaseUrl = "https://promo-iror.onrender.com/";
+  const imageBaseUrl = `${config.apiBaseUrl}/`;
 
   useEffect(() => {
     const fetchAllOffers = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          "https://promo-iror.onrender.com/api/offers/all"
-        );
+        const response = await axios.get(`${config.apiBaseUrl}/api/offers/all`);
         const offersData = response.data.data;
 
         // Check if offersData is an array before attempting to sort
@@ -244,7 +239,7 @@ const Admin = () => {
     try {
       // Assuming 'selectedOffer' contains the ID of the offer you want to delete
       const response = await axios.delete(
-        `https://promo-iror.onrender.com/api/offers/${selectedOffer._id}`
+        `${config.apiBaseUrl}/api/offers/${selectedOffer._id}`
       );
       if (response.status === 200 || response.status === 204) {
         // Filter out the deleted offer from the 'offers' array
@@ -261,7 +256,7 @@ const Admin = () => {
       console.error("Failed to delete offer:", error);
     }
   };
-  const baseUrl = "https://promo-iror.onrender.com/";
+  const baseUrl = `${config.apiBaseUrl}/`;
   const navigateToAddOffers = () => {
     navigate("/adoffers");
   };
@@ -284,9 +279,7 @@ const Admin = () => {
     const fetchBrands = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          "https://promo-iror.onrender.com/api/brands"
-        );
+        const response = await fetch(`${config.apiBaseUrl}/api/brands`);
         const data = await response.json();
         if (data.success) {
           setBrands(data.data); // Assuming your API returns an array of brands in data.data
@@ -330,7 +323,7 @@ const Admin = () => {
                     key={brand._id}
                     id={brand._id}
                     name={brand.name}
-                    imageUrl={`https://promo-iror.onrender.com/${brand.imageUrl.replace(
+                    imageUrl={`${config.apiBaseUrl}/${brand.imageUrl.replace(
                       /\\/g,
                       "/"
                     )}`}

@@ -12,6 +12,7 @@ import BrandCard from "./BrandCard";
 import OffersCard from "./OffersCard";
 import { FaCopy } from "react-icons/fa";
 import AdComponent from "./AdComponent";
+import config from "../config";
 
 const OffersInfo = () => {
   const { offerId } = useParams();
@@ -37,7 +38,6 @@ const OffersInfo = () => {
   const [brands, setBrands] = useState([]);
   const [showAllBrands, setShowAllBrands] = useState(false);
   const { isAuthenticated, userRole } = useAuth();
-
   const { user, token } = useAuth();
 
   // const token = user?.token;
@@ -74,7 +74,7 @@ const OffersInfo = () => {
 
     try {
       const response = await axios.get(
-        `https://promo-iror.onrender.com/api/offers/visit/${offerId}`
+        `${config.apiBaseUrl}/api/offers/visit/${offerId}`
       );
     } catch (error) {
       console.error("Failed to increment visit:", error);
@@ -100,7 +100,7 @@ const OffersInfo = () => {
 
     try {
       await axios.post(
-        `https://promo-iror.onrender.com/api/offers/${offerId}/share`,
+        `${config.apiBaseUrl}/api/offers/${offerId}/share`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -153,7 +153,7 @@ const OffersInfo = () => {
       try {
         // Fetch offer details
         const offerResponse = await axios.get(
-          `https://promo-iror.onrender.com/api/offers/${offerId}`
+          `${config.apiBaseUrl}/api/offers/${offerId}`
         );
         setOffer(offerResponse.data);
         // Check if the offer is in the user's favorites if authenticated
@@ -175,7 +175,7 @@ const OffersInfo = () => {
       const checkFavoriteStatus = async () => {
         try {
           const response = await axios.get(
-            `https://promo-iror.onrender.com/api/users/${userId}/favorites/${offerId}`,
+            `${config.apiBaseUrl}/api/users/${userId}/favorites/${offerId}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -198,7 +198,7 @@ const OffersInfo = () => {
       return;
     }
 
-    const url = `https://promo-iror.onrender.com/api/users/${userId}/favorites/${offerId}`; // Ensure the offerId is used here
+    const url = `${config.apiBaseUrl}/api/users/${userId}/favorites/${offerId}`; // Ensure the offerId is used here
     const method = isLiked ? "delete" : "post";
 
     try {
@@ -232,8 +232,8 @@ const OffersInfo = () => {
       setLoading(true); // Assuming you have a loading state
       setError(null); // Assuming you have an error state
       try {
-        const offerUrl = `https://promo-iror.onrender.com/api/offers/${offerId}`;
-        const brandUrl = `https://promo-iror.onrender.com/api/brands/offers/${offerId}`;
+        const offerUrl = `${config.apiBaseUrl}/api/offers/${offerId}`;
+        const brandUrl = `${config.apiBaseUrl}/api/brands/offers/${offerId}`;
 
         const [offerResponse, brandResponse] = await Promise.all([
           fetch(offerUrl),
@@ -303,7 +303,7 @@ const OffersInfo = () => {
   const fetchBrands = async (brandId) => {
     try {
       const response = await fetch(
-        `https://promo-iror.onrender.com/api/brands/${brandId}/suggestions`
+        `${config.apiBaseUrl}/api/brands/${brandId}/suggestions`
       );
       const data = await response.json();
       console.log("data", data);
@@ -340,7 +340,7 @@ const OffersInfo = () => {
     setFetchOffersError(null);
     try {
       const response = await axios.get(
-        `https://promo-iror.onrender.com/api/offers/suggestions/${offerId}`
+        `${config.apiBaseUrl}/api/offers/suggestions/${offerId}`
       );
       setSuggestedOffers(response.data); // Assuming the API returns an array of offers directly
       setIsFetchingOffers(false);
@@ -369,7 +369,7 @@ const OffersInfo = () => {
   const showDiscountPrice =
     offer.discountPrice && offer.discountPrice < offer.originalPrice;
   // Construct the full URL for the image
-  const baseUrl = "https://promo-iror.onrender.com/";
+  const baseUrl = `${config.apiBaseUrl}/`;
   // const imagePath = offer.imageUrl.replace(/\\/g, "/");
   // const fullImageUrl = baseUrl + imagePath;
   if (!offer || !offer.imageUrls || offer.imageUrls.length === 0) {
@@ -573,7 +573,7 @@ const OffersInfo = () => {
               ? brands.slice(0, 4)
               : brands.slice(0, 8)
             ).map((brand) => {
-              const baseUrl = "https://promo-iror.onrender.com/";
+              const baseUrl = `${config.apiBaseUrl}/`;
               const imagePath = brand.imageUrl.replace(/\\/g, "/"); // Replace backslashes with forward slashes if needed
               const fullImageUrl = baseUrl + imagePath;
 

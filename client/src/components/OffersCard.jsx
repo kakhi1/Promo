@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
 import { RxPencil1 } from "react-icons/rx";
 import { FaRegTrashCan } from "react-icons/fa6";
-
+import config from "../config";
 const OffersCard = ({
   id,
   imageUrls = [],
@@ -35,7 +35,7 @@ const OffersCard = ({
     const fetchBrandName = async () => {
       try {
         const response = await axios.get(
-          `https://promo-iror.onrender.com/api/brands/${brandid}`,
+          `${config.apiBaseUrl}/api/brands/${brandid}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -59,7 +59,7 @@ const OffersCard = ({
 
     try {
       const response = await axios.get(
-        `https://promo-iror.onrender.com/api/users/${userId}/favorites/${id}`,
+        `${config.apiBaseUrl}/api/users/${userId}/favorites/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -85,7 +85,7 @@ const OffersCard = ({
       const method = isLiked ? "DELETE" : "POST";
       await axios({
         method,
-        url: `https://promo-iror.onrender.com/api/users/${userId}/favorites/${id}`,
+        url: `${config.apiBaseUrl}/api/users/${userId}/favorites/${id}`,
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -123,12 +123,9 @@ const OffersCard = ({
     }
 
     try {
-      await fetch(
-        `https://promo-iror.onrender.com/api/offers/increment-views/${id}`,
-        {
-          method: "POST",
-        }
-      );
+      await fetch(`${config.apiBaseUrl}/api/offers/increment-views/${id}`, {
+        method: "POST",
+      });
 
       // Navigate only if offer.description is not present
       if (!offer.description) {

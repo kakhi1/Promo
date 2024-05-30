@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import config from "../config";
 import OffersCard from "./OffersCard";
 import { FaPlus } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
@@ -31,7 +32,7 @@ const BrandArea = () => {
     const fetchMetrics = async () => {
       try {
         const response = await fetch(
-          `https://promo-iror.onrender.com/api/brands/${brandId}/metrics`
+          `${config.apiBaseUrl}/api/brands/${brandId}/metrics`
         );
         if (!response.ok) throw new Error("Network response was not ok");
         const data = await response.json();
@@ -52,7 +53,7 @@ const BrandArea = () => {
       setLoading(true);
       try {
         const response = await fetch(
-          `https://promo-iror.onrender.com/api/brands/${brandId}/offers-favorites-count`
+          `${config.apiBaseUrl}/api/brands/${brandId}/offers-favorites-count`
         ); // Adjust the URL as necessary
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -102,7 +103,7 @@ const BrandArea = () => {
 
       try {
         const response = await axios.get(
-          `https://promo-iror.onrender.com/api/brands/${brandId}`
+          `${config.apiBaseUrl}/api/brands/${brandId}`
         );
         setBrandDetails(response.data);
       } catch (error) {
@@ -121,7 +122,7 @@ const BrandArea = () => {
   const handleDelete = async () => {
     try {
       await axios.delete(
-        `https://promo-iror.onrender.com/api/offers/${selectedOffer._id}`
+        `${config.apiBaseUrl}/api/offers/${selectedOffer._id}`
       );
       setBrandDetails({
         ...brandDetails,
@@ -135,7 +136,7 @@ const BrandArea = () => {
     }
   };
 
-  const baseUrl = "https://promo-iror.onrender.com/";
+  const baseUrl = `${config.apiBaseUrl}/`;
   const navigateToAddOffers = () => {
     navigate("/adoffers");
   };

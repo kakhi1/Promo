@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import logo from "../assets/logo.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import config from "../config";
 import Modal from "./Modal";
 import FooterLoginForm from "./FooterLoginForm";
 
@@ -15,14 +16,11 @@ const Footer = () => {
   const navigate = useNavigate();
   const handleLogin = async (email, password) => {
     try {
-      const response = await fetch(
-        "https://promo-iror.onrender.com/api/users/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      const response = await fetch(`${config.apiBaseUrl}/api/users/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
       if (!response.ok) {
         throw new Error("Incorrect email or password"); // Triggers the catch block

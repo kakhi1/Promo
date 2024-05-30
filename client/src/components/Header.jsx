@@ -11,6 +11,7 @@ import { BiChevronDown } from "react-icons/bi";
 import { FaRegHeart } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
+import config from "../config";
 import { toast } from "react-toastify";
 
 function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
@@ -48,7 +49,7 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
     async function fetchStates() {
       try {
         const response = await axios.get(
-          "https://promo-iror.onrender.com/api/data/states"
+          `${config.apiBaseUrl}/api/data/states`
         );
         setStates(response.data);
       } catch (error) {
@@ -63,7 +64,7 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
   async function fetchUserState() {
     try {
       const response = await axios.get(
-        `https://promo-iror.onrender.com/api/users/${userId}/state`
+        `${config.apiBaseUrl}/api/users/${userId}/state`
       );
       setCurrentUserState(response.data._id); // Adjust according to your data structure
     } catch (error) {
@@ -76,7 +77,7 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
     const newStateId = e.target.value;
     try {
       const response = await axios.put(
-        `https://promo-iror.onrender.com/api/users/${userId}/state2`,
+        `${config.apiBaseUrl}/api/users/${userId}/state2`,
         { stateId: newStateId }
       );
       setCurrentUserState(response.data.state); // Assuming response data returns the state object

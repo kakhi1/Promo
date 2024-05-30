@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
-
+import config from "../config";
 function RegisterForm() {
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -31,7 +31,7 @@ function RegisterForm() {
 
   const checkGuestUser = (ip) => {
     axios
-      .get(`https://promo-iror.onrender.com/api/check-modal/${ip}`)
+      .get(`${config.apiBaseUrl}/api/check-modal/${ip}`)
       .then((response) => {
         setIsWelcomeModalOpen(response.data.showModal);
         // Handle other actions based on the guest user check
@@ -42,7 +42,7 @@ function RegisterForm() {
   const fetchStateByIpAddress = async (ipAddress) => {
     try {
       const response = await axios.get(
-        `https://promo-iror.onrender.com/api/state/${ipAddress}`
+        `${config.apiBaseUrl}/api/state/${ipAddress}`
       );
       if (response.status === 200) {
         console.log(
@@ -79,14 +79,11 @@ function RegisterForm() {
         state,
       };
       console.log(payload);
-      const response = await fetch(
-        "https://promo-iror.onrender.com/api/users/register",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
+      const response = await fetch(`${config.apiBaseUrl}/api/users/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
       if (response.ok) {
         const data = await response.json();

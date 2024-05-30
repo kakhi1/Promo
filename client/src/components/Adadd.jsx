@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import config from "../config";
 import { FaPlus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -108,7 +109,7 @@ const AdAdd = () => {
     });
 
     try {
-      await axios.post("https://promo-iror.onrender.com/api/ads", data, {
+      await axios.post(`${config.apiBaseUrl}/api/ads`, data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

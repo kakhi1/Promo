@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Select from "react-select";
+import config from "../config";
 import CreatableSelect from "react-select/creatable";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -102,16 +103,13 @@ function Adoffers() {
     if (actionMeta.action === "create-option") {
       const newTagName = actionMeta.option.value;
       try {
-        const response = await fetch(
-          "https://promo-iror.onrender.com/api/data/tags",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ name: newTagName }),
-          }
-        );
+        const response = await fetch(`${config.apiBaseUrl}/api/data/tags`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name: newTagName }),
+        });
 
         if (!response.ok) {
           throw new Error("Failed to create tag");
@@ -191,13 +189,10 @@ function Adoffers() {
     });
 
     try {
-      const response = await fetch(
-        "https://promo-iror.onrender.com/api/offers",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch(`${config.apiBaseUrl}/api/offers`, {
+        method: "POST",
+        body: formData,
+      });
 
       if (!response.ok) {
         throw new Error(
@@ -218,14 +213,12 @@ function Adoffers() {
     const fetchData = async () => {
       try {
         const categoriesResponse = await fetch(
-          "https://promo-iror.onrender.com/api/data/categories"
+          `${config.apiBaseUrl}/api/data/categories`
         );
         const statesResponse = await fetch(
-          "https://promo-iror.onrender.com/api/data/states"
+          `${config.apiBaseUrl}/api/data/states`
         );
-        const tagsResponse = await fetch(
-          "https://promo-iror.onrender.com//api/data/tags"
-        );
+        const tagsResponse = await fetch(`${config.apiBaseUrl}/api/data/tags`);
 
         const categoriesData = await categoriesResponse.json();
         const statesData = await statesResponse.json();

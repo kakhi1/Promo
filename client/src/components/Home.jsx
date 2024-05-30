@@ -5,6 +5,7 @@ import BrandCard from "./BrandCard";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import axios from "axios";
+import config from "../config";
 import AdComponent from "./AdComponent";
 
 const Home = ({
@@ -66,7 +67,7 @@ const Home = ({
   useEffect(() => {
     const fetchOffersAndBrands = async () => {
       setLoading(true);
-      let offersUrl = "https://promo-iror.onrender.com/api/offers";
+      let offersUrl = `${config.apiBaseUrl}/api/offers`;
       const offersParams = new URLSearchParams();
 
       if (selectedCategory && selectedCategory._id) {
@@ -105,7 +106,7 @@ const Home = ({
   useEffect(() => {
     const fetchOffersAndBrands = async () => {
       setLoading(true);
-      let offersUrl = "https://promo-iror.onrender.com/api/offers";
+      let offersUrl = `${config.apiBaseUrl}/api/offers`;
       const offersParams = new URLSearchParams();
 
       if (selectedCategory && selectedCategory._id) {
@@ -141,7 +142,7 @@ const Home = ({
     if (isAuthenticated && userId) {
       try {
         const response = await axios.get(
-          `https://promo-iror.onrender.com/api/users/${userId}/favorites`,
+          `${config.apiBaseUrl}/api/users/${userId}/favorites`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -159,8 +160,8 @@ const Home = ({
   useEffect(() => {
     const fetchOffersAndBrands = async () => {
       setLoading(true);
-      const offersUrl = "https://promo-iror.onrender.com/api/offers";
-      const brandsUrl = "https://promo-iror.onrender.com/api/brands";
+      const offersUrl = `${config.apiBaseUrl}/api/offers`;
+      const brandsUrl = `${config.apiBaseUrl}/api/brands`;
 
       try {
         const [offersResult, brandsResult] = await Promise.all([
@@ -193,7 +194,7 @@ const Home = ({
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  const baseUrl = "https://promo-iror.onrender.com/";
+  const baseUrl = `${config.apiBaseUrl}/`;
   return (
     <div className="pt-8 bg-white w-full ">
       {/* Responsive Grid Layout */}
@@ -275,7 +276,7 @@ const Home = ({
             <div className="grid grid-cols-2 md:grid-cols-4 xl2:grid-cols-6 gap-4">
               {filteredBrands.map((brand) => {
                 const imagePath = brand.imageUrl.replace(/\\/g, "/");
-                const fullImageUrl = `https://promo-iror.onrender.com/${imagePath}`;
+                const fullImageUrl = `${config.apiBaseUrl}/${imagePath}`;
 
                 return (
                   <BrandCard

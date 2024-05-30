@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import config from "../config";
 
 function ForgotPasswordForm({ onBackToLoginClick }) {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ function ForgotPasswordForm({ onBackToLoginClick }) {
 
     try {
       const response = await fetch(
-        "https://promo-iror.onrender.com/api/users/forgot-password",
+        `${config.apiBaseUrl}/api/users/forgot-password`,
         {
           method: "POST",
           headers: {

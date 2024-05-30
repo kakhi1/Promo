@@ -4,6 +4,7 @@ import OffersCard from "./OffersCard";
 import BrandCard from "./BrandCard";
 import axios from "axios";
 import AdComponent from "./AdComponent";
+import config from "../config";
 
 const UserArea = () => {
   const [interestingBrands] = useState([...Array(20).keys()]); // Simulated array of interesting brands
@@ -32,7 +33,7 @@ const UserArea = () => {
     const fetchBrands = async () => {
       try {
         const response = await axios.get(
-          `https://promo-iror.onrender.com/api/users/${userId}/suggested-brands`
+          `${config.apiBaseUrl}/api/users/${userId}/suggested-brands`
         );
         console.log("brand in userarea", response.data);
         setBrands(response.data);
@@ -53,7 +54,7 @@ const UserArea = () => {
       try {
         // Adjust the URL as needed to include the appropriate user ID
         const response = await fetch(
-          `https://promo-iror.onrender.com/api/users/${userId}/suggestions`
+          `${config.apiBaseUrl}/api/users/${userId}/suggestions`
         );
         if (!response.ok) throw new Error("Network response was not ok");
         const data = await response.json();
@@ -90,7 +91,7 @@ const UserArea = () => {
     if (isAuthenticated && userId) {
       try {
         const response = await axios.get(
-          `https://promo-iror.onrender.com/api/users/${userId}/favorites`,
+          `${config.apiBaseUrl}/api/users/${userId}/favorites`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -138,11 +139,7 @@ const UserArea = () => {
                     key={offer._id}
                     id={offer._id}
                     imageUrls={offer.imageUrls.map(
-                      (url) =>
-                        `https://promo-iror.onrender.com/${url.replace(
-                          /\\/g,
-                          "/"
-                        )}`
+                      (url) => `${config.apiBaseUrl}/${url.replace(/\\/g, "/")}`
                     )} // Adjust URL path as needed
                     title={offer.title}
                     originalPrice={offer.originalPrice}
@@ -182,11 +179,7 @@ const UserArea = () => {
                     key={offer._id}
                     id={offer._id}
                     imageUrls={offer.imageUrls.map(
-                      (url) =>
-                        `https://promo-iror.onrender.com/${url.replace(
-                          /\\/g,
-                          "/"
-                        )}`
+                      (url) => `${config.apiBaseUrl}/${url.replace(/\\/g, "/")}`
                     )}
                     title={offer.title}
                     originalPrice={offer.originalPrice}
@@ -222,7 +215,7 @@ const UserArea = () => {
                 ? brands.slice(0, 4)
                 : brands.slice(0, 8)
               ).map((brand) => {
-                const baseUrl = "https://promo-iror.onrender.com/";
+                const baseUrl = `${config.apiBaseUrl}/`;
                 const imagePath = brand.imageUrl.replace(/\\/g, "/"); // Replace backslashes with forward slashes if needed
                 const fullImageUrl = baseUrl + imagePath;
 
