@@ -98,9 +98,9 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
         <Link
           onClick={onLogoClick}
           to="/"
-          className="flex title-font font-medium items-center text-white mb-4 md:mb-0  w-[200px]"
+          className="flex title-font font-medium items-center text-white mb-4 md:mb-0 "
         >
-          <img src={logo} alt="Logo" className="h-10" />
+          <img src={logo} alt="Logo" className="h-10 " />
         </Link>
 
         {/* Hamburger Menu Icon for mobile */}
@@ -202,8 +202,8 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
         )}
 
         {/* Desktop Menu including search bar */}
-        <div className="hidden md:flex  w-full justify-end  items-center">
-          <nav className="flex items-center md:ml-10 lg:text-sm text-xs w-full md:gap-10 ">
+        <div className="hidden md:flex  w-[90%] justify-end  items-center">
+          <nav className="flex items-center md:ml-10 lg:text-sm text-xs w-full md:gap-10 gap-2 ">
             {showUserSpecificLinks && (
               <>
                 <Link to="/brands" className=" hover:text-white flex-col  ">
@@ -242,8 +242,8 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
             )}
 
             {/* Search Bar */}
-            <div className="md:ml-auto md:mr-3 hidden md:block h-[40px] w-full md:w-[500px] ">
-              <div className="relative h-full  ">
+            <div className="md:ml-auto md:mr-3 hidden md:flex items-center justify-center  h-[40px] w-full ">
+              <div className="relative h-full lg:w-[100%] w-full  ">
                 <input
                   onChange={(e) => onSearch(e.target.value)}
                   className="w-full rounded-2xl  px-4 py-1 pl-10 border border-productBg bg-[#17b978] text-productBg placeholder-productBg text-sm font-normal h-full"

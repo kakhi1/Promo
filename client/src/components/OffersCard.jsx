@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import { RxPencil1 } from "react-icons/rx";
 import { FaRegTrashCan } from "react-icons/fa6";
 import config from "../config";
+
 const OffersCard = ({
   id,
   imageUrls = [],
@@ -30,7 +31,11 @@ const OffersCard = ({
   const userId = user?.id || user?._id;
   const navigate = useNavigate();
   const [brandName, setBrandName] = useState("");
-
+  const truncateText = (text, maxLength) => {
+    return text.length > maxLength
+      ? text.substring(0, maxLength) + "..."
+      : text;
+  };
   useEffect(() => {
     const fetchBrandName = async () => {
       try {
@@ -142,6 +147,7 @@ const OffersCard = ({
       console.error("Error incrementing views:", error);
     }
   };
+
   const handleActionClick = (e, action) => {
     e.stopPropagation();
     if (action === "modify") onModify(id);
@@ -154,6 +160,12 @@ const OffersCard = ({
 
   const nextImage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imageUrls.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex(
+      (prevIndex) => (prevIndex - 1 + imageUrls.length) % imageUrls.length
+    );
   };
 
   return (
@@ -223,7 +235,7 @@ const OffersCard = ({
         </div>
 
         <FaHeart
-          className={`absolute  -top-4 -right-2 cursor-pointer text-[25px] ${
+          className={`absolute  top-3 md:top-0 -right-2 cursor-pointer text-[25px] ${
             isLiked ? "fill-red-500" : "stroke-current text-gray-500"
           }`}
           onClick={(event) => toggleFavorite(event)}
@@ -233,7 +245,7 @@ const OffersCard = ({
         <div>
           <h1 className="text-xs font-bold mt-4">{brandName}</h1>
         </div>
-        <div className="flex justify-between ">
+        {/* <div className="flex justify-between ">
           <h1 className=" text-xs font-semibold mt-4">{title}</h1>
           {status === "pending" && (
             <div className="mt-2">
@@ -249,6 +261,26 @@ const OffersCard = ({
                 {views}
               </span>
             </div>
+          </div>
+        </div> */}
+      </div>
+      <div className="flex justify-between ">
+        <h1 className="text-xs font-semibold mt-4 md:whitespace-normal">
+          <span className="block md:hidden">{truncateText(title, 30)}</span>
+          <span className="hidden md:block">{title}</span>
+        </h1>
+        {status === "pending" && (
+          <div className="mt-2">
+            <p className="text-red-500 font-bold">დასადასტურებელია</p>
+          </div>
+        )}
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex items-start gap-2"></div>
+          <div className="flex items-center md:mt-1">
+            <IoEyeOutline className="text-base text-[#9D9D9D]" />
+            <span className="ml-1 md:text-xs text-[8px] text-[#9D9D9D]">
+              {views}
+            </span>
           </div>
         </div>
       </div>

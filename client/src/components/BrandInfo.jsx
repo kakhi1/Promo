@@ -160,6 +160,7 @@ const BrandInfo = () => {
                   views={offer.views}
                   userRole={user?.role}
                   onFavoriteToggle={onFavoriteToggle}
+                  offer={offer}
                 />
               );
             })}

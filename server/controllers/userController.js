@@ -9,240 +9,241 @@ const UserActivity = require("../models/UserActivity");
 const crypto = require("crypto");
 const client = require("../middleware/redisClient");
 const GuestUser = require("./guestUserController");
+
 const { fetchStateByIpAddress } = require("./guestUserController");
 
 const { sendPasswordResetEmail } = require("../services/emailService");
 
 const JWT_SECRET = process.env.JWT_SECRET; // Ensure this is set in your environment
 
-exports.verifyToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1]; // Extract token from authorization header
+// exports.verifyToken = (req, res, next) => {
+//   const token = req.headers.authorization?.split(" ")[1]; // Extract token from authorization header
 
-  if (!token) {
-    return res.status(401).json({ message: "Token is required" });
-  }
+//   if (!token) {
+//     return res.status(401).json({ message: "Token is required" });
+//   }
 
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
-    if (err) {
-      console.log("Error verifying token:", err);
-      return res.status(401).json({ message: "Invalid or expired token" });
-    }
+//   jwt.verify(token, JWT_SECRET, (err, decoded) => {
+//     if (err) {
+//       console.log("Error verifying token:", err);
+//       return res.status(401).json({ message: "Invalid or expired token" });
+//     }
 
-    // Attach decoded token to request
-    req.user = {
-      userId: decoded.userId,
-      role: decoded.role,
-    };
+//     // Attach decoded token to request
+//     req.user = {
+//       userId: decoded.userId,
+//       role: decoded.role,
+//     };
 
-    next(); // Token is valid, proceed to the next middleware/route handler
-  });
-};
+//     next(); // Token is valid, proceed to the next middleware/route handler
+//   });
+// };
 
-exports.fetchStateByIpAddress = async (ipAddress) => {
-  try {
-    const guestUser = await GuestUser.findOne({ ipAddress });
-    if (!guestUser) {
-      return null; // Return null or an appropriate value if the user isn't found
-    }
-    return guestUser.state; // Return the state directly
-  } catch (error) {
-    console.error("Error fetching state by IP address:", error);
-    throw new Error("Server error in fetching state"); // Throw an error to be handled by the caller
-  }
-};
-exports.refreshToken = async (req, res) => {
-  const { token } = req.body; // Assume the old token is sent in the request body
-  if (!token) {
-    return res.status(400).json({ message: "Token is required" });
-  }
+// exports.fetchStateByIpAddress = async (ipAddress) => {
+//   try {
+//     const guestUser = await GuestUser.findOne({ ipAddress });
+//     if (!guestUser) {
+//       return null; // Return null or an appropriate value if the user isn't found
+//     }
+//     return guestUser.state; // Return the state directly
+//   } catch (error) {
+//     console.error("Error fetching state by IP address:", error);
+//     throw new Error("Server error in fetching state"); // Throw an error to be handled by the caller
+//   }
+// };
+// exports.refreshToken = async (req, res) => {
+//   const { token } = req.body; // Assume the old token is sent in the request body
+//   if (!token) {
+//     return res.status(400).json({ message: "Token is required" });
+//   }
 
-  jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
-    if (err) return res.status(403).json({ message: "Token is not valid" });
+//   jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+//     if (err) return res.status(403).json({ message: "Token is not valid" });
 
-    const user = await User.findById(decoded.userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+//     const user = await User.findById(decoded.userId);
+//     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Generate a new token
-    const newToken = jwt.sign(
-      { userId: user._id, role: decoded.role },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1h",
-      }
-    );
+//     // Generate a new token
+//     const newToken = jwt.sign(
+//       { userId: user._id, role: decoded.role },
+//       process.env.JWT_SECRET,
+//       {
+//         expiresIn: "1h",
+//       }
+//     );
 
-    res.json({ message: "Token refreshed successfully", token: newToken });
-  });
-};
+//     res.json({ message: "Token refreshed successfully", token: newToken });
+//   });
+// };
 
-exports.forgotPassword = async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
+// exports.forgotPassword = async (req, res) => {
+//   const { email } = req.body;
+//   const user = await User.findOne({ email });
+//   if (!user) {
+//     return res.status(404).json({ message: "User not found" });
+//   }
 
-  // Generate a password reset token (this is a simplified version)
-  const resetToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-    expiresIn: "15m",
-  });
+//   // Generate a password reset token (this is a simplified version)
+//   const resetToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+//     expiresIn: "15m",
+//   });
 
-  // Send the token to the user's email. This part depends on your email service
-  // For example: await sendResetEmail(user.email, `Your reset link: http://yourapp.com/reset/${resetToken}`);
+//   // Send the token to the user's email. This part depends on your email service
+//   // For example: await sendResetEmail(user.email, `Your reset link: http://yourapp.com/reset/${resetToken}`);
 
-  res.json({
-    message:
-      "If your email is in our system, you will receive a password reset link shortly.",
-  });
-};
+//   res.json({
+//     message:
+//       "If your email is in our system, you will receive a password reset link shortly.",
+//   });
+// };
 
-// Verify email endpoint
-exports.verifyEmail = async (req, res) => {
-  const { token } = req.params;
-  jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
-    if (err)
-      return res
-        .status(403)
-        .json({ message: "Verification link is invalid or has expired." });
+// // Verify email endpoint
+// exports.verifyEmail = async (req, res) => {
+//   const { token } = req.params;
+//   jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+//     if (err)
+//       return res
+//         .status(403)
+//         .json({ message: "Verification link is invalid or has expired." });
 
-    const user = await User.findById(decoded.userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+//     const user = await User.findById(decoded.userId);
+//     if (!user) return res.status(404).json({ message: "User not found" });
 
-    user.emailVerified = true;
-    await user.save();
+//     user.emailVerified = true;
+//     await user.save();
 
-    res.json({ message: "Email verified successfully." });
-  });
-};
+//     res.json({ message: "Email verified successfully." });
+//   });
+// };
 
-// Assuming this function is defined to check both User and Brand collections
-async function emailExists(email) {
-  const userExists = await User.findOne({ email }).lean();
-  const brandExists = await Brand.findOne({ email }).lean();
-  return userExists || brandExists ? true : false;
-}
+// // Assuming this function is defined to check both User and Brand collections
+// async function emailExists(email) {
+//   const userExists = await User.findOne({ email }).lean();
+//   const brandExists = await Brand.findOne({ email }).lean();
+//   return userExists || brandExists ? true : false;
+// }
 
-exports.register = async (req, res) => {
-  try {
-    const { name, username, email, password, mobile, state } = req.body;
+// exports.register = async (req, res) => {
+//   try {
+//     const { name, username, email, password, mobile, state } = req.body;
 
-    const stateDocument = await State.findOne({ name: state });
-    // Check if user already exists
-    if (await emailExists(email)) {
-      return res
-        .status(400)
-        .json({ message: "ეს იმეილი უკვე გამოყენებულია, სცადეთ სხვა იმეილი" });
-    }
+//     const stateDocument = await State.findOne({ name: state });
+//     // Check if user already exists
+//     if (await emailExists(email)) {
+//       return res
+//         .status(400)
+//         .json({ message: "ეს იმეილი უკვე გამოყენებულია, სცადეთ სხვა იმეილი" });
+//     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+//     // Hash password
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create new user
-    user = new User({
-      name,
-      username,
-      email,
-      password: hashedPassword,
-      mobile,
-      state,
-      state: stateDocument._id,
-    });
+//     // Create new user
+//     user = new User({
+//       name,
+//       username,
+//       email,
+//       password: hashedPassword,
+//       mobile,
+//       state,
+//       state: stateDocument._id,
+//     });
 
-    await user.save();
-    res.status(201).json({ message: "User created successfully", user });
-  } catch (error) {
-    console.error("Registration error:", error); // Log the complete error
-    res
-      .status(500)
-      .json({ message: "Error registering user", error: error.message });
-  }
-};
-exports.login = async (req, res) => {
-  const { email, password } = req.body;
-  const ipAddress = req.ip; // Assume you're extracting the IP from the request
+//     await user.save();
+//     res.status(201).json({ message: "User created successfully", user });
+//   } catch (error) {
+//     console.error("Registration error:", error); // Log the complete error
+//     res
+//       .status(500)
+//       .json({ message: "Error registering user", error: error.message });
+//   }
+// };
+// exports.login = async (req, res) => {
+//   const { email, password } = req.body;
+//   const ipAddress = req.ip; // Assume you're extracting the IP from the request
 
-  try {
-    // Try to find the user by email if credentials are provided
-    let user = email ? await User.findOne({ email }) : null;
+//   try {
+//     // Try to find the user by email if credentials are provided
+//     let user = email ? await User.findOne({ email }) : null;
 
-    // If no user found by email, check for user by IP address
-    if (!user) {
-      user = await User.findOne({
-        lastIPAddress: ipAddress,
-        isAdmin: false,
-        isBrand: false,
-      });
-      if (user) {
-        // User found by IP, no need for password check
-        console.log("User found by IP address:", ipAddress);
-      } else if (email) {
-        // No user found by email
-        console.log("Email not found:", email);
-        return res.status(400).json({ message: "Invalid Credentials" });
-      } else {
-        // No IP match and no credentials provided
-        return res
-          .status(400)
-          .json({ message: "No suitable login method found" });
-      }
-    } else {
-      // User found by email, proceed with password verification
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ message: "Invalid Credentials" });
-      }
-    }
+//     // If no user found by email, check for user by IP address
+//     if (!user) {
+//       user = await User.findOne({
+//         lastIPAddress: ipAddress,
+//         isAdmin: false,
+//         isBrand: false,
+//       });
+//       if (user) {
+//         // User found by IP, no need for password check
+//         console.log("User found by IP address:", ipAddress);
+//       } else if (email) {
+//         // No user found by email
+//         console.log("Email not found:", email);
+//         return res.status(400).json({ message: "Invalid Credentials" });
+//       } else {
+//         // No IP match and no credentials provided
+//         return res
+//           .status(400)
+//           .json({ message: "No suitable login method found" });
+//       }
+//     } else {
+//       // User found by email, proceed with password verification
+//       const isMatch = await bcrypt.compare(password, user.password);
+//       if (!isMatch) {
+//         return res.status(400).json({ message: "Invalid Credentials" });
+//       }
+//     }
 
-    // Update user login count in UserActivity model
-    const now = new Date();
+//     // Update user login count in UserActivity model
+//     const now = new Date();
 
-    // Proceed with updating UserActivity for a successful login
-    try {
-      await UserActivity.findOneAndUpdate(
-        { userId: user._id },
-        {
-          $inc: { userLoginCount: 1 },
-          $set: { lastLoginTimestamp: now },
-          $push: { sessions: { loginTimestamp: now } },
-        },
-        { upsert: true, new: true }
-      );
-    } catch (error) {
-      console.error("Error updating user login count and activity:", error);
-    }
+//     // Proceed with updating UserActivity for a successful login
+//     try {
+//       await UserActivity.findOneAndUpdate(
+//         { userId: user._id },
+//         {
+//           $inc: { userLoginCount: 1 },
+//           $set: { lastLoginTimestamp: now },
+//           $push: { sessions: { loginTimestamp: now } },
+//         },
+//         { upsert: true, new: true }
+//       );
+//     } catch (error) {
+//       console.error("Error updating user login count and activity:", error);
+//     }
 
-    // Determine the role based on user document flags
-    let role = "user"; // Default role
-    if (user.isAdmin) {
-      role = "admin";
-    } else if (user.isBrand) {
-      role = "brand";
-    }
-    const token = jwt.sign({ userId: user._id, role }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+//     // Determine the role based on user document flags
+//     let role = "user"; // Default role
+//     if (user.isAdmin) {
+//       role = "admin";
+//     } else if (user.isBrand) {
+//       role = "brand";
+//     }
+//     const token = jwt.sign({ userId: user._id, role }, process.env.JWT_SECRET, {
+//       expiresIn: "1h",
+//     });
 
-    const responseObj = {
-      message: "Logged in successfully",
-      entity: {
-        id: user._id.toString(),
-        name: user.name,
-        email: user.email,
-        role,
-        brand: user.brand,
-      },
-      token,
-    };
+//     const responseObj = {
+//       message: "Logged in successfully",
+//       entity: {
+//         id: user._id.toString(),
+//         name: user.name,
+//         email: user.email,
+//         role,
+//         brand: user.brand,
+//       },
+//       token,
+//     };
 
-    res.status(200).json(responseObj);
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ message: "Error logging in", error: error.message });
-  }
-};
+//     res.status(200).json(responseObj);
+//   } catch (error) {
+//     console.error("Login error:", error);
+//     res.status(500).json({ message: "Error logging in", error: error.message });
+//   }
+// };
 
-// Login by IP endpoint
+// // Login by IP endpoint
 exports.loginByIp = async (req, res) => {
   const ipAddress = req.body.ip; // This should be the real IP address of the client
 
@@ -288,124 +289,48 @@ exports.loginByIp = async (req, res) => {
   }
 };
 
-// exports.login = async (req, res) => {
-//   const { email, password } = req.body;
-
-//   try {
-//     let user = await User.findOne({ email });
-
-//     if (!user) {
-//       console.log("Email not found:", email);
-//       return res.status(400).json({ message: "Invalid Credentials" });
-//     }
-
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) {
-//       return res.status(400).json({ message: "Invalid Credentials" });
-//     }
-
-//     // Update user login count in UserActivity model
-//     // Define 'now' here before it's used
-//     const now = new Date(); // This is the fix
-
-//     // Proceed with updating UserActivity for a successful login
-//     try {
-//       await UserActivity.findOneAndUpdate(
-//         { userId: user._id },
-//         {
-//           $inc: { userLoginCount: 1 },
-//           $set: { lastLoginTimestamp: now },
-//           $push: { sessions: { loginTimestamp: now } }, // Use 'now' here
-//         },
-//         { upsert: true, new: true }
-//       );
-//     } catch (error) {
-//       console.error("Error updating user login count and activity:", error);
-//     }
-
-//     // Determine the role based on user document flags
-//     let role = "user"; // Default role
-//     if (user.isAdmin) {
-//       role = "admin";
-//     } else if (user.isBrand) {
-//       role = "brand";
-//     }
-//     const token = jwt.sign(
-//       { userId: user._id, role: "user" },
-//       process.env.JWT_SECRET,
-//       {
-//         expiresIn: "1h",
-//       }
-//     );
-
-//     const responseObj = {
-//       message: "Logged in successfully",
-//       entity: {
-//         id: user._id.toString(),
-//         name: user.name,
-//         email: user.email,
-//         role, // Hardcoded as "user" since we're only tracking user logins
-//         brand: user.brand,
-//       },
-//       token,
-//     };
-
-//     res.status(200).json(responseObj);
-//   } catch (error) {
-//     console.error("Login error:", error);
-//     res.status(500).json({ message: "Error logging in", error: error.message });
-//   }
-// };
+// // Function to fetch state by IP, adjust accordingly to your data fetching logic
 
 // async function getUserFromCache(ipAddress) {
-//   return await client.hgetall(`userData:${ipAddress}`);
-// }
-// async function createUser(ipAddress, state) {
-//   // Generate a random hexadecimal string as a unique part of the username
-//   const randomPart = crypto.randomBytes(4).toString("hex");
-
-//   // Create a username combining a prefix with the random part
-//   const username = `user_${randomPart}`;
-
-//   // Construct the new user object with the random username and other details
-//   const newUser = new User({
-//     username, // Random username generated above
-//     lastIPAddress: ipAddress, // Ensure the IP address is set here
-//     state, // State object ID or state data
-//     isAdmin: false, // Default admin status
-//     isBrand: false, // Default brand status
-//   });
-
-//   // Save the new user to the database
-//   await newUser.save();
-
-//   return newUser;
+//   const userData = await client.hgetall(`userData:${ipAddress}`);
+//   return userData ? JSON.parse(userData) : null;
 // }
 
 // async function cacheUserData(user) {
-//   await client.hset(
-//     `userData:${user._id}`,
-//     "username",
-//     user.username,
-//     "state",
-//     user.state
-//   );
+//   const userData = JSON.stringify({
+//     username: user.username,
+//     state: user.state.toString(), // Ensure the state is stringified if it's an ObjectId
+//   });
+//   await client.hset(`userData:${user.lastIPAddress}`, userData);
 // }
-// // Function to get a user from the database by IP address
+
 // async function getUserFromDb(ipAddress) {
 //   try {
-//     const user = await User.findOne({ lastIPAddress: ipAddress });
-//     return user;
+//     return await User.findOne({ lastIPAddress: ipAddress });
 //   } catch (error) {
 //     console.error("Failed to fetch user from database:", error);
-//     throw error; // Consider more graceful error handling here
+//     throw error;
 //   }
 // }
+
+// async function createUser(ipAddress, state) {
+//   const randomPart = crypto.randomBytes(4).toString("hex");
+//   const username = `user_${randomPart}`;
+//   const newUser = new User({
+//     username,
+//     lastIPAddress: ipAddress,
+//     state,
+//     isAdmin: false,
+//     isBrand: false,
+//   });
+//   await newUser.save();
+//   return newUser;
+// }
+
 // exports.checkAndCreateUser = async (req, res) => {
 //   try {
 //     const ipAddress = req.body.ip;
-//     const stateId = await fetchStateByIpAddress(ipAddress); // This should return an ObjectId
-//     console.log("stateId", stateId);
+//     const stateId = await fetchStateByIpAddress(ipAddress);
 
 //     if (!stateId) {
 //       return res
@@ -413,17 +338,19 @@ exports.loginByIp = async (req, res) => {
 //         .json({ message: "State not found for this IP address" });
 //     }
 
-//     let user =
-//       (await getUserFromCache(ipAddress)) || (await getUserFromDb(ipAddress));
-//     if (user) {
-//       return res.status(200).json({ message: "User exists", user });
+//     let user = await getUserFromCache(ipAddress);
+//     if (!user) {
+//       user = await getUserFromDb(ipAddress);
+//       if (!user) {
+//         user = await createUser(ipAddress, stateId);
+//       }
+//       await cacheUserData(user); // Cache the user after retrieving from DB or creating a new one
 //     }
 
-//     // Ensure `createUser` uses the ObjectId for the state
-//     user = await createUser(ipAddress, stateId);
-//     await cacheUserData(user);
-
-//     res.status(201).json({ message: "User created successfully", user });
+//     res.status(user ? 200 : 201).json({
+//       message: user ? "User exists" : "User created successfully",
+//       user,
+//     });
 //   } catch (error) {
 //     console.error("Error in user check/creation:", error);
 //     res
@@ -431,115 +358,199 @@ exports.loginByIp = async (req, res) => {
 //       .json({ message: "Error processing request", error: error.message });
 //   }
 // };
-// exports.register = async (req, res) => {
-//   try {
-//     const { name, username, email, password, mobile, state, isAdmin, isBrand } =
-//       req.body;
 
-//     // Fetch state document to link with the user
-//     const stateDocument = await State.findOne({ name: state });
-//     if (!stateDocument) {
-//       return res.status(404).json({ message: "State not found" });
-//     }
+exports.verifyToken = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
 
-//     // Check if the user already exists
-//     if (email && (await User.findOne({ email }))) {
-//       return res.status(400).json({
-//         message: "This email is already in use, please try another email",
-//       });
-//     }
+  if (!token) {
+    return res.status(401).json({ message: "Token is required" });
+  }
 
-//     // Hash password
-//     const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) {
+      console.log("Error verifying token:", err);
+      return res.status(401).json({ message: "Invalid or expired token" });
+    }
 
-//     // Create new user
-//     const user = new User({
-//       name,
-//       username,
-//       email,
-//       password: hashedPassword,
-//       mobile,
-//       state: stateDocument._id,
-//       isAdmin: !!isAdmin,
-//       isBrand: !!isBrand,
-//     });
-//     await user.save();
+    req.user = {
+      userId: decoded.userId,
+      role: decoded.role,
+    };
 
-//     // Cache the user data
-//     client.hmset(
-//       `userData:${user._id}`,
-//       "name",
-//       name,
-//       "username",
-//       username,
-//       "email",
-//       email,
-//       "state",
-//       stateDocument.name
-//     );
+    next();
+  });
+};
 
-//     // Respond with success message
-//     res.status(201).json({
-//       message: "User created successfully",
-//       user: {
-//         id: user._id,
-//         state: stateDocument.name,
-//         role: isAdmin ? "admin" : isBrand ? "brand" : "user",
-//       },
-//     });
-//   } catch (error) {
-//     console.error("Registration error:", error);
-//     res
-//       .status(500)
-//       .json({ message: "Error registering user", error: error.message });
-//   }
-// };
+exports.refreshToken = async (req, res) => {
+  const { token } = req.body;
+  if (!token) {
+    return res.status(400).json({ message: "Token is required" });
+  }
 
-// exports.login = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-//     let user = await User.findOne({ email });
+  jwt.verify(token, JWT_SECRET, async (err, decoded) => {
+    if (err) return res.status(403).json({ message: "Token is not valid" });
 
-//     if (!user) {
-//       return res.status(400).json({ message: "Invalid Credentials" });
-//     }
+    const user = await User.findById(decoded.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-//     // Password verification
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) {
-//       return res.status(400).json({ message: "Invalid Credentials" });
-//     }
+    const newToken = jwt.sign(
+      { userId: user._id, role: decoded.role },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    res.json({ message: "Token refreshed successfully", token: newToken });
+  });
+};
 
-//     // Determine the user's role
-//     const role = user.isAdmin ? "admin" : user.isBrand ? "brand" : "user";
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
 
-//     // Generate JWT token
-//     const token = jwt.sign({ userId: user._id, role }, process.env.JWT_SECRET, {
-//       expiresIn: "1h",
-//     });
+  const resetToken = jwt.sign({ userId: user._id }, JWT_SECRET, {
+    expiresIn: "15m",
+  });
 
-//     // Cache the token
-//     client.setex(`userToken:${user._id}`, 3600, token);
+  res.json({
+    message:
+      "If your email is in our system, you will receive a password reset link shortly.",
+  });
+};
 
-//     // Respond with user data and token
-//     res.status(200).json({
-//       message: "Logged in successfully",
-//       entity: {
-//         id: user._id.toString(),
-//         name: user.name,
-//         email: user.email,
-//         role,
-//         brand: user.brand,
-//       },
-//       token,
-//     });
-//   } catch (error) {
-//     console.error("Login error:", error);
-//     res.status(500).json({ message: "Error logging in", error: error.message });
-//   }
-// };
+exports.verifyEmail = async (req, res) => {
+  const { token } = req.params;
+  jwt.verify(token, JWT_SECRET, async (err, decoded) => {
+    if (err)
+      return res
+        .status(403)
+        .json({ message: "Verification link is invalid or has expired." });
 
-// Function to fetch state by IP, adjust accordingly to your data fetching logic
+    const user = await User.findById(decoded.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.emailVerified = true;
+    await user.save();
+
+    res.json({ message: "Email verified successfully." });
+  });
+};
+
+async function emailExists(email) {
+  const userExists = await User.findOne({ email }).lean();
+  const brandExists = await Brand.findOne({ email }).lean();
+  return userExists || brandExists ? true : false;
+}
+
+exports.register = async (req, res) => {
+  try {
+    const { name, username, email, password, mobile, state } = req.body;
+
+    const stateDocument = await State.findOne({ name: state });
+    if (await emailExists(email)) {
+      return res.status(400).json({
+        message: "This email is already in use, please try another one.",
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = new User({
+      name,
+      username,
+      email,
+      password: hashedPassword,
+      mobile,
+      state: stateDocument._id,
+    });
+
+    await user.save();
+    res.status(201).json({ message: "User created successfully", user });
+  } catch (error) {
+    console.error("Registration error:", error);
+    res
+      .status(500)
+      .json({ message: "Error registering user", error: error.message });
+  }
+};
+
+exports.login = async (req, res) => {
+  const { email, password } = req.body;
+  const ipAddress = req.ip;
+
+  try {
+    let user = email ? await User.findOne({ email }) : null;
+
+    if (!user) {
+      user = await User.findOne({
+        lastIPAddress: ipAddress,
+        isAdmin: false,
+        isBrand: false,
+      });
+      if (user) {
+        console.log("User found by IP address:", ipAddress);
+      } else if (email) {
+        console.log("Email not found:", email);
+        return res.status(400).json({ message: "Invalid Credentials" });
+      } else {
+        return res
+          .status(400)
+          .json({ message: "No suitable login method found" });
+      }
+    } else {
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Invalid Credentials" });
+      }
+    }
+
+    const now = new Date();
+
+    try {
+      await UserActivity.findOneAndUpdate(
+        { userId: user._id },
+        {
+          $inc: { userLoginCount: 1 },
+          $set: { lastLoginTimestamp: now },
+          $push: { sessions: { loginTimestamp: now } },
+        },
+        { upsert: true, new: true }
+      );
+    } catch (error) {
+      console.error("Error updating user login count and activity:", error);
+    }
+
+    let role = "user";
+    if (user.isAdmin) {
+      role = "admin";
+    } else if (user.isBrand) {
+      role = "brand";
+    }
+
+    const token = jwt.sign({ userId: user._id, role }, JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    const responseObj = {
+      message: "Logged in successfully",
+      entity: {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        role,
+        brand: user.brand,
+      },
+      token,
+    };
+
+    res.status(200).json(responseObj);
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Error logging in", error: error.message });
+  }
+};
 
 async function getUserFromCache(ipAddress) {
   const userData = await client.hgetall(`userData:${ipAddress}`);
@@ -549,7 +560,7 @@ async function getUserFromCache(ipAddress) {
 async function cacheUserData(user) {
   const userData = JSON.stringify({
     username: user.username,
-    state: user.state.toString(), // Ensure the state is stringified if it's an ObjectId
+    state: user.state.toString(),
   });
   await client.hset(`userData:${user.lastIPAddress}`, userData);
 }
@@ -588,13 +599,17 @@ exports.checkAndCreateUser = async (req, res) => {
         .json({ message: "State not found for this IP address" });
     }
 
+    // Check if the user already exists in the cache
     let user = await getUserFromCache(ipAddress);
     if (!user) {
+      // If not found in the cache, check in the database
       user = await getUserFromDb(ipAddress);
       if (!user) {
+        // If no user exists, create a new one
         user = await createUser(ipAddress, stateId);
       }
-      await cacheUserData(user); // Cache the user after retrieving from DB or creating a new one
+      // Cache the user (whether found in DB or newly created)
+      await cacheUserData(user);
     }
 
     res.status(user ? 200 : 201).json({
@@ -608,6 +623,8 @@ exports.checkAndCreateUser = async (req, res) => {
       .json({ message: "Error processing request", error: error.message });
   }
 };
+
+exports.createUser = createUser;
 
 exports.addToFavorites = async (req, res) => {
   const userId = req.params.userId;
@@ -791,38 +808,7 @@ exports.getSuggestedOffers = async (req, res) => {
     });
   }
 };
-// find suggested brands
-// async function getSuggestedBrandsForUser(userId) {
-//   const userWithFavorites = await User.findById(userId)
-//     .populate("favorites")
-//     .lean(); // Use .lean() for performance improvements
 
-//   if (!userWithFavorites) {
-//     throw new Error("User not found");
-//   }
-
-//   const favoriteTagsAndCategories = userWithFavorites.favorites.reduce(
-//     (acc, offer) => {
-//       acc.tags = [...new Set([...acc.tags, ...offer.tags])];
-//       if (offer.category && !acc.categories.includes(offer.category)) {
-//         acc.categories.push(offer.category);
-//       }
-//       return acc;
-//     },
-//     { tags: [], categories: [] }
-//   );
-
-//   const suggestedBrands = await Brand.find({
-//     $or: [
-//       { tags: { $in: favoriteTagsAndCategories.tags } },
-//       { category: { $in: favoriteTagsAndCategories.categories } },
-//     ],
-//   })
-//     .limit(8)
-//     .lean(); // Limit to 8 brands and use .lean()
-
-//   return suggestedBrands;
-// }
 async function getSuggestedBrandsForUser(userId) {
   const userWithFavorites = await User.findById(userId)
     .populate("favorites")

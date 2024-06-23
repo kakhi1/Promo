@@ -1,5 +1,6 @@
 const GuestUser = require("../models/GuestUser");
 const State = require("../models/State");
+const { createUser } = require("./userController");
 
 exports.checkGuestUser = async (req, res) => {
   try {
@@ -21,14 +22,15 @@ exports.addOrUpdateGuestUser = async (req, res) => {
 
   try {
     const update = { state };
-
     const options = { new: true, upsert: true, runValidators: true };
-
     const guestUser = await GuestUser.findOneAndUpdate(
       { ipAddress },
       update,
       options
     );
+
+    // Create or update corresponding user
+    await createUserIfNotExists(ipAddress, state);
 
     res.status(201).json(guestUser);
   } catch (error) {
@@ -37,37 +39,31 @@ exports.addOrUpdateGuestUser = async (req, res) => {
   }
 };
 
-exports.fetchStateByIpAddress = async (req, res) => {
+async function createUserIfNotExists(ipAddress, state) {
   try {
-    const ipAddress = req.params.ipAddress;
-    const guestUser = await GuestUser.findOne({ ipAddress });
-
-    if (!guestUser) {
-      return res.status(404).send("GuestUser not found");
+    const user = await User.findOne({ lastIPAddress: ipAddress });
+    if (!user) {
+      await createUser(ipAddress, state);
     }
-
-    res.status(200).json({ state: guestUser.state });
   } catch (error) {
-    res.status(500).send("Server error");
+    console.error("Error creating user:", error);
   }
-};
+}
+
 exports.fetchStateByIpAddress = async (ipAddress) => {
   try {
-    // Fetch guest user by IP address
     const guestUser = await GuestUser.findOne({ ipAddress });
     if (!guestUser) {
       console.log("No guest user found for the given IP address:", ipAddress);
       return null;
     }
 
-    // Fetch the state using the state name from the GuestUser document
     const state = await State.findOne({ name: guestUser.state });
     if (!state) {
       console.log("No state found with the name:", guestUser.state);
       return null;
     }
 
-    // Return the ObjectId of the state
     return state._id;
   } catch (error) {
     console.error("Error fetching state by IP address:", error);
