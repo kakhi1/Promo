@@ -153,7 +153,7 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
                 ფავორიტები
               </Link>
 
-              {user && (
+              {/* {user && (
                 <Link
                   to="/user-area" // Adjust the route as needed
                   className="text-white p-2"
@@ -161,7 +161,7 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
                 >
                   მომხმარებელი
                 </Link>
-              )}
+              )} */}
 
               {/* Dynamic Authentication Button */}
               {(userRole === "admin" || userRole === "brand") && (
@@ -203,46 +203,47 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
 
         {/* Desktop Menu including search bar */}
         <div className="hidden md:flex  w-[90%] justify-end  items-center">
-          <nav className="flex items-center md:ml-10 lg:text-sm text-xs w-full md:gap-10 gap-2 ">
-            {showUserSpecificLinks && (
-              <>
-                <Link to="/brands" className=" hover:text-white flex-col  ">
-                  <RiShoppingCart2Line
-                    size={25}
-                    color="#DCEEF8"
-                    className="w-full flex items-center"
-                  />
-                  <span>ბრენდი</span>
-                </Link>
-                <Link
-                  to="/categories"
-                  // onClick={onCategoriesClick}
-                  className=" hover:text-white"
-                >
-                  <HiOutlineBars3
-                    size={25}
-                    color="#DCEEF8"
-                    className="w-full flex items-center"
-                  />
-                  <span>კატეგორიები</span>
-                </Link>
-                <Link
-                  to="/favorites"
-                  // onClick={onCategoriesClick}
-                  className=" hover:text-white"
-                >
-                  <FaRegHeart
-                    size={25}
-                    color="#DCEEF8"
-                    className="w-full flex items-center"
-                  />
-                  <span>ფავორიტები</span>
-                </Link>
-              </>
-            )}
-
+          <nav className="flex items-center md:ml-10 lg:text-sm text-xs w-full md:gap-10 gap-2 justify-between ">
+            <div className="flex items-center md:ml-10 lg:text-sm text-xs w-full md:gap-10 gap-2 justify-center">
+              {showUserSpecificLinks && (
+                <>
+                  <Link to="/brands" className=" hover:text-white flex-col  ">
+                    <RiShoppingCart2Line
+                      size={25}
+                      color="#DCEEF8"
+                      className="w-full flex items-center"
+                    />
+                    <span>ბრენდი</span>
+                  </Link>
+                  <Link
+                    to="/categories"
+                    // onClick={onCategoriesClick}
+                    className=" hover:text-white"
+                  >
+                    <HiOutlineBars3
+                      size={25}
+                      color="#DCEEF8"
+                      className="w-full flex items-center"
+                    />
+                    <span>კატეგორიები</span>
+                  </Link>
+                  <Link
+                    to="/favorites"
+                    // onClick={onCategoriesClick}
+                    className=" hover:text-white"
+                  >
+                    <FaRegHeart
+                      size={25}
+                      color="#DCEEF8"
+                      className="w-full flex items-center"
+                    />
+                    <span>ფავორიტები</span>
+                  </Link>
+                </>
+              )}
+            </div>
             {/* Search Bar */}
-            <div className="md:ml-auto md:mr-3 hidden md:flex items-center justify-center  h-[40px] w-full ">
+            {/* <div className="md:ml-auto md:mr-3 hidden md:flex items-center justify-center  h-[40px] w-full ">
               <div className="relative h-full lg:w-[100%] w-full  ">
                 <input
                   onChange={(e) => onSearch(e.target.value)}
@@ -271,7 +272,7 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
                   />
                 </svg>
               </div>
-            </div>
+            </div> */}
             <Link to="/about" className=" hover:text-white">
               <CiCircleInfo
                 size={25}
@@ -281,7 +282,7 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
               <span>შესახებ</span>
             </Link>
             {/* Conditional rendering for User Area Link/Button */}
-            {user && userRole === "user" && (
+            {/* {user && userRole === "user" && (
               <Link
                 to="/user-area" // Adjust the route as needed
                 className="hover:text-white flex-col items-center justify-center"
@@ -294,41 +295,6 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
                 />
                 <span>მომხმარებელი</span>
               </Link>
-            )}
-
-            {/* {user ? (
-              <div className="relative">
-                <div
-                  className="flex items-center cursor-pointer "
-                  onClick={toggleDropdown}
-                >
-                  <div className="w-32 border border-productBg inline-flex items-center justify-center gap-2 rounded-2xl ">
-                    <LuUser size={20} color="#DCEEF8" />
-                    <span className="hover:text-white p-2 focus:outline-none flex items-center justify-center text-sm h-10 ">
-                      {user.name}
-                    </span>
-                    <BiChevronDown className="hover:text-white" size={20} />
-                  </div>
-                </div>
-                {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 py-2 bg-white rounded-md shadow-xl z-20">
-                    <button
-                      className="text-sm text-gray-700 hover:bg-gray-100 px-4 py-2 block"
-                      onClick={handleLogout}
-                    >
-                      გამოსვლა
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <button
-                className="hover:text-white p-2 inline-flex items-center justify-center gap-4 focus:outline-none rounded-2xl text-sm h-10 w-32 border border-productBg"
-                onClick={() => onLoginClick && onLoginClick()} // Ensure onLoginClick is called correctly
-              >
-                <LuUser size={20} color="#DCEEF8" />
-                <span>შესვლა</span>
-              </button>
             )} */}
 
             {/* Show specific links for admin or brand roles */}
@@ -337,7 +303,7 @@ function Header({ onLoginClick, onCategoriesClick, onLogoClick, onSearch }) {
                 {user ? (
                   <div className="relative">
                     <div
-                      className="flex items-center cursor-pointer"
+                      className="flex items-center cursor-pointer "
                       onClick={toggleDropdown}
                     >
                       <div className="w-32 border border-productBg inline-flex items-center justify-center gap-2 rounded-2xl">

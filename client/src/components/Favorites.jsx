@@ -1,44 +1,97 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import config from "../config";
-import OffersCard from "./OffersCard";
-import AdComponent from "./AdComponent";
 import { useAuth } from "../context/AuthContext";
-import { IoMdPhonePortrait } from "react-icons/io";
+import OffersCard from "./OffersCard";
+import BrandCard from "./BrandCard";
+import axios from "axios";
+import AdComponent from "./AdComponent";
+import config from "../config";
+import { FaVoicemail } from "react-icons/fa6";
 
 const Favorites = () => {
+  const [interestingBrands] = useState([...Array(20).keys()]); // Simulated array of interesting brands
+  const [showAllFavorites, setShowAllFavorites] = useState(false);
+  const [showAllSuggestedOffers, setShowAllSuggestedOffers] = useState(false);
+  const [showAllInterestingBrands, setShowAllInterestingBrands] =
+    useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [offers, setOffers] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [offersPerPage] = useState(20); // Maximum offers per page
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const { user, isAuthenticated, token, userRole } = useAuth();
+  const [showAll, setShowAll] = useState(false);
+  const { user, isAuthenticated, token } = useAuth();
   const userId = user?.id || user?._id;
+  const [brands, setBrands] = useState([]);
+  const [showAllBrands, setShowAllBrands] = useState(false);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const offersPerPage = isMobile ? 12 : window.innerWidth <= 1100 ? 25 : 36; // Adjust the number of offers per page based on the screen size
+  const totalPages = Math.ceil(favorites.length / offersPerPage);
+
+  const toggleShowAllBrands = () => {
+    setShowAllBrands(!showAllBrands);
+  };
+
+  // Fetch suggested brands
   useEffect(() => {
-    const fetchPopularFavorites = async () => {
-      setLoading(true);
-      const url = `${config.apiBaseUrl}/api/users/popular-favorites`;
-
+    const fetchBrands = async () => {
       try {
-        const response = await axios.get(url);
-        setOffers(response.data.data || response.data); // Adjust depending on your API's response structure
-      } catch (err) {
-        console.error("Error fetching popular favorites:", err);
-        setError(err.message || "Failed to fetch popular favorites");
-      } finally {
-        setLoading(false);
+        const response = await axios.get(
+          `${config.apiBaseUrl}/api/users/${userId}/suggested-brands`
+        );
+        console.log("brand in userarea", response.data);
+        setBrands(response.data);
+      } catch (error) {
+        console.error("Error fetching brands:", error);
       }
     };
 
-    fetchPopularFavorites();
-  }, []); // Empty dependency array means this effect will only run once on component mount
+    fetchBrands();
+  }, [userId]);
 
-  const onFavoriteToggle = async () => {
-    fetchFavorites();
-    // Additionally fetch favorites if needed
+  const toggleShowAll = () => setShowAll(!showAll);
+
+  // Fetch suggested offers
+  useEffect(() => {
+    const fetchOffers = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `${config.apiBaseUrl}/api/users/${userId}/suggestions`
+        );
+        if (!response.ok) throw new Error("Network response was not ok");
+        const data = await response.json();
+
+        setOffers(data);
+      } catch (error) {
+        console.error("Failed to fetch offers:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchOffers();
+  }, [userId]);
+
+  const handleShowAllFavorites = () => {
+    setShowAllFavorites(!showAllFavorites);
   };
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    fetchFavorites();
+  }, [userId, isAuthenticated]);
+
+  // Fetch favorites for users
   const fetchFavorites = async () => {
     if (isAuthenticated && userId) {
       try {
@@ -58,98 +111,90 @@ const Favorites = () => {
     }
   };
 
+  const refreshFavorites = () => {
+    fetchFavorites();
+  };
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   const indexOfLastOffer = currentPage * offersPerPage;
   const indexOfFirstOffer = indexOfLastOffer - offersPerPage;
-  const currentOffers = offers.slice(indexOfFirstOffer, indexOfLastOffer);
+  const currentFavorites = favorites.slice(indexOfFirstOffer, indexOfLastOffer);
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  if (isLoading) return <div>Loading...</div>;
+  if (!favorites.length) return <div>No favorites available.</div>;
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-  const getImageUrls = (offer) => {
-    // Ensure that the offer object and the imageUrls property exist
-    if (!offer || !offer.imageUrls || !Array.isArray(offer.imageUrls)) {
-      return []; // Return an empty array if no valid image URLs exist
-    }
-
-    const baseUrl = `${config.apiBaseUrl}/`;
-    return offer.imageUrls.map(
-      (path) => `${baseUrl}${path.replace(/\\/g, "/")}`
-    );
-  };
   return (
-    <div className="pt-8 bg-white w-full flex md:flex-row flex-col-reverse">
-      <div className="flex flex-col justify-between h-full w-full px-5">
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold py-4">ფავორიტები</h2>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 xl2:grid-cols-6 gap-4">
-            {currentOffers.map((offer) => {
-              // Check if offer is null before accessing its properties
-              if (!offer) {
-                console.error("Encountered a null offer object");
-                return null; // or continue, depending on desired handling
-              }
-
-              const imageUrls = getImageUrls(offer); // Assuming you have implemented this function
-
-              return (
-                <OffersCard
-                  key={offer._id} // Now safe to access _id
-                  id={offer._id}
-                  imageUrls={imageUrls}
-                  title={offer.title}
-                  originalPrice={offer.originalPrice}
-                  discountPrice={offer.discountPrice}
-                  views={offer.views}
-                  userRole={user?.role}
-                  onFavoriteToggle={onFavoriteToggle}
-                  offer={offer}
-                  numberField={offer.numberField}
-                />
-              );
-            })}
-          </div>
-          <Pagination
-            itemsPerPage={offersPerPage}
-            totalItems={offers.length}
-            paginate={paginate}
-          />
+    <div className="pt-8 bg-white flex">
+      <div className="flex md:flex-row flex-col-reverse w-full justify-center px-5">
+        <div className="md:flex-grow">
+          <section>
+            <div className="flex justify-between items-center py-4">
+              <h2 className="text-lg font-semibold">ფავორიტები</h2>
+              <button
+                onClick={handleShowAllFavorites}
+                className="text-indigo-600 hover:text-indigo-800"
+              >
+                {showAllFavorites ? "ნაკლები" : "ყველა"}
+              </button>
+            </div>
+            <div
+              className={`grid grid-cols-2 ${
+                isMobile
+                  ? "md:grid-cols-2"
+                  : window.innerWidth <= 1100
+                  ? "md:grid-cols-5"
+                  : "md:grid-cols-6"
+              } gap-4 mb-8`}
+            >
+              {(showAllFavorites ? favorites : currentFavorites).map(
+                (offer) => {
+                  return (
+                    <OffersCard
+                      key={offer._id}
+                      id={offer._id}
+                      imageUrls={offer.imageUrls.map(
+                        (url) =>
+                          `${config.apiBaseUrl}/${url.replace(/\\/g, "/")}`
+                      )}
+                      title={offer.title}
+                      originalPrice={offer.originalPrice}
+                      discountPrice={offer.discountPrice}
+                      brandid={offer.brand}
+                      views={offer.views}
+                      userRole={user.role}
+                      onFavoriteToggle={refreshFavorites}
+                      offer={offer}
+                      numberField={offer.numberField}
+                    />
+                  );
+                }
+              )}
+            </div>
+            <div className="flex justify-center mt-4">
+              {Array.from({ length: totalPages }, (_, index) => (
+                <button
+                  key={index + 1}
+                  onClick={() => handlePageChange(index + 1)}
+                  className={`mx-1 px-3 py-1 bg-gray-200 text-gray-700 hover:bg-blue-500 hover:text-white rounded-md ${
+                    currentPage === index + 1 ? "bg-blue-500 text-white" : ""
+                  }`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+            </div>
+          </section>
         </div>
-      </div>
-
-      <div className="w-full bg-gray-300 h-56 mb-4 md:mb-0 md:w-1/5 md:h-screen md:ml-4">
-        <div className="p-4">
-          <AdComponent pageType="favorites" />
+        <div className="w-full bg-gray-300 h-56 mb-4 md:mb-0 md:w-1/5 md:h-screen md:ml-4">
+          <div className="p-4">
+            <AdComponent pageType="userarea" />
+          </div>
         </div>
       </div>
     </div>
   );
 };
-
-const Pagination = ({ itemsPerPage, totalItems, paginate }) => {
-  const pageNumbers = [];
-
-  for (let i = 1; i <= Math.ceil(totalItems / itemsPerPage); i++) {
-    pageNumbers.push(i);
-  }
-
-  return (
-    <nav>
-      <ul className="flex justify-center space-x-2 mt-4">
-        {pageNumbers.map((number) => (
-          <li
-            key={number}
-            className="border px-4 py-2 rounded hover:bg-gray-200 cursor-pointer"
-          >
-            <a onClick={() => paginate(number)} href="#!">
-              {number}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
-};
-
 export default Favorites;

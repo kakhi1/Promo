@@ -38,7 +38,7 @@ const BrandCard = ({ id, name, imageUrl, offerCount, onDelete, onModify }) => {
       <img
         src={imageUrl}
         alt={name}
-        className="max-w-[280px] h-[164px] object-cover opacity-70"
+        className="max-w-[280px] h-[164px]  opacity-70"
       />
       <div className="p-4 items-end justify-center w-full absolute bottom-0">
         <h3 className="text-lg font-semibold">{name}</h3>
