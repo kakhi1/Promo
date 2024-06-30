@@ -23,6 +23,7 @@ const OffersCard = ({
   offer = {}, // Ensure offer is an object by default
   onModify,
   onDelete,
+  numberField,
 }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -109,6 +110,44 @@ const OffersCard = ({
     }
   };
 
+  // const handleCardClick = async () => {
+  //   if (userRole === "admin" || userRole === "brand") {
+  //     setShowActions(!showActions);
+  //     return;
+  //   }
+
+  //   if (!id) {
+  //     console.error("Offer ID is undefined.");
+  //     return;
+  //   }
+
+  //   const url = offer.url;
+
+  //   if (!url) {
+  //     console.error("Offer URL is undefined.");
+  //     return;
+  //   }
+
+  //   try {
+  //     await fetch(`${config.apiBaseUrl}/api/offers/increment-views/${id}`, {
+  //       method: "POST",
+  //     });
+
+  //     // Navigate only if offer.description is not present
+  //     if (!offer.description) {
+  //       // Check if the URL is an external link and open in a new tab
+  //       if (url.startsWith("http://") || url.startsWith("https://")) {
+  //         window.open(url, "_blank");
+  //       } else {
+  //         navigate(url); // Navigate within the app
+  //       }
+  //     } else {
+  //       navigate(`/offer-card/${id}`); // Navigate to the offer card page
+  //     }
+  //   } catch (error) {
+  //     console.error("Error incrementing views:", error);
+  //   }
+  // };
   const handleCardClick = async () => {
     if (userRole === "admin" || userRole === "brand") {
       setShowActions(!showActions);
@@ -122,17 +161,12 @@ const OffersCard = ({
 
     const url = offer.url;
 
-    if (!url) {
-      console.error("Offer URL is undefined.");
-      return;
-    }
-
     try {
       await fetch(`${config.apiBaseUrl}/api/offers/increment-views/${id}`, {
         method: "POST",
       });
 
-      // Navigate only if offer.description is not present
+      // Navigate based on the presence of the offer.description
       if (!offer.description) {
         // Check if the URL is an external link and open in a new tab
         if (url.startsWith("http://") || url.startsWith("https://")) {
@@ -145,6 +179,7 @@ const OffersCard = ({
       }
     } catch (error) {
       console.error("Error incrementing views:", error);
+      toast.error("Failed to navigate to the offer.");
     }
   };
 
@@ -173,6 +208,13 @@ const OffersCard = ({
       className="flex relative flex-col items-araound justify-center md:p-4 p-4 h-[200px] max-w-[280px] shadow-lg  md:h-[285px] border border-gray-300 bg-productBg lg:cursor-pointer"
       onClick={handleCardClick}
     >
+      {/* Display the numberField on the left side */}
+      {numberField > 0 && (
+        <div className="absolute top-4 left-4 bg-green-500 rounded-lg text-white text-center font-bold md:text-[36px] text-[30px] w-[40%] h-[20%] z-50 flex  justify-center items-center">
+          -{numberField}%
+        </div>
+      )}
+
       {userRole === "admin" && showActions && (
         <div className="absolute -top-0 left-0 z-10 shadow-lg overflow-hidden w-full h-full cursor-pointer bg-[#1E1F53] opacity-95  flex flex-col justify-center items-center ">
           <div className="w-full flex h-1/3 items-center">
@@ -245,24 +287,6 @@ const OffersCard = ({
         <div>
           <h1 className="text-xs font-bold mt-4">{brandName}</h1>
         </div>
-        {/* <div className="flex justify-between ">
-          <h1 className=" text-xs font-semibold mt-4">{title}</h1>
-          {status === "pending" && (
-            <div className="mt-2">
-              <p className="text-red-500 font-bold">დასადასტურებელია</p>
-            </div>
-          )}
-          <div className="flex items-center justify-between  mt-2">
-            <div className="flex items-start gap-2"></div>
-
-            <div className="flex items-center md:mt-1 ">
-              <IoEyeOutline className="text-base text-[#9D9D9D]" />
-              <span className="ml-1 md:text-xs text-[8px] text-[#9D9D9D]">
-                {views}
-              </span>
-            </div>
-          </div>
-        </div> */}
       </div>
       <div className="flex justify-between ">
         <h1 className="text-xs font-semibold mt-4 md:whitespace-normal">

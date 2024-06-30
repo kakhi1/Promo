@@ -4,16 +4,6 @@ const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
 const Brand = require("../models/Brand");
 
-function parseInput(input) {
-  if (!input) return [];
-  return Array.isArray(input) ? input : JSON.parse(input);
-}
-
-// Util function to parse inputs that might be arrays or single values
-function parseInput(input) {
-  return Array.isArray(input) ? input : [input];
-}
-
 exports.incrementOfferViews = async (req, res) => {
   try {
     const { id } = req.params;
@@ -31,54 +21,27 @@ exports.incrementOfferViews = async (req, res) => {
   }
 };
 
-// exports.createOffer = async (req, res) => {
-//   console.log("Request Body:", req.body);
-//   console.log("Request Files:", req.files);
-//   try {
-//     if (req.fileValidationError) {
-//       return res
-//         .status(400)
-//         .json({ success: false, error: req.fileValidationError });
-//     }
-//     let tags = req.body.tags ? parseInput(req.body.tags) : [];
-//     let state = req.body.state ? parseInput(req.body.state) : [];
-//     let category = req.body.category ? parseInput(req.body.category) : [];
-//     const { brand } = req.body;
-
-//     // Adjusting for multiple files; map each file to its path
-//     const imageUrls = req.files ? req.files.map((file) => file.path) : [];
-
-//     const offerData = {
-//       ...req.body,
-//       tags, // Use parsed tags
-//       state, // Use parsed state
-//       imageUrls,
-//       category,
-//       isApproved: false,
-//       brand,
-//     };
-
-//     // Optionally remove properties if not part of your model
-
-//     // Create the offer with the brand linked
-//     const newOffer = await Offer.create(offerData);
-//     // If `brand` is provided, update the Brand document to include this new offer
-//     if (brand) {
-//       // Make sure `brand` is the correct ObjectId format
-//       await Brand.findByIdAndUpdate(
-//         brand, // Use `brand` as the ID directly
-//         { $push: { offers: newOffer._id } }, // Pushing the offer ID to the brand's offers array
-//         { new: true, safe: true, upsert: false } // Options for findByIdAndUpdate
-//       );
-//     }
-//     res.status(201).json({ success: true, data: newOffer });
-//   } catch (error) {
-//     console.error("Error creating offer:", error);
-//     res.status(400).json({ success: false, error: error.message });
-//   }
-// };
-
 // Helper function to parse input to array format
+function parseInput(input) {
+  if (Array.isArray(input)) {
+    return input; // Already an array, return as is
+  } else if (typeof input === "string") {
+    try {
+      // Attempt to parse as JSON array
+      const parsed = JSON.parse(input);
+      if (Array.isArray(parsed)) {
+        return parsed; // Successfully parsed JSON array
+      } else {
+        return [parsed]; // Parsed single value, return as array
+      }
+    } catch (error) {
+      // Not a JSON string, treat as single string value
+      return [input]; // Return as array with single item
+    }
+  } else {
+    return []; // Unsupported type, return empty array
+  }
+}
 
 exports.createOffer = async (req, res) => {
   console.log("Request Body:", req.body);
@@ -93,7 +56,7 @@ exports.createOffer = async (req, res) => {
     let tags = req.body.tags ? parseInput(req.body.tags) : [];
     let state = req.body.state ? parseInput(req.body.state) : [];
     let category = req.body.category ? parseInput(req.body.category) : [];
-    const { brand, description, url } = req.body;
+    const { brand, description, url, numberField } = req.body;
 
     const imageUrls = req.files ? req.files.map((file) => file.path) : [];
 
@@ -113,6 +76,14 @@ exports.createOffer = async (req, res) => {
     if (!url) {
       delete offerData.url;
     }
+    if (
+      !numberField ||
+      isNaN(numberField) ||
+      numberField < 1 ||
+      numberField > 100
+    ) {
+      delete offerData.numberField;
+    }
 
     const newOffer = await Offer.create(offerData);
 
@@ -131,47 +102,97 @@ exports.createOffer = async (req, res) => {
   }
 };
 
-function parseInput(input) {
-  if (Array.isArray(input)) {
-    return input; // Already an array, return as is
-  } else if (typeof input === "string") {
-    try {
-      // Attempt to parse as JSON array
-      const parsed = JSON.parse(input);
-      if (Array.isArray(parsed)) {
-        return parsed; // Successfully parsed JSON array
-      } else {
-        return [parsed]; // Parsed single value, return as array
-      }
-    } catch (error) {
-      // Not a JSON string, treat as single string value
-      return [input]; // Return as array with single item
+exports.updateOfferById = async (req, res) => {
+  try {
+    // Fetch the existing offer
+    const existingOffer = await Offer.findById(req.params.id);
+    if (!existingOffer) {
+      return res.status(404).json({ success: false, error: "Offer not found" });
     }
-  } else {
-    return []; // Unsupported type, return empty array
-  }
-}
 
-function parseInput(input) {
-  if (Array.isArray(input)) {
-    return input; // Already an array, return as is
-  } else if (typeof input === "string") {
+    let tags = [];
+    let state = [];
+    let category = [];
+
+    // Try to parse tags, state, and category from the request body
     try {
-      // Attempt to parse as JSON array
-      const parsed = JSON.parse(input);
-      if (Array.isArray(parsed)) {
-        return parsed; // Successfully parsed JSON array
-      } else {
-        return [parsed]; // Parsed single value, return as array
-      }
+      tags = req.body.tags
+        ? JSON.parse(req.body.tags).map((tag) => tag.value)
+        : [];
     } catch (error) {
-      // Not a JSON string, treat as single string value
-      return [input]; // Return as array with single item
+      console.error("Error parsing tags:", error.message);
     }
-  } else {
-    return []; // Unsupported type, return empty array
+
+    try {
+      state = req.body.state
+        ? JSON.parse(req.body.state).map((state) => state.value)
+        : [];
+    } catch (error) {
+      console.error("Error parsing state:", error.message);
+    }
+
+    try {
+      category = req.body.category
+        ? JSON.parse(req.body.category).map((cat) => cat.value)
+        : [];
+    } catch (error) {
+      console.error("Error parsing category:", error.message);
+    }
+
+    // Prepare the update data with parsed tags, state, and category
+    let updateData = { ...req.body, tags, state, category };
+
+    // Remove the stringified fields that were parsed and replaced
+    delete updateData["tags"];
+    delete updateData["state"];
+    delete updateData["category"];
+
+    console.log(
+      "Constructed updateData before adjusting status and images:",
+      updateData
+    );
+
+    // Adjust status based on user role
+    if (req.body.role === "admin") {
+      updateData.status = "approved";
+    } else if (req.body.role === "brand") {
+      updateData.status = "pending";
+    }
+
+    // Update image URLs if files were uploaded
+    if (req.files && req.files.length > 0) {
+      const imageUrls = req.files.map((file) => file.path);
+      updateData.imageUrls = imageUrls;
+      console.log("Updated imageUrls with uploaded files:", imageUrls);
+    }
+
+    // If numberField is already set, do not include it in the update unless it's provided
+    if (existingOffer.numberField && !req.body.numberField) {
+      delete updateData.numberField;
+    }
+
+    console.log(
+      "Final updateData being used for update operation:",
+      updateData
+    );
+
+    const offer = await Offer.findByIdAndUpdate(req.params.id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!offer) {
+      console.log("No offer found with the given ID.");
+      return res.status(404).json({ success: false, error: "Offer not found" });
+    }
+
+    console.log("Successfully updated offer:", offer);
+    res.status(200).json({ success: true, data: offer });
+  } catch (error) {
+    console.error("Error updating offer:", error);
+    res.status(400).json({ success: false, error: error.message });
   }
-}
+};
 
 exports.approveOfferById = async (req, res) => {
   try {
@@ -240,30 +261,6 @@ exports.getAllOffers = async (req, res) => {
     res.status(400).json({ success: false, error: error.message });
   }
 };
-// exports.getAllOffers = async (req, res) => {
-//   try {
-//     const { brandId, category, tags } = req.query;
-//     let query = { status: "approved" };
-
-//     if (brandId) {
-//       query.brand = brandId;
-//     }
-
-//     if (category) {
-//       query.category = category;
-//     }
-
-//     if (tags) {
-//       const tagsArray = tags.split(",");
-//       query.tags = { $in: tagsArray };
-//     }
-
-//     const offers = await Offer.find(query);
-//     res.status(200).json({ success: true, data: offers });
-//   } catch (error) {
-//     res.status(400).json({ success: false, error: error.message });
-//   }
-// };
 
 exports.getAllOffersWithoutFilter = async (req, res) => {
   try {
@@ -282,72 +279,6 @@ exports.getOfferById = async (req, res) => {
     }
     res.status(200).json({ success: true, data: offer });
   } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
-  }
-};
-
-// Update an offer by ID
-exports.updateOfferById = async (req, res) => {
-  try {
-    // Assuming req.body.tags and req.body.state are JSON strings of arrays
-    let tags = JSON.parse(req.body.tags).map((tag) => tag.value);
-    let state = JSON.parse(req.body.state).map((state) => state.value);
-    let category = req.body.category
-      ? JSON.parse(req.body.category).map((cat) => cat.value)
-      : [];
-
-    // Prepare the update data with parsed tags and state,
-    // spread the rest of req.body to retain other fields as they were
-    let updateData = { ...req.body, tags, state, category };
-    // Remove the stringified fields that were parsed and replaced
-    delete updateData["tags"];
-    delete updateData["state"];
-
-    // Add parsed tags and state to the updateData
-    updateData.tags = tags;
-    updateData.state = state;
-
-    console.log(
-      "Constructed updateData before adjusting status and images:",
-      updateData
-    );
-
-    // if (req.user && req.user.role === "brand") {
-    //   updateData.status = "pending";
-    //   console.log("Status set to pending due to brand role");
-    // }
-    // If the user is an admin, approve the offer directly
-    if (req.body.role === "admin") {
-      updateData.status = "approved";
-    } else if (req.body.role === "brand") {
-      updateData.status = "pending";
-    }
-
-    if (req.files && req.files.length > 0) {
-      const imageUrls = req.files.map((file) => file.path);
-      updateData.imageUrls = imageUrls;
-      console.log("Updated imageUrls with uploaded files:", imageUrls);
-    }
-
-    console.log(
-      "Final updateData being used for update operation:",
-      updateData
-    );
-
-    const offer = await Offer.findByIdAndUpdate(req.params.id, updateData, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!offer) {
-      console.log("No offer found with the given ID.");
-      return res.status(404).json({ success: false, error: "Offer not found" });
-    }
-
-    console.log("Successfully updated offer:", offer);
-    res.status(200).json({ success: true, data: offer });
-  } catch (error) {
-    console.error("Error updating offer:", error);
     res.status(400).json({ success: false, error: error.message });
   }
 };

@@ -380,6 +380,7 @@ const Admin = () => {
                     onModify={handleModify}
                     onDelete={handleDelete}
                     status={offer.status}
+                    numberField={offer.numberField}
                   />
                   {/* Additional element to display pending status */}
                   {offer.status === "pending" && (

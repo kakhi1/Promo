@@ -181,6 +181,7 @@ const BrandArea = () => {
                   discountPrice={offer.discountPrice}
                   views={offer.views}
                   userRole={userRole}
+                  numberField={offer.numberField}
                 />
               </div>
             ))}

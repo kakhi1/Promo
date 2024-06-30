@@ -22,6 +22,7 @@ function Adoffers() {
     state: [],
     originalPrice: "",
     discountPrice: "",
+    numberField: "",
   });
   const [image, setImage] = useState(null);
   const [offerImages, setOfferImages] = useState([]);
@@ -159,6 +160,12 @@ function Adoffers() {
     if (!offerInfo.state.length) newErrors.state = "გთხოვ მიუთითოთ ქალაქი";
     if (offerImages.length === 0)
       newErrors.offerImage = "გთხოვ ატვირთოთ სურათი";
+    if (
+      offerInfo.numberField &&
+      (offerInfo.numberField < 1 || offerInfo.numberField > 100)
+    ) {
+      newErrors.numberField = "გთხოვ მიუთითოთ რიცხვი 1-დან 100-მდე";
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -341,6 +348,27 @@ function Adoffers() {
                   დამატება URL-ის გარეშე
                 </label>
               </div>
+              <div className="w-full md:w-[50%] flex justify-start items-center flex-col gap-4">
+                <h1 className="text-start w-full text-base font-semibold">
+                  ფასდაკლების რაოდენობა პროცენტებში
+                </h1>
+                <input
+                  type="number"
+                  name="numberField"
+                  placeholder="%"
+                  value={offerInfo.numberField}
+                  onChange={handleChange}
+                  className="input input-bordered w-full mb-2 border-2 border-[#CED4DA] h-8 rounded-md pl-6"
+                  min="1"
+                  max="100"
+                />
+                {errors.numberField && (
+                  <span className="text-red-500 text-sm">
+                    {errors.numberField}
+                  </span>
+                )}
+              </div>
+
               {errors.descriptionUrl && (
                 <span className="text-red-500 text-sm">
                   {errors.descriptionUrl}

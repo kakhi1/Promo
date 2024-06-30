@@ -95,6 +95,7 @@ const OffersCategory = () => {
                   views={offer.views}
                   userRole={offer.userRole}
                   onFavoriteToggle={() => {}}
+                  numberField={offer.numberField}
                 />
               ))}
             </div>

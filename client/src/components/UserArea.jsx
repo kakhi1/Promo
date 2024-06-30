@@ -149,6 +149,7 @@ const UserArea = () => {
                     userRole={user.role}
                     onFavoriteToggle={refreshFavorites}
                     offer={offer}
+                    numberField={offer.numberField}
                   />
                 );
               })}

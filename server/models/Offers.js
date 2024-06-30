@@ -27,6 +27,17 @@ const offerSchema = new mongoose.Schema({
   // discountPrice: { type: Number },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Brand" }, // Optional: If you want to track the status of offers
   lastModified: { type: Date, default: Date.now }, // To track when an offer was last updated
+  numberField: {
+    type: Number,
+    validate: {
+      validator: function (value) {
+        // If value is provided, it must be between 1 and 100
+        return value == null || (value >= 1 && value <= 100);
+      },
+      message: "Number must be between 1 and 100",
+    },
+    required: false, // Field is optional
+  },
 });
 
 // Optionally, you can add methods or virtuals to your schema if needed

@@ -551,6 +551,7 @@ const OffersInfo = () => {
                   userRole={user?.role}
                   onFavoriteToggle={onFavoriteToggle}
                   offer={offer}
+                  numberField={offer.numberField}
                 />
               ))
             )}
