@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import config from "../config";
 import OffersCard from "./OffersCard";
 import BrandCard from "./BrandCard";
@@ -7,9 +7,6 @@ import { useAuth } from "../context/AuthContext";
 import AdComponent from "./AdComponent";
 import { toast } from "react-toastify";
 import axios from "axios";
-
-// Assuming you're using react-router-dom for routing
-import { useParams } from "react-router-dom";
 
 const BrandInfo = () => {
   const { brandId } = useParams();
@@ -19,6 +16,8 @@ const BrandInfo = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showAllBrands, setShowAllBrands] = useState(false);
+  const [columns, setColumns] = useState(2); // Default to mobile view
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { user, isAuthenticated, token, userRole } = useAuth();
   const userId = user?.id || user?._id;
@@ -29,19 +28,14 @@ const BrandInfo = () => {
     setShowAllProducts(!showAllProducts);
   };
 
-  const handleShowAllbrands = () => {
+  const handleShowAllBrands = () => {
     setShowAllBrands(!showAllBrands);
   };
-  // Function to refresh offers/favorites when a favorite is toggled
+
   const onFavoriteToggle = async () => {
     fetchFavorites();
-    // Additionally fetch favorites if needed
   };
 
-  // Placeholder for determining if the device is mobile
-  const isMobile = window.innerWidth < 768;
-
-  // Your API base URL
   const baseUrl = `${config.apiBaseUrl}/`;
 
   useEffect(() => {
@@ -71,7 +65,6 @@ const BrandInfo = () => {
         if (!brandResponse.ok)
           throw new Error(brandData.message || "Failed to fetch brand.");
 
-        // Assuming there's an API to fetch all offers for a brand sorted by views
         const offersResponse = await fetch(
           `${config.apiBaseUrl}/api/brands/${brandId}/offers`
         );
@@ -80,34 +73,60 @@ const BrandInfo = () => {
           throw new Error(offersData.message || "Failed to fetch offers.");
 
         setBrand(brandData);
-        setOffers(offersData); // Assuming this array is already sorted by views
+        setOffers(offersData);
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
+
     fetchBrands();
     fetchBrandAndOffers();
   }, [brandId]);
+
+  useEffect(() => {
+    const updateColumns = () => {
+      if (window.innerWidth >= 1000) {
+        setColumns(6);
+      } else if (window.innerWidth >= 768) {
+        setColumns(5);
+      } else {
+        setColumns(2);
+      }
+    };
+
+    updateColumns();
+    window.addEventListener("resize", updateColumns);
+    return () => window.removeEventListener("resize", updateColumns);
+  }, []);
+
+  const itemsPerPage = columns * 6;
+  const totalPages = Math.ceil(offers.length / itemsPerPage);
+
+  const paginatedOffers = offers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
   if (!brand) return <div>No brand found.</div>;
 
-  // Adjust the image path as needed
   const imageUrl = `${config.apiBaseUrl}/${brand.imageUrl.replace(/\\/g, "/")}`;
 
   return (
-    <div className="flex md:flex-row flex-col-reverse  px-10">
+    <div className="flex md:flex-row flex-col-reverse px-10">
       <div className="md:w-4/5 w-full">
         <div className="flex justify-start py-4">
           <h1 className="text-[24px] font-semibold">{brand.name}</h1>
         </div>
-        <div className="flex  flex-col md:flex-row">
+        <div className="flex flex-col md:flex-row">
           <div className="w-full md:flex-row flex flex-col">
-            {" "}
-            {/* Image */}
             <div className="flex justify-center items-center p-4 md:w-[40%] w-full">
               <img
                 src={imageUrl}
@@ -115,35 +134,21 @@ const BrandInfo = () => {
                 className="max-h-full max-w-full"
               />
             </div>
-            {/* Description */}
             <div className="flex-1 p-4 overflow-auto">
               <p>{brand.description}</p>
             </div>
           </div>
         </div>
-        {/* Brand and product details */}
         <div className="w-full">
-          {/* Top Offers Section */}
           <div className="flex justify-between items-center py-4">
             <h2 className="text-lg font-semibold">
               ამ ბრენდის ტოპ შეთავაზებები
             </h2>
-            <button
-              onClick={handleShowAllProducts}
-              className="text-indigo-600 hover:text-indigo-800"
-            >
-              {showAllProducts ? "ნაკლები" : "ყველა"}
-            </button>
           </div>
-
-          {/* Products Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 xl2:grid-cols-6 gap-4 mb-8 ">
-            {(showAllProducts
-              ? offers
-              : isMobile
-              ? offers.slice(0, 4)
-              : offers.slice(0, 8)
-            ).map((offer) => {
+          <div
+            className={`grid grid-cols-2 md:grid-cols-${columns} gap-4 mb-8`}
+          >
+            {paginatedOffers.map((offer) => {
               const imageUrls = offer.imageUrls
                 ? offer.imageUrls.map(
                     (path) => `${baseUrl}${path.replace(/\\/g, "/")}`
@@ -166,46 +171,54 @@ const BrandInfo = () => {
               );
             })}
           </div>
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-4">
+              {Array.from({ length: totalPages }, (_, index) => (
+                <button
+                  key={index}
+                  className={`mx-1 px-3 py-1 rounded ${
+                    currentPage === index + 1
+                      ? "bg-indigo-600 text-white"
+                      : "bg-gray-200"
+                  }`}
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-        {/* Top Brands Section */}
         <div className="flex justify-between items-center py-4">
           <h2 className="text-lg font-semibold">ტოპ ბრენდები</h2>
           {!showAllBrands && (
             <button
-              onClick={handleShowAllbrands}
+              onClick={handleShowAllBrands}
               className="text-indigo-600 hover:text-indigo-800"
             >
               {showAllBrands ? "ნაკლები" : "ყველა"}
             </button>
           )}
         </div>
+        <div className={`grid grid-cols-2 md:grid-cols-${columns} gap-4`}>
+          {(showAllBrands ? brands : brands.slice(0, columns * 2)).map(
+            (brand) => {
+              const imagePath = brand.imageUrl.replace(/\\/g, "/");
+              const fullImageUrl = baseUrl + imagePath;
 
-        {/* Brands Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {(showAllBrands
-            ? brands
-            : isMobile
-            ? brands.slice(0, 4)
-            : brands.slice(0, 8)
-          ).map((brand) => {
-            // and the images are served from the 'uploads' directory
-            const baseUrl = `${config.apiBaseUrl}/`;
-            const imagePath = brand.imageUrl.replace(/\\/g, "/"); // Replace backslashes with forward slashes if needed
-            const fullImageUrl = baseUrl + imagePath;
-
-            return (
-              <BrandCard
-                key={brand._id}
-                id={brand._id}
-                name={brand.name}
-                imageUrl={fullImageUrl} // Adjust as necessary for the path
-                offerCount={brand.offers.length} // Make sure your API provides this
-              />
-            );
-          })}
+              return (
+                <BrandCard
+                  key={brand._id}
+                  id={brand._id}
+                  name={brand.name}
+                  imageUrl={fullImageUrl}
+                  offerCount={brand.offers.length}
+                />
+              );
+            }
+          )}
         </div>
       </div>
-      {/* add section */}
       <div className="w-full bg-gray-300 h-56 mb-4 md:mb-0 md:w-1/5 md:h-screen md:ml-4">
         <div className="p-4">
           <AdComponent pageType="userarea" />

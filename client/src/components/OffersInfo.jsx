@@ -395,9 +395,14 @@ const OffersInfo = () => {
         <section className=" md:flex md:flex-row flex-col justify-between w-full items-center gap-2  ">
           <div className="md:flex  justify-start items-center gap-2 h-full  grid grid-cols-4 ">
             {/* views  */}
-            <div className="flex items-center justify-end gap-1 ml-2  order-none md:order-last">
+            <div className="flex items-center justify-end gap-1 ml-2  order-none md:order-last ">
               <IoEyeOutline className="text-xs text-[#9D9D9D]" />
               <span className="text-xs  text-[#9D9D9D]">{offer.views}</span>
+              {offer.numberField > 0 && (
+                <div className=" bg-green-500 rounded-lg text-white text-center font-bold md:text-[36px] text-[30px] w-[100px] h-[50px] md:ml-24 flex  justify-center items-center">
+                  -{offer.numberField}%
+                </div>
+              )}
             </div>
             {/* title */}
             <h1 className="md:text-[24px] text-xl font-semibold flex justify-start items-center h-full col-span-3 order-first md:order-none">
@@ -498,7 +503,7 @@ const OffersInfo = () => {
                 onClick={handleBuyClick}
                 className="lg:w-[300px] w-[300px] md:w-[200px] h-[40px] flex order-last md:order-none rounded-sm  items-center justify-center text-white text-xl bg-[#5E5FB2] lg:hover:bg-Bgcolor"
               >
-                შეიძინე
+                შეიძინე esaaaaa
               </button>{" "}
             </div>
             <div className=" flex  items-center  md:justify-center justify-end lg:w-[300px] w-[300px] md:w-[200px]  h-[40px] gap-2">

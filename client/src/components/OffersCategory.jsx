@@ -8,22 +8,34 @@ import config from "../config";
 const OffersCategory = () => {
   const [offers, setOffers] = useState([]);
   const [categoryName, setCategoryName] = useState("");
-  const [showAllProducts, setShowAllProducts] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [columns, setColumns] = useState(2); // Default to mobile view
   const [currentPage, setCurrentPage] = useState(1);
-  const offersPerPage = 12;
   const { categoryId } = useParams();
 
-  const baseUrl = `${config.apiBaseUrl}/`; // Adjust this to your actual base URL
+  const baseUrl = `${config.apiBaseUrl}/`;
 
   useEffect(() => {
-    window.addEventListener("resize", () =>
-      setIsMobile(window.innerWidth <= 768)
-    );
+    const updateColumns = () => {
+      if (window.innerWidth >= 1000) {
+        setColumns(6);
+      } else if (window.innerWidth >= 768) {
+        setColumns(5);
+      } else {
+        setColumns(2);
+      }
+    };
+
+    updateColumns();
+    window.addEventListener("resize", () => {
+      setIsMobile(window.innerWidth <= 768);
+      updateColumns();
+    });
     return () =>
-      window.removeEventListener("resize", () =>
-        setIsMobile(window.innerWidth <= 768)
-      );
+      window.removeEventListener("resize", () => {
+        setIsMobile(window.innerWidth <= 768);
+        updateColumns();
+      });
   }, []);
 
   useEffect(() => {
@@ -43,7 +55,7 @@ const OffersCategory = () => {
             response.data.data.length > 0
               ? response.data.data[0].categoryName
               : "Unknown Category"
-          ); // Assuming categoryName is part of the offer data
+          );
         } else {
           console.error(
             "Received data is not in the expected format:",
@@ -59,32 +71,26 @@ const OffersCategory = () => {
     fetchOffers();
   }, [categoryId]);
 
+  const offersPerPage = columns * 6; // 6 rows per page
   const indexOfLastOffer = currentPage * offersPerPage;
   const indexOfFirstOffer = indexOfLastOffer - offersPerPage;
   const currentOffers = offers.slice(indexOfFirstOffer, indexOfLastOffer);
   const totalPages = Math.ceil(offers.length / offersPerPage);
 
   const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
-  const handleShowAllProducts = () => setShowAllProducts(!showAllProducts);
 
   return (
     <div className="pt-8 bg-white w-full">
       <div className="flex md:flex-row flex-col-reverse">
         <div className="md:flex-grow ml-6">
           <div className="flex justify-between items-center py-4">
-            <h2 className="text-lg font-semibold">პროდუქტი</h2>
-            {!isMobile || !showAllProducts ? (
-              <button
-                onClick={handleShowAllProducts}
-                className="text-indigo-600 hover:text-indigo-800"
-              >
-                {showAllProducts ? "ნაკლები" : "ყველა"}
-              </button>
-            ) : null}
+            <h2 className="text-lg font-semibold">{categoryName} პროდუქტი</h2>
           </div>
           {offers.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 xl2:grid-cols-6 gap-4 mb-8">
-              {(showAllProducts ? offers : currentOffers).map((offer) => (
+            <div
+              className={`grid grid-cols-2 md:grid-cols-${columns} gap-4 mb-8`}
+            >
+              {currentOffers.map((offer) => (
                 <OffersCard
                   key={offer._id}
                   id={offer._id}

@@ -4,23 +4,51 @@ const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
 const Brand = require("../models/Brand");
 
+// exports.incrementOfferViews = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const offer = await Offer.findByIdAndUpdate(
+//       id,
+//       { $inc: { views: 1 } },
+//       { new: true }
+//     );
+//     if (!offer) {
+//       return res.status(404).json({ success: false, error: "Offer not found" });
+//     }
+//     res.status(200).json({ success: true, data: offer });
+//   } catch (error) {
+//     res.status(500).json({ success: false, error: error.message });
+//   }
+// };
+
 exports.incrementOfferViews = async (req, res) => {
   try {
     const { id } = req.params;
-    const offer = await Offer.findByIdAndUpdate(
-      id,
-      { $inc: { views: 1 } },
-      { new: true }
-    );
+    const userIp =
+      req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+
+    const offer = await Offer.findById(id);
+
     if (!offer) {
       return res.status(404).json({ success: false, error: "Offer not found" });
     }
+
+    // Check if the IP address has already viewed the offer
+    if (!offer.viewIPs.includes(userIp)) {
+      // Add the new IP to the viewIPs array
+      offer.viewIPs.push(userIp);
+
+      // Increment the view count
+      offer.views += 1;
+
+      await offer.save();
+    }
+
     res.status(200).json({ success: true, data: offer });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-
 // Helper function to parse input to array format
 function parseInput(input) {
   if (Array.isArray(input)) {
